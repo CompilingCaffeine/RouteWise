@@ -62,3 +62,37 @@ The recommended validator is the cheapest one whose simulated end-to-end held-ou
 - **Nano judge:** its false alarms are spread across every field (refund_date 12, currency 8, refund_amount 7, ...). That is general unreliability, not a misreading a prompt can fix.
 - **Super judge:** its 4 false alarms are definition disagreements, such as a wrong-colour item counted as `damaged_item`, and the full-refund amount in `ext-h09`.
 - **Decision:** the allowed revision was **not used**. `judge_*_v1` prompts are frozen as committed before any held-out judge call.
+
+## Results (held-out): `validators-20261025T182255Z-812767`
+
+The 186 Nano first answers come from the three cited evaluation runs. Escalation answers come from `benchmark-20261025T182208Z-53fc8a`, a single Super pass over held-out.
+
+| Validator | Extraction recall / precision / FPR | Extraction acc. | Classification acc. | $ / 1k tasks (all) | Judge latency p50 | Simulated extraction p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| none | – | 87.8% | 95.2% | $0.050 | – | 3984 ms |
+| deterministic | 60% / 100% / 0% | 95.1% | 95.2% | $0.064 | – | 3984 ms |
+| judge_nano | 67% / 18% / 43% | 93.5% | 100% | $0.178 | 457 ms | 5880 ms |
+| judge_super | 67% / 83% / 2% | 95.9% | 100% | $0.230 | 775 ms | 4742 ms |
+| deterministic + judge_nano | 87% / 22% / 43% | 95.9% | 100% | $0.181 | 457 ms | 5835 ms |
+| deterministic + judge_super | 67% / 83% / 2% | 95.9% | 100% | $0.221 | 776 ms | 4742 ms |
+
+Every error the deterministic rules caught, the Super judge also caught.
+
+**Hypotheses**
+
+- **H4a, supported.** Deterministic precision is 100%, against 83–87% for the Super judge and 18–20% for the Nano judge.
+- **H4b, supported but marginal.** On extraction, the Super judge's recall is 66.7% against 60.0% for the deterministic rules: 10 vs 9 of 15 errors.
+- **H4c, not supported.** The deterministic + Super-judge cascade keeps 78% of the savings versus always-Ultra ($0.221 vs $0.769 per 1k), not less than half. It costs 3.5× the deterministic route for +2.1 points of overall accuracy.
+
+**Decision rule (as pre-registered): `none`.** Pooled over 186 answers, Nano alone meets the declared accuracy thresholds (extraction 87.8% ≥ 85%, classification 95.2% ≥ 95%). We report this as the rule's output.
+
+The rule has two weaknesses, which we note without changing it:
+- It uses point estimates. Nano alone scored 85.4% in the primary run, and its CI lower bound falls below 85%.
+- It ignores latency. Any judge pushes the simulated extraction p95 over the 4 s ceiling.
+
+A future rule should use a lower confidence bound and include the latency SLO.
+
+**Observations, not pre-registered**
+
+- The judges' value is concentrated in **classification**, where the deterministic rules only check the schema. Both judges caught all 3 classification errors, and the Super judge did so with no false alarms.
+- A per-task validator choice (deterministic rules for extraction, Super judge for classification) is a hypothesis for a future pre-registered run. It is not a result.

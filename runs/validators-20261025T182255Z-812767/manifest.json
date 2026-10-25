@@ -1,0 +1,101 @@
+{
+  "experiment_id": "validators-20261025T182255Z-812767",
+  "created_at": "2026-10-25T18:22:55.412067+00:00",
+  "git": {
+    "sha": "c121af5fa5c624f9a1980abe0fb7904182b66d2b",
+    "dirty": true
+  },
+  "kind": "validator_study",
+  "split": "heldout",
+  "answers": [
+    "runs/eval-20261025T170223Z-7e4682",
+    "runs/eval-20261025T171615Z-4ca4e4",
+    "runs/eval-20261025T174144Z-d1e7da"
+  ],
+  "escalation": "runs/benchmark-20261025T182208Z-53fc8a",
+  "primary": "nano",
+  "escalate_to": "super",
+  "judges": [
+    "nano",
+    "super"
+  ],
+  "judge_prompts": {
+    "extraction": {
+      "version": "judge_extraction_v1",
+      "sha256": "125de351275481dedcf2e4a93db7a91cb8219da3244c2c058393a6cb286515c3"
+    },
+    "classification": {
+      "version": "judge_classification_v1",
+      "sha256": "b843a6778552b1841359e1ddbe3bc40b78d4bdcbc51ee2fc7d5a15b94d48bba3"
+    }
+  },
+  "n_samples": 186,
+  "dataset": {
+    "version": "v1",
+    "sha256": "2bb6732e28b6d9679e7a35b35b0d59127cf24218b34d3dc81a21bf39452ca61c"
+  },
+  "load": {
+    "concurrency": 6,
+    "rpm": 90.0
+  },
+  "config_sha256": "7e06d900429de83836a577233681baa7ef4b77ab467465b7e5fdfdfcc66c1441",
+  "prices": {
+    "sha256": "ce9b74ae2483a470de9d85f87be74ea9957855210d1232a045ee8a9c610e569c",
+    "fetched_at": "2026-10-25T16:52:04.284177+00:00"
+  },
+  "generation": {
+    "temperature": 0.0,
+    "seed": 7,
+    "response_format": "json_schema"
+  },
+  "thresholds": {
+    "extraction": {
+      "min_task_accuracy": 0.85,
+      "min_field_accuracy": 0.95,
+      "max_p95_latency_ms": 4000
+    },
+    "classification": {
+      "min_task_accuracy": 0.95,
+      "min_field_accuracy": null,
+      "max_p95_latency_ms": 3000
+    }
+  },
+  "candidates": [
+    {
+      "label": "nano",
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.06,
+      "usd_per_1m_output": 0.24
+    },
+    {
+      "label": "super",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.3,
+      "usd_per_1m_output": 0.8999999999999999
+    },
+    {
+      "label": "ultra",
+      "model_id": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 1.0,
+      "usd_per_1m_output": 3.0
+    }
+  ]
+}

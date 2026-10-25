@@ -1,0 +1,38 @@
+[
+  {
+    "candidate": "super",
+    "task": "classification",
+    "n": 21,
+    "task_accuracy": 1.0,
+    "field_accuracy": 1.0,
+    "cost_usd_total": 0.002352,
+    "cost_per_1k_tasks": 0.112,
+    "p50_latency_ms": 780.1,
+    "p95_latency_ms": 1489.4,
+    "escalation_rate": 0.0,
+    "hedge_rate": 0.0,
+    "incomplete_cost_count": 0,
+    "schema_valid_rate": 1.0,
+    "error_rate": 0.0,
+    "mean_completion_tokens": 8.619047619047619,
+    "model_id": "nvidia/nemotron-3-super-120b-a12b"
+  },
+  {
+    "candidate": "super",
+    "task": "extraction",
+    "n": 41,
+    "task_accuracy": 0.975609756097561,
+    "field_accuracy": 0.9959349593495935,
+    "cost_usd_total": 0.0116148,
+    "cost_per_1k_tasks": 0.2832878048780488,
+    "p50_latency_ms": 975.5,
+    "p95_latency_ms": 1273.5,
+    "escalation_rate": 0.0,
+    "hedge_rate": 0.0,
+    "incomplete_cost_count": 0,
+    "schema_valid_rate": 1.0,
+    "error_rate": 0.0,
+    "mean_completion_tokens": 68.14634146341463,
+    "model_id": "nvidia/nemotron-3-super-120b-a12b"
+  }
+]

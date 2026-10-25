@@ -1,0 +1,129 @@
+{
+  "experiment_id": "benchmark-20261025T182208Z-53fc8a",
+  "created_at": "2026-10-25T18:22:08.564986+00:00",
+  "git": {
+    "sha": "c121af5fa5c624f9a1980abe0fb7904182b66d2b",
+    "dirty": true
+  },
+  "kind": "benchmark",
+  "split": "heldout",
+  "limit": null,
+  "dataset": {
+    "version": "v1",
+    "sha256": "2bb6732e28b6d9679e7a35b35b0d59127cf24218b34d3dc81a21bf39452ca61c"
+  },
+  "example_ids": [
+    "ext-001",
+    "ext-002",
+    "ext-003",
+    "ext-009",
+    "ext-010",
+    "ext-011",
+    "ext-014",
+    "ext-016",
+    "ext-017",
+    "ext-018",
+    "ext-023",
+    "ext-024",
+    "ext-028",
+    "ext-029",
+    "ext-031",
+    "ext-032",
+    "ext-034",
+    "ext-037",
+    "ext-040",
+    "ext-042",
+    "ext-043",
+    "ext-044",
+    "ext-045",
+    "ext-046",
+    "ext-047",
+    "ext-048",
+    "ext-051",
+    "ext-052",
+    "ext-054",
+    "ext-055",
+    "ext-062",
+    "ext-067",
+    "ext-068",
+    "ext-069",
+    "ext-070",
+    "ext-h03",
+    "ext-h05",
+    "ext-h06",
+    "ext-h07",
+    "ext-h08",
+    "ext-h10",
+    "cls-002",
+    "cls-003",
+    "cls-004",
+    "cls-006",
+    "cls-007",
+    "cls-010",
+    "cls-011",
+    "cls-012",
+    "cls-013",
+    "cls-014",
+    "cls-016",
+    "cls-017",
+    "cls-019",
+    "cls-020",
+    "cls-021",
+    "cls-022",
+    "cls-027",
+    "cls-028",
+    "cls-031",
+    "cls-033",
+    "cls-036"
+  ],
+  "prompts": {
+    "extraction": {
+      "version": "extraction_v2",
+      "sha256": "6eaf3b06d7ef2a4fd80238124dcea7702449f6d12981d42cc0d2fcc14dc57fcb"
+    },
+    "classification": {
+      "version": "classification_v1",
+      "sha256": "1e78ff616aed2db7d06aadf90d48fb7996257987dce9fbeba7299c9f59b00692"
+    }
+  },
+  "load": {
+    "concurrency": 6,
+    "rpm": 90.0
+  },
+  "config_sha256": "7e06d900429de83836a577233681baa7ef4b77ab467465b7e5fdfdfcc66c1441",
+  "prices": {
+    "sha256": "ce9b74ae2483a470de9d85f87be74ea9957855210d1232a045ee8a9c610e569c",
+    "fetched_at": "2026-10-25T16:52:04.284177+00:00"
+  },
+  "generation": {
+    "temperature": 0.0,
+    "seed": 7,
+    "response_format": "json_schema"
+  },
+  "thresholds": {
+    "extraction": {
+      "min_task_accuracy": 0.85,
+      "min_field_accuracy": 0.95,
+      "max_p95_latency_ms": 4000
+    },
+    "classification": {
+      "min_task_accuracy": 0.95,
+      "min_field_accuracy": null,
+      "max_p95_latency_ms": 3000
+    }
+  },
+  "candidates": [
+    {
+      "label": "super",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.3,
+      "usd_per_1m_output": 0.8999999999999999
+    }
+  ]
+}
