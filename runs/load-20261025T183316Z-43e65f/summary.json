@@ -1,0 +1,194 @@
+[
+  {
+    "model": "nano",
+    "concurrency": 1,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 0.9709169906427875,
+    "output_tokens_per_s": 74.2953772214783,
+    "ttft_ms": {
+      "p50": 734.3,
+      "p95": 850.815,
+      "p99": 908.985,
+      "max": 915.8
+    },
+    "e2e_ms": {
+      "p50": 1019.45,
+      "p95": 1146.4,
+      "p99": 1196.021,
+      "max": 1198.7
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": null,
+    "cost_usd_total": 0.003009
+  },
+  {
+    "model": "nano",
+    "concurrency": 4,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 3.4362293110360227,
+    "output_tokens_per_s": 262.5136017410228,
+    "ttft_ms": {
+      "p50": 796.05,
+      "p95": 851.205,
+      "p99": 887.6590000000001,
+      "max": 916.0
+    },
+    "e2e_ms": {
+      "p50": 1140.1,
+      "p95": 1277.995,
+      "p99": 1389.661,
+      "max": 1471.3
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": null,
+    "cost_usd_total": 0.00300756
+  },
+  {
+    "model": "nano",
+    "concurrency": 8,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 6.493594339750268,
+    "output_tokens_per_s": 496.4894005600725,
+    "ttft_ms": {
+      "p50": 807.55,
+      "p95": 893.9449999999999,
+      "p99": 901.371,
+      "max": 906.4
+    },
+    "e2e_ms": {
+      "p50": 1235.65,
+      "p95": 1321.325,
+      "p99": 1362.795,
+      "max": 1372.9
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": null,
+    "cost_usd_total": 0.00300828
+  },
+  {
+    "model": "nano",
+    "concurrency": 16,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 10.422547444304513,
+    "output_tokens_per_s": 796.8906066791159,
+    "ttft_ms": {
+      "p50": 922.7,
+      "p95": 1004.765,
+      "p99": 1030.2740000000001,
+      "max": 1042.4
+    },
+    "e2e_ms": {
+      "p50": 1468.35,
+      "p95": 1733.545,
+      "p99": 1770.277,
+      "max": 1789.5
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": null,
+    "cost_usd_total": 0.00300828
+  },
+  {
+    "model": "super",
+    "concurrency": 1,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 0.6571075767241545,
+    "output_tokens_per_s": 44.628556252515494,
+    "ttft_ms": {
+      "p50": 1152.45,
+      "p95": 1469.8799999999999,
+      "p99": 1678.0020000000002,
+      "max": 1707.8
+    },
+    "e2e_ms": {
+      "p50": 1381.3000000000002,
+      "p95": 1992.0899999999997,
+      "p99": 3939.07,
+      "max": 4023.2
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": 43.333333333333336,
+    "cost_usd_total": 0.013072199999999999
+  },
+  {
+    "model": "super",
+    "concurrency": 4,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 2.861264440443972,
+    "output_tokens_per_s": 194.32754324681977,
+    "ttft_ms": {
+      "p50": 1039.85,
+      "p95": 1294.195,
+      "p99": 1341.614,
+      "max": 1348.1
+    },
+    "e2e_ms": {
+      "p50": 1346.8000000000002,
+      "p95": 1758.49,
+      "p99": 1817.874,
+      "max": 1853.5
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": 359.0,
+    "cost_usd_total": 0.00943572
+  },
+  {
+    "model": "super",
+    "concurrency": 8,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 4.4659887047702345,
+    "output_tokens_per_s": 303.3150661989784,
+    "ttft_ms": {
+      "p50": 1027.8,
+      "p95": 2022.53,
+      "p99": 2273.695,
+      "max": 2420.1
+    },
+    "e2e_ms": {
+      "p50": 1456.75,
+      "p95": 3280.304999999999,
+      "p99": 4992.024,
+      "max": 5128.7
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": 641.3333333333334,
+    "cost_usd_total": 0.00618324
+  },
+  {
+    "model": "super",
+    "concurrency": 16,
+    "n": 48,
+    "errors": 0,
+    "throughput_rps": 7.615179591318696,
+    "output_tokens_per_s": 517.356263485214,
+    "ttft_ms": {
+      "p50": 1143.25,
+      "p95": 1685.455,
+      "p99": 1769.737,
+      "max": 1813.4
+    },
+    "e2e_ms": {
+      "p50": 1592.8,
+      "p95": 2836.965,
+      "p99": 2890.716,
+      "max": 2908.2
+    },
+    "retried_requests": 0,
+    "over_limit_responses": 0,
+    "cached_tokens_mean": 656.3333333333334,
+    "cost_usd_total": 0.0060113399999999996
+  }
+]

@@ -12,5 +12,6 @@ pages = [
     st.Page("views/benchmark.py", title="Benchmark", icon=":material/leaderboard:"),
     st.Page("views/live_router.py", title="Live router", icon=":material/alt_route:"),
     st.Page("views/evaluation.py", title="Held-out evaluation", icon=":material/fact_check:"),
+    st.Page("views/experiments.py", title="Experiments", icon=":material/science:"),
 ]
 st.navigation(pages).run()

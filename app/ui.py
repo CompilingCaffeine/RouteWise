@@ -191,3 +191,48 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None) -> Non
 
 def trace_json(trace: dict[str, Any]) -> str:
     return json.dumps(trace, indent=2)
+
+
+def _axis(ink: dict[str, str], title: str, fmt: str | None = None, grid: bool = True) -> alt.Axis:
+    style = {"format": fmt} if fmt else {}
+    return alt.Axis(title=title, grid=grid, gridColor=ink["grid"], domainColor=ink["baseline"],
+                    tickColor=ink["baseline"], labelColor=ink["secondary"], titleColor=ink["secondary"], **style)
+
+
+def line_chart(df: pd.DataFrame, *, x: str, y: str, series: str, domain: list[str], x_title: str, y_title: str,
+               x_log: bool = False, y_format: str = ",.0f", height: int = 260) -> alt.LayerChart:
+    """One line per series with >=8px markers, the last point direct-labelled, one y-axis."""
+    m = mode()
+    ink = INK[m]
+    surface = "#1a1a19" if m == "dark" else "#fcfcfb"
+    color = alt.Color(f"{series}:N", scale=alt.Scale(domain=domain, range=SERIES[m][: len(domain)]),
+                      legend=alt.Legend(title=None, orient="bottom", labelColor=ink["secondary"]))
+    x_enc = alt.X(f"{x}:Q", scale=alt.Scale(type="log" if x_log else "linear", zero=False, nice=False, padding=16),
+                  axis=_axis(ink, x_title, grid=False))
+    y_enc = alt.Y(f"{y}:Q", axis=_axis(ink, y_title, y_format), scale=alt.Scale(zero=True))
+    tooltip = [alt.Tooltip(f"{series}:N"), alt.Tooltip(f"{x}:Q", title=x_title, format=",.0f"),
+               alt.Tooltip(f"{y}:Q", title=y_title, format=y_format)]
+    base = alt.Chart(df).encode(x=x_enc, y=y_enc, color=color, tooltip=tooltip)
+    last = df.loc[df.groupby(series)[x].idxmax()]
+    labels = alt.Chart(last).mark_text(align="left", dx=8, fontSize=12, color=ink["secondary"]).encode(
+        x=x_enc, y=y_enc, text=f"{series}:N")
+    return alt.layer(base.mark_line(strokeWidth=2), base.mark_circle(size=80, opacity=1, stroke=surface, strokeWidth=2),
+                     labels).properties(height=height).configure_view(stroke=None)
+
+
+def stacked_bar(df: pd.DataFrame, *, category: str, segment: str, value: str, seg_domain: list[str],
+                x_title: str, height: int = 150) -> alt.Chart:
+    """Horizontal stacked bars (two segments), separated by a 2px surface gap."""
+    m = mode()
+    ink = INK[m]
+    surface = "#1a1a19" if m == "dark" else "#fcfcfb"
+    order = {s: i for i, s in enumerate(seg_domain)}
+    df = df.assign(_order=df[segment].map(order))
+    return alt.Chart(df).mark_bar(stroke=surface, strokeWidth=2, cornerRadiusEnd=4, height=22).encode(
+        y=alt.Y(f"{category}:N", sort=None, axis=_axis(ink, "", grid=False)),
+        x=alt.X(f"{value}:Q", stack="zero", axis=_axis(ink, x_title, ",.0f")),
+        color=alt.Color(f"{segment}:N", scale=alt.Scale(domain=seg_domain, range=SERIES[m][: len(seg_domain)]),
+                        legend=alt.Legend(title=None, orient="bottom", labelColor=ink["secondary"])),
+        order=alt.Order("_order:Q"),
+        tooltip=[alt.Tooltip(f"{category}:N"), alt.Tooltip(f"{segment}:N"), alt.Tooltip(f"{value}:Q", format=",.0f")],
+    ).properties(height=height).configure_view(stroke=None)

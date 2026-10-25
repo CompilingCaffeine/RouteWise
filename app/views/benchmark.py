@@ -15,7 +15,10 @@ if not runs:
     st.info("No benchmark run yet. Run `routewise benchmark --split tune`.", icon=":material/hourglass_empty:")
     st.stop()
 
-default = artifacts.preferred(runs)
+# Default to the tuning run behind the newest policy; held-out benchmark passes are evaluation inputs.
+policy_sources = [artifacts.load_json(p)["source_run"] for p in artifacts.list_policies()]
+default = next((r for r in runs if policy_sources and r.id == policy_sources[0]), None) or artifacts.preferred(
+    [r for r in runs if r.manifest.get("split") == "tune"] or runs)
 run = st.selectbox("Benchmark run", runs, index=runs.index(default),
                    format_func=lambda r: f"{r.id}{r.tag}")
 metrics = artifacts.load_json(run.path / "metrics.json") if (run.path / "metrics.json").exists() else []

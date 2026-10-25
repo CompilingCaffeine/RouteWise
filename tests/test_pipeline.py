@@ -123,7 +123,8 @@ def test_dashboard_pages_render_from_artifacts(sandbox, monkeypatch):
 
     at = AppTest.from_file(str(REPO_ROOT / "app" / "streamlit_app.py"), default_timeout=60)
     at.run()
-    for page in ["views/overview.py", "views/benchmark.py", "views/live_router.py", "views/evaluation.py"]:
+    for page in ["views/overview.py", "views/benchmark.py", "views/live_router.py", "views/evaluation.py",
+                 "views/experiments.py"]:
         at.switch_page(page)
         at.run()
         assert not at.exception, (page, [e.value for e in at.exception])

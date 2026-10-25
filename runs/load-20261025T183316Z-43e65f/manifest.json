@@ -1,0 +1,113 @@
+{
+  "experiment_id": "load-20261025T183316Z-43e65f",
+  "created_at": "2026-10-25T18:33:16.517184+00:00",
+  "git": {
+    "sha": "f9cab6fd253aaf4772d0917183d755c2afcf60d7",
+    "dirty": true
+  },
+  "kind": "load_sweep",
+  "levels": [
+    1,
+    4,
+    8,
+    16
+  ],
+  "requests_per_level": 48,
+  "cooldown_s": 65.0,
+  "seed": 7,
+  "workload": [
+    "ext-001",
+    "ext-002",
+    "ext-003",
+    "ext-009",
+    "ext-010",
+    "ext-011",
+    "ext-014",
+    "ext-016",
+    "ext-017",
+    "ext-018",
+    "ext-023",
+    "ext-024",
+    "ext-028",
+    "ext-029",
+    "ext-031",
+    "ext-032",
+    "ext-034",
+    "ext-037",
+    "ext-040",
+    "ext-042",
+    "ext-043",
+    "ext-044",
+    "ext-045",
+    "ext-046",
+    "ext-047",
+    "ext-048",
+    "ext-051",
+    "ext-052",
+    "ext-054",
+    "ext-055",
+    "ext-062",
+    "ext-067",
+    "ext-068",
+    "ext-069",
+    "ext-070",
+    "ext-h03",
+    "ext-h05",
+    "ext-h06",
+    "ext-h07",
+    "ext-h08",
+    "ext-h10"
+  ],
+  "prompt": {
+    "version": "extraction_v2",
+    "sha256": "6eaf3b06d7ef2a4fd80238124dcea7702449f6d12981d42cc0d2fcc14dc57fcb"
+  },
+  "config_sha256": "7e06d900429de83836a577233681baa7ef4b77ab467465b7e5fdfdfcc66c1441",
+  "prices": {
+    "sha256": "ce9b74ae2483a470de9d85f87be74ea9957855210d1232a045ee8a9c610e569c",
+    "fetched_at": "2026-10-25T16:52:04.284177+00:00"
+  },
+  "generation": {
+    "temperature": 0.0,
+    "seed": 7,
+    "response_format": "json_schema"
+  },
+  "thresholds": {
+    "extraction": {
+      "min_task_accuracy": 0.85,
+      "min_field_accuracy": 0.95,
+      "max_p95_latency_ms": 4000
+    },
+    "classification": {
+      "min_task_accuracy": 0.95,
+      "min_field_accuracy": null,
+      "max_p95_latency_ms": 3000
+    }
+  },
+  "candidates": [
+    {
+      "label": "nano",
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.06,
+      "usd_per_1m_output": 0.24
+    },
+    {
+      "label": "super",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.3,
+      "usd_per_1m_output": 0.8999999999999999
+    }
+  ]
+}
