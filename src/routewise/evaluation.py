@@ -1,4 +1,4 @@
-"""Held-out comparison: always-smallest vs always-strongest vs RouteWise, run live."""
+"""Held-out comparison: always-smallest vs always-strongest vs RouteWise (and its hedged variant), run live."""
 
 from __future__ import annotations
 
@@ -22,7 +22,9 @@ from routewise.router import Router, Trace
 from routewise.runlog import RunDir
 from routewise.schema import Example
 
-STRATEGIES = ("always_smallest", "always_strongest", "routewise")
+STRATEGIES = ("always_smallest", "always_strongest", "routewise", "routewise_hedged")
+ROUTEWISE_VARIANTS = ("routewise", "routewise_hedged")
+VARIANT_NAMES = {"routewise": "RouteWise", "routewise_hedged": "RouteWise + hedging"}
 
 
 def build_routers(
@@ -42,9 +44,15 @@ def build_routers(
     routers = {
         name: Router(client, config, prices, prompts, options, strategy=name) for name, options in fixed.items()
     }
+    options = policy_options(policy)
     routers["routewise"] = Router(
-        client, config, prices, prompts, policy_options(policy), strategy="routewise", policy=policy
+        client, config, prices, prompts, {t: o.without_hedge() for t, o in options.items()},
+        strategy="routewise", policy=policy,
     )
+    if any(o.hedge_after_ms is not None for o in options.values()):
+        routers["routewise_hedged"] = Router(
+            client, config, prices, prompts, options, strategy="routewise_hedged", policy=policy
+        )
     return routers
 
 
@@ -126,7 +134,8 @@ def summarize_evaluation(
 ) -> dict[str, Any]:
     by_id = {e.id: e for e in examples}
     tasks = list(policy["tasks"])
-    by_strategy: dict[str, list[Trace]] = {s: [] for s in STRATEGIES}
+    present = {t.strategy for t in traces}
+    by_strategy: dict[str, list[Trace]] = {s: [] for s in STRATEGIES if s in present}
     for t in traces:
         by_strategy[t.strategy].append(t)
 
@@ -150,13 +159,19 @@ def summarize_evaluation(
         if not math.isclose(traced, reported, rel_tol=1e-9, abs_tol=1e-12):
             raise AssertionError(f"{strategy}: summary cost {reported} != traced cost {traced}")
 
-    comparison = _paired_comparison(by_strategy["routewise"], by_strategy["always_strongest"])
+    variants = [s for s in ROUTEWISE_VARIANTS if s in by_strategy]
+    lead = variants[-1]
+    comparisons = {s: _paired_comparison(by_strategy[s], by_strategy["always_strongest"]) for s in variants}
+    verdicts = {s: _verdict(results, s, comparisons[s], tasks) for s in variants}
     return {
         "policy_id": policy["policy_id"],
         "n_examples": len(examples),
         "strategies": results,
-        "routewise_vs_strongest": comparison,
-        "verdict": _verdict(results, comparison, tasks),
+        "lead_strategy": lead,
+        "routewise_vs_strongest": comparisons[lead],
+        "verdict": verdicts[lead],
+        "comparisons": comparisons,
+        "verdicts": verdicts,
     }
 
 
@@ -179,8 +194,9 @@ def _paired_comparison(rw: Sequence[Trace], strong: Sequence[Trace]) -> dict[str
     }
 
 
-def _verdict(results: dict[str, Any], comparison: dict[str, Any], tasks: list[str]) -> dict[str, Any]:
-    rw = results["routewise"]
+def _verdict(results: dict[str, Any], strategy: str, comparison: dict[str, Any], tasks: list[str]) -> dict[str, Any]:
+    rw = results[strategy]
+    name = VARIANT_NAMES[strategy]
     unmet = {t: rw[t]["threshold_violations"] for t in tasks if not rw[t]["meets_thresholds"]}
     savings = comparison.get("cost_savings_fraction")
     cheaper = savings is not None and savings > 0
@@ -189,12 +205,12 @@ def _verdict(results: dict[str, Any], comparison: dict[str, Any], tasks: list[st
     quality_met = not any(not v.startswith("p95") for vs in unmet.values() for v in vs)
     lines = []
     if unmet:
-        lines.append("RouteWise did NOT meet every declared threshold on held-out data ("
+        lines.append(f"{name} did NOT meet every declared threshold on held-out data ("
                      + "; ".join(f"{t}: {', '.join(v)}" for t, v in unmet.items()) + ").")
         if quality_met:
             lines.append("It did meet every quality (accuracy) threshold.")
     else:
-        lines.append("RouteWise met every declared threshold on held-out data.")
+        lines.append(f"{name} met every declared threshold on held-out data.")
     if savings is not None:
         lines.append(f"Its total cost was {abs(savings) * 100:.1f}% {'lower' if cheaper else 'higher'} than always using the strongest model.")
     if smallest_ok:

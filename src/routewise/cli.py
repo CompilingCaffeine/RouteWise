@@ -328,11 +328,14 @@ def _print_evaluation(summary: dict[str, Any], policy: dict[str, Any]) -> None:
             rows.append([
                 strategy, scope, f"{m['task_accuracy']:.3f}", f"{m['field_accuracy']:.3f}",
                 f"{m['cost_per_1k_tasks']:.4f}", _fmt_ms(m["p50_latency_ms"]), _fmt_ms(m["p95_latency_ms"]),
-                f"{m['escalation_rate']:.2f}", "" if scope == "overall" else ("yes" if m["meets_thresholds"] else "no"),
+                f"{m['escalation_rate']:.2f}", f"{m['hedge_rate']:.2f}",
+                "" if scope == "overall" else ("yes" if m["meets_thresholds"] else "no"),
             ])
-    _print_table(["strategy", "scope", "task_acc", "field_acc", "$/1k", "p50_ms", "p95_ms", "esc_rate", "meets"], rows)
-    print(f"\nValidator (RouteWise first calls): {summary['strategies']['routewise']['validator']}")
-    print(f"\nVerdict: {summary['verdict']['summary']}")
+    _print_table(["strategy", "scope", "task_acc", "field_acc", "$/1k", "p50_ms", "p95_ms", "esc_rate", "hedge_rate", "meets"], rows)
+    lead = summary["lead_strategy"]
+    print(f"\nValidator ({lead} first calls): {summary['strategies'][lead]['validator']}")
+    for strategy, verdict in summary["verdicts"].items():
+        print(f"\nVerdict [{strategy}]: {verdict['summary']}")
 
 
 # ---------------------------------------------------------------- helpers

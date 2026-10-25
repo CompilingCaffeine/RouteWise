@@ -10,13 +10,13 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from routewise.config import REPO_ROOT, Config, Thresholds
-from routewise.metrics import Outcome, summarize
+from routewise.metrics import Outcome, percentile, summarize
 from routewise.runlog import new_experiment_id
 from routewise.schema import CallRecord, Example
 from routewise.validate import validate
@@ -28,10 +28,17 @@ POLICIES_DIR = REPO_ROOT / "policies"
 class RouteOption:
     primary: str
     escalate_to: str | None = None
+    hedge_after_ms: float | None = None  # also start the escalation call if the primary is this slow
 
     @property
     def label(self) -> str:
-        return self.primary if self.escalate_to is None else f"{self.primary} -> {self.escalate_to} on fail"
+        if self.escalate_to is None:
+            return self.primary
+        base = f"{self.primary} -> {self.escalate_to} on fail"
+        return base if self.hedge_after_ms is None else f"{base}, hedge @ {self.hedge_after_ms:.0f} ms"
+
+    def without_hedge(self) -> RouteOption:
+        return replace(self, hedge_after_ms=None)
 
 
 def record_validation(record: CallRecord, example: Example):
@@ -39,28 +46,52 @@ def record_validation(record: CallRecord, example: Example):
 
 
 def simulate(option: RouteOption, examples: Sequence[Example], index: dict[tuple[str, str], CallRecord]) -> list[Outcome]:
-    outcomes = []
-    for ex in examples:
-        first = index[(option.primary, ex.id)]
-        calls = [first]
-        if option.escalate_to and not record_validation(first, ex).passed:
-            calls.append(index[(option.escalate_to, ex.id)])
-        final = calls[-1]
-        score = final.score or {"task_correct": False, "field_accuracy": 0.0}
-        latencies = [c.latency_ms for c in calls]
-        outcomes.append(
-            Outcome(
-                example_id=ex.id,
-                task=ex.task,
-                correct=bool(score["task_correct"]),
-                field_accuracy=float(score["field_accuracy"]),
-                cost_usd=sum(c.cost_usd or 0.0 for c in calls),
-                latency_ms=None if None in latencies else sum(latencies),
-                escalated=len(calls) > 1,
-                cost_complete=all(c.cost_usd is not None for c in calls),
-            )
-        )
-    return outcomes
+    """Replay an option over recorded calls, mirroring the router's control flow and billing."""
+    return [_simulate_one(option, ex, index) for ex in examples]
+
+
+def _simulate_one(option: RouteOption, ex: Example, index: dict[tuple[str, str], CallRecord]) -> Outcome:
+    p = index[(option.primary, ex.id)]
+    if option.escalate_to is None:
+        return _outcome(ex, final=p, calls=[p], latency=_lat(p))
+    e = index[(option.escalate_to, ex.id)]
+    p_ok = record_validation(p, ex).passed
+    t = option.hedge_after_ms
+    if t is None or _lat(p) <= t:
+        if p_ok:
+            return _outcome(ex, final=p, calls=[p], latency=_lat(p))
+        return _outcome(ex, final=e, calls=[p, e], latency=_lat(p) + _lat(e), escalated=True)
+    # Hedged: the escalation call starts at t; the first valid answer wins; both are billed.
+    e_done = t + _lat(e)
+    if _lat(p) <= e_done:
+        if p_ok:
+            return _outcome(ex, final=p, calls=[p, e], latency=_lat(p), hedged=True)
+        return _outcome(ex, final=e, calls=[p, e], latency=e_done, escalated=True, hedged=True)
+    if record_validation(e, ex).passed:
+        return _outcome(ex, final=e, calls=[p, e], latency=e_done, hedged=True)
+    if p_ok:
+        return _outcome(ex, final=p, calls=[p, e], latency=_lat(p), hedged=True)
+    return _outcome(ex, final=e, calls=[p, e], latency=_lat(p), escalated=True, hedged=True)
+
+
+def _lat(record: CallRecord) -> float:
+    return record.latency_ms if record.latency_ms is not None else record.total_ms
+
+
+def _outcome(ex: Example, *, final: CallRecord, calls: list[CallRecord], latency: float,
+             escalated: bool = False, hedged: bool = False) -> Outcome:
+    score = final.score or {"task_correct": False, "field_accuracy": 0.0}
+    return Outcome(
+        example_id=ex.id,
+        task=ex.task,
+        correct=bool(score["task_correct"]),
+        field_accuracy=float(score["field_accuracy"]),
+        cost_usd=sum(c.cost_usd or 0.0 for c in calls),
+        latency_ms=latency,
+        escalated=escalated,
+        hedged=hedged,
+        cost_complete=all(c.cost_usd is not None for c in calls),
+    )
 
 
 def violations(metrics: dict[str, Any], t: Thresholds) -> list[str]:
@@ -77,10 +108,13 @@ def violations(metrics: dict[str, Any], t: Thresholds) -> list[str]:
     return out
 
 
-def candidate_options(ladder: Sequence[str]) -> list[RouteOption]:
-    """Every single model, plus every model with escalation to any stronger model."""
+def candidate_options(ladder: Sequence[str], hedge_after_ms: dict[str, float] | None = None) -> list[RouteOption]:
+    """Every single model, plus every model with escalation to any stronger model.
+
+    With `hedge_after_ms` (per primary), escalation options also hedge slow primaries."""
+    hedge = hedge_after_ms or {}
     options = [RouteOption(p) for p in ladder]
-    options += [RouteOption(p, e) for i, p in enumerate(ladder) for e in ladder[i + 1 :]]
+    options += [RouteOption(p, e, hedge.get(p)) for i, p in enumerate(ladder) for e in ladder[i + 1 :]]
     return options
 
 
@@ -103,8 +137,14 @@ def optimize(
         task_examples = [ex for ex in examples if ex.task == task and ex.id in ids_with_all]
         if not task_examples:
             continue
+        hedge_after_ms = None
+        if config.hedge_after_percentile is not None:
+            hedge_after_ms = {
+                c: round(percentile([_lat(index[(c, ex.id)]) for ex in task_examples], config.hedge_after_percentile))
+                for c in ladder
+            }
         rows = []
-        for option in candidate_options(ladder):
+        for option in candidate_options(ladder, hedge_after_ms):
             m = summarize(simulate(option, task_examples, index))
             v = violations(m, thresholds)
             rows.append({"option": asdict(option), "label": option.label, "metrics": m, "qualifies": not v, "violations": v})
@@ -144,6 +184,7 @@ def optimize(
         "dataset_sha256": dataset_sha256,
         "examples_used": len(ids_with_all),
         "ladder": ladder,
+        "hedging": {"after_primary_percentile": config.hedge_after_percentile},
         "tasks": tasks,
     }
 

@@ -57,6 +57,15 @@ thresholds:
     min_task_accuracy: 0.95
     max_p95_latency_ms: 3000
 
+# Hedged escalation (added 2026-10-25 AFTER the primary held-out run
+# eval-20261025T170223Z-7e4682 showed provider-side latency bursts on the cheapest model,
+# which the tuning runs never exhibited). When a route has an escalation model, the
+# escalation call is also started early if the primary has not answered by the primary's
+# own tuning-split latency at this percentile. Both calls are billed; at most 2 calls.
+hedging:
+  enabled: true
+  after_primary_percentile: 95
+
 prompts:
   extraction: prompts/extraction_v2.txt
   classification: prompts/classification_v1.txt

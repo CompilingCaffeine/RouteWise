@@ -39,7 +39,7 @@ with live_tab:
     escalated_ids = set()
     if latest_eval:
         escalated_ids = {t["example_id"] for t in artifacts.load_records(latest_eval, "traces.jsonl")
-                         if t["strategy"] == "routewise" and t["escalated"]}
+                         if t["strategy"].startswith("routewise") and t["escalated"]}
     source = st.segmented_control("Input", ["Held-out example", "Paste a conversation"], default="Held-out example")
     expected = None
     example_id = None
@@ -58,8 +58,9 @@ with live_tab:
         task, text, expected, example_id = ex.task, ex.input, ex.expected, ex.id
         st.code(text, language=None, wrap_lines=True)
 
-    strategy = st.segmented_control("Strategy", list(STRATEGY_LABELS), default="routewise",
-                                    format_func=STRATEGY_LABELS.get)
+    hedging = any(e["choice"].get("hedge_after_ms") for e in policy["tasks"].values())
+    available = [s for s in STRATEGY_LABELS if s != "routewise_hedged" or hedging]
+    strategy = st.segmented_control("Strategy", available, default=available[-1], format_func=STRATEGY_LABELS.get)
     used = st.session_state.get("live_routes", 0)
     disabled = not key or not text or not task or not strategy or used >= MAX_LIVE_ROUTES
     if st.button("Route it", type="primary", disabled=disabled, icon=":material/send:"):
@@ -75,17 +76,21 @@ with live_tab:
     st.caption(f"{used}/{MAX_LIVE_ROUTES} live requests used this session.")
     if "live_trace" in st.session_state:
         trace = st.session_state["live_trace"]
-        reason = policy["tasks"][trace["task"]]["reason"] if trace["strategy"] == "routewise" else "Fixed baseline."
+        reason = policy["tasks"][trace["task"]]["reason"] if trace["strategy"].startswith("routewise") else "Fixed baseline."
         render_trace(trace, policy_reason=reason)
 
 with replay_tab:
     if not latest_eval:
         st.info("No recorded evaluation traces yet.", icon=":material/hourglass_empty:")
     else:
-        recorded = [t for t in artifacts.load_records(latest_eval, "traces.jsonl") if t["strategy"] == "routewise"]
-        recorded.sort(key=lambda t: (not t["escalated"], t["example_id"]))
-        pick = st.selectbox("Recorded RouteWise request", recorded,
-                            format_func=lambda t: f"{t['example_id']} · {t['route']}" + (" · escalated" if t["escalated"] else ""))
+        lead = artifacts.load_json(latest_eval.path / "summary.json").get("lead_strategy", "routewise")
+        recorded = [t for t in artifacts.load_records(latest_eval, "traces.jsonl") if t["strategy"] == lead]
+        recorded.sort(key=lambda t: (not (t["escalated"] or t.get("hedged")), t["example_id"]))
+        pick = st.selectbox(
+            f"Recorded {STRATEGY_LABELS[lead]} request", recorded,
+            format_func=lambda t: f"{t['example_id']} · {t['route']}"
+            + (" · escalated" if t["escalated"] else "") + (" · hedged" if t.get("hedged") else ""),
+        )
         st.code(next(e.input for e in dataset.load_examples() if e.id == pick["example_id"]), language=None, wrap_lines=True)
         render_trace(pick, policy_reason=policy["tasks"][pick["task"]]["reason"])
         st.caption(f"From evaluation run `{latest_eval.id}`")

@@ -25,8 +25,14 @@ verdict = summary["verdict"]
 status_badge(verdict["hypothesis_supported"], "Hypothesis supported", "Hypothesis not supported")
 st.markdown(verdict["summary"])
 
+lead = summary.get("lead_strategy", "routewise")
 comp = summary["routewise_vs_strongest"]
-rw = summary["strategies"]["routewise"]
+rw = summary["strategies"][lead]
+if len(summary.get("verdicts", {})) > 1:
+    for s, v in summary["verdicts"].items():
+        if s != lead:
+            st.caption(f"Same-run control, {STRATEGY_LABELS[s]}: {v['summary']}")
+st.markdown(f"Headline figures are for **{STRATEGY_LABELS[lead]}**.")
 cols = st.columns(4)
 cols[0].metric("Cost saved vs always-strongest", pct(comp.get("cost_savings_fraction")))
 acc_ci = comp.get("task_accuracy_diff_ci95")
@@ -36,7 +42,9 @@ cols[2].metric("Escalation rate", pct(rw["overall"]["escalation_rate"]))
 cols[3].metric("Validator error recall", pct(rw["validator"]["error_recall"]),
                help="Share of wrong first answers the deterministic validator caught.")
 
-strategies = list(STRATEGY_LABELS)
+strategies = [s for s in STRATEGY_LABELS if s in summary["strategies"]]
+emphasized = [STRATEGY_LABELS[lead]] + [STRATEGY_LABELS[s] for s in ("routewise", "routewise_hedged")
+                                        if s in summary["strategies"] and s != lead]
 for task, th in config.thresholds.items():
     if task not in rw:
         continue
@@ -48,7 +56,7 @@ for task, th in config.thresholds.items():
     df = pd.DataFrame(rows)
     st.altair_chart(
         tradeoff_chart(df, series="strategy", domain=[STRATEGY_LABELS[s] for s in strategies],
-                       threshold=th.min_task_accuracy, emphasize="RouteWise"),
+                       threshold=th.min_task_accuracy, emphasize=emphasized),
         width="stretch",
     )
     st.dataframe(pd.DataFrame({
@@ -59,11 +67,12 @@ for task, th in config.thresholds.items():
         "p95": df["p95_latency_ms"].map(ms),
         "$ / 1k tasks": df["cost_per_1k_tasks"].map(money),
         "escalations": df["escalation_rate"].map(pct),
+        "hedged": df["hedge_rate"].map(pct),
         "meets requirements": df["meets_thresholds"].map(lambda b: "yes" if b else "no"),
     }), hide_index=True, width="stretch")
     for _, r in df.iterrows():
-        if r["threshold_violations"] and r["strategy"] == "RouteWise":
-            st.warning("RouteWise misses: " + "; ".join(r["threshold_violations"]), icon=":material/warning:")
+        if r["threshold_violations"] and r["strategy"] in emphasized:
+            st.warning(f"{r['strategy']} misses: " + "; ".join(r["threshold_violations"]), icon=":material/warning:")
 
 st.subheader("Is validation worth it?")
 v = rw["validator"]
@@ -80,8 +89,8 @@ st.dataframe([
 
 st.subheader("Trace explorer")
 ids = sorted({t["example_id"] for t in traces})
-escalated = sorted({t["example_id"] for t in traces if t["strategy"] == "routewise" and t["escalated"]})
-only_esc = st.toggle(f"Only requests RouteWise escalated ({len(escalated)})", value=bool(escalated))
+escalated = sorted({t["example_id"] for t in traces if t["strategy"] == lead and (t["escalated"] or t.get("hedged"))})
+only_esc = st.toggle(f"Only requests {STRATEGY_LABELS[lead]} escalated or hedged ({len(escalated)})", value=bool(escalated))
 choice = st.selectbox("Request", escalated if only_esc and escalated else ids)
 tabs = st.tabs([STRATEGY_LABELS[s] for s in strategies])
 for tab, s in zip(tabs, strategies):

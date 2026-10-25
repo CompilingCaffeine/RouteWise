@@ -98,7 +98,7 @@ def test_end_to_end(sandbox, capsys):
     assert summary["verdict"]["summary"]
     assert (ev / "summary.csv").read_text().startswith("strategy,scope,")
     out = capsys.readouterr().out
-    assert "Verdict:" in out
+    assert "Verdict [routewise]:" in out
 
 
 def test_policy_reports_no_qualifying_option(sandbox, capsys):

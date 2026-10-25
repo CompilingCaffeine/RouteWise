@@ -1,9 +1,10 @@
-"""Applies a routing option to one request: call, validate, escalate at most once, trace everything."""
+"""Applies a routing option to one request: call, validate, escalate or hedge (at most 2 calls), trace everything."""
 
 from __future__ import annotations
 
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 from typing import Any
 
 from pydantic import BaseModel
@@ -16,7 +17,7 @@ from routewise.execution import call_candidate
 from routewise.policy import RouteOption
 from routewise.prompts import PromptTemplate
 from routewise.schema import CallRecord, Task
-from routewise.validate import validate
+from routewise.validate import Validation, validate
 
 
 class Trace(BaseModel):
@@ -40,6 +41,8 @@ class Trace(BaseModel):
     cost_usd: float
     cost_complete: bool
     score: dict[str, Any] | None = None
+    hedged: bool = False
+    answered_by: str | None = None
 
 
 class Router:
@@ -78,28 +81,52 @@ class Router:
         t0 = time.perf_counter()
         timeline: dict[str, float] = {"received": 0.0}
         option = self._options[task]
-        chain = [option.primary] + ([option.escalate_to] if option.escalate_to else [])
-        calls: list[CallRecord] = []
-        validations = []
-        escalation_reason = None
+        results: dict[int, tuple[CallRecord, Validation]] = {}
 
-        for hop, label in enumerate(chain, start=1):
-            timeline[f"dispatched_{hop}"] = _ms(t0)
+        def hop(n: int, label: str) -> int:
+            timeline[f"dispatched_{n}"] = _ms(t0)
             record = call_candidate(
                 self._client, self._config, self._candidates[label], self._prompts[task], self._prices[label],
                 example_id=example_id or "adhoc", text=text,
             )
-            timeline[f"model_complete_{hop}"] = _ms(t0)
+            timeline[f"model_complete_{n}"] = _ms(t0)
             check = validate(task, text, record.parsed_output())
-            timeline[f"validation_complete_{hop}"] = _ms(t0)
-            calls.append(record)
-            validations.append(check.to_dict())
-            if check.passed or hop == len(chain):
-                break
-            escalation_reason = "validator failed: " + ", ".join(check.failed_rules)
+            timeline[f"validation_complete_{n}"] = _ms(t0)
+            results[n] = (record, check)
+            return n
 
-        timeline["response_complete"] = _ms(t0)
-        final = calls[-1]
+        answer, escalated, hedged = 1, False, False
+        if option.escalate_to is None:
+            hop(1, option.primary)
+        elif option.hedge_after_ms is None:
+            hop(1, option.primary)
+            if not results[1][1].passed:
+                escalated, answer = True, hop(2, option.escalate_to)
+        else:
+            # Leaving the pool waits for any unused call, so its cost is still recorded.
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                primary = pool.submit(hop, 1, option.primary)
+                if primary in wait([primary], timeout=option.hedge_after_ms / 1000).done:
+                    if not results[1][1].passed:
+                        escalated, answer = True, hop(2, option.escalate_to)
+                else:
+                    hedged = True
+                    timeline["hedge_dispatched"] = _ms(t0)
+                    backup = pool.submit(hop, 2, option.escalate_to)
+                    first = next(as_completed([primary, backup])).result()
+                    if results[first][1].passed:
+                        answer = first
+                    else:
+                        wait([primary, backup])
+                        answer = 1 if results[1][1].passed else 2
+                        escalated = answer == 2
+                    timeline["response_complete"] = _ms(t0)
+        timeline.setdefault("response_complete", _ms(t0))
+
+        calls = [results[n][0] for n in sorted(results)]
+        validations = [results[n][1].to_dict() for n in sorted(results)]
+        final, final_check = results[answer]
+        escalation_reason = ("validator failed: " + ", ".join(results[1][1].failed_rules)) if escalated else None
         policy_status = None
         if self.policy is not None:
             policy_status = self.policy["tasks"][task]["status"]
@@ -115,10 +142,12 @@ class Router:
             model_chain=[c.candidate for c in calls],
             calls=calls,
             validations=validations,
-            escalated=len(calls) > 1,
+            escalated=escalated,
             escalation_reason=escalation_reason,
+            hedged=hedged,
+            answered_by=final.candidate,
             final_output=final.parsed,
-            final_valid=validations[-1]["passed"],
+            final_valid=final_check.passed,
             timeline_ms=timeline,
             latency_ms=timeline["response_complete"],
             cost_usd=sum(c.cost_usd or 0.0 for c in calls),

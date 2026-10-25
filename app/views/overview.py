@@ -29,13 +29,14 @@ if latest_eval and (latest_eval.path / "summary.json").exists():
     summary = artifacts.load_json(latest_eval.path / "summary.json")
     verdict = summary["verdict"]
     comp = summary["routewise_vs_strongest"]
-    rw = summary["strategies"]["routewise"]["overall"]
+    lead = summary.get("lead_strategy", "routewise")
+    rw = summary["strategies"][lead]["overall"]
     strong = summary["strategies"]["always_strongest"]["overall"]
     st.subheader("Latest held-out result")
     status_badge(verdict["hypothesis_supported"], "Hypothesis supported", "Hypothesis not supported")
     cols = st.columns(4)
     cols[0].metric("Cost saved vs always-strongest", pct(comp.get("cost_savings_fraction")))
-    cols[1].metric("RouteWise task accuracy", pct(rw["task_accuracy"]),
+    cols[1].metric("Task accuracy", pct(rw["task_accuracy"]),
                    delta=f"{(rw['task_accuracy'] - strong['task_accuracy']) * 100:+.1f} pts vs strongest")
     cols[2].metric("Escalation rate", pct(rw["escalation_rate"]))
     cols[3].metric("Held-out tasks", summary["n_examples"])

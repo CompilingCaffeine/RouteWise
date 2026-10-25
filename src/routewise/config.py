@@ -50,6 +50,7 @@ class Config:
     baselines: dict[str, str]
     thresholds: dict[str, Thresholds]
     prompts: dict[str, Path]
+    hedge_after_percentile: float | None = None  # hedge escalation options after this primary-latency percentile
 
     def candidate(self, name: str) -> Candidate:
         for cand in self.candidates:
@@ -118,4 +119,7 @@ def load_config(path: Path | str = DEFAULT_CONFIG) -> Config:
         baselines=dict(raw["baselines"]),
         thresholds=thresholds,
         prompts={task: root / p for task, p in raw["prompts"].items()},
+        hedge_after_percentile=(raw.get("hedging") or {}).get("after_primary_percentile")
+        if (raw.get("hedging") or {}).get("enabled")
+        else None,
     )

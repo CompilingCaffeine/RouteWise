@@ -25,6 +25,7 @@ STRATEGY_LABELS = {
     "always_smallest": "Always smallest",
     "always_strongest": "Always strongest",
     "routewise": "RouteWise",
+    "routewise_hedged": "RouteWise + hedging",
 }
 MAX_LIVE_ROUTES = 15
 
@@ -65,17 +66,18 @@ def tradeoff_chart(
     series: str,
     domain: list[str],
     threshold: float | None,
-    emphasize: str | None = None,
+    emphasize: list[str] | None = None,
     height: int = 300,
 ) -> alt.LayerChart:
     """Cost (log x) vs task accuracy (y), one point per series, direct-labelled.
 
-    With `emphasize`, that series takes slot 1 and the rest recede to muted ink.
+    With `emphasize`, those series take slots 1, 2, ... in order and the rest recede to muted ink.
     """
     m = mode()
     ink = INK[m]
     if emphasize:
-        colors = [SERIES[m][0] if d == emphasize else ink["muted"] for d in domain]
+        slot = {name: SERIES[m][i] for i, name in enumerate(emphasize)}
+        colors = [slot.get(d, ink["muted"]) for d in domain]
     else:
         colors = SERIES[m][: len(domain)]
     surface = "#1a1a19" if m == "dark" else "#fcfcfb"
@@ -134,10 +136,11 @@ def status_badge(ok: bool, yes: str, no: str) -> None:
 def render_trace(trace: dict[str, Any], policy_reason: str | None = None) -> None:
     """One routed request: decision, every hop with validator checks, and the totals."""
     head = st.columns(4)
-    head[0].metric("Route", trace["route"])
-    head[1].metric("End-to-end latency", ms(trace["latency_ms"]))
-    head[2].metric("Total cost", money(trace["cost_usd"], 6))
+    head[0].metric("Answered by", trace.get("answered_by") or trace["calls"][-1]["candidate"])
+    head[1].metric("Time to answer", ms(trace["latency_ms"]))
+    head[2].metric("Total cost (all calls)", money(trace["cost_usd"], 6))
     head[3].metric("Model calls", len(trace["calls"]))
+    st.caption(f"Route: `{trace['route']}`")
     if policy_reason:
         st.caption(f"**Why this route:** {policy_reason}")
     if trace.get("policy_status") == "no_qualifying_policy":
@@ -166,7 +169,11 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None) -> Non
                     icon = ":material/check_circle:" if chk["passed"] else ":material/cancel:"
                     detail = f" — {chk['detail']}" if chk["detail"] and not chk["passed"] else ""
                     st.markdown(f"{icon} `{chk['rule']}`{detail}")
-        if hop < len(trace["calls"]):
+        if hop == 1 and trace.get("hedged"):
+            started = trace["timeline_ms"].get("hedge_dispatched")
+            st.info(f"Hedged: no answer after {started:,.0f} ms, so the escalation model was started in parallel. "
+                    "The first valid answer is used; both calls are billed.", icon=":material/call_split:")
+        if hop == 1 and trace["escalated"]:
             st.info(f"Escalated: {trace['escalation_reason']}", icon=":material/arrow_downward:")
 
     if trace.get("score"):

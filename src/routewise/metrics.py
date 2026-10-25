@@ -21,6 +21,7 @@ class Outcome:
     cost_usd: float
     latency_ms: float | None
     escalated: bool = False
+    hedged: bool = False
     cost_complete: bool = True  # False if any call lacked usage data
 
 
@@ -49,6 +50,7 @@ def summarize(outcomes: Sequence[Outcome]) -> dict[str, float | int | None]:
         "p50_latency_ms": percentile(latencies, 50),
         "p95_latency_ms": percentile(latencies, 95),
         "escalation_rate": sum(o.escalated for o in outcomes) / n,
+        "hedge_rate": sum(o.hedged for o in outcomes) / n,
         "incomplete_cost_count": sum(not o.cost_complete for o in outcomes),
     }
 
