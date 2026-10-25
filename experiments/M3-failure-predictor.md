@@ -102,3 +102,17 @@ Otherwise, report that it is not worth deploying.
 - **Initial acceptance:** 1,159 of 1,200. Most rejections (40 of 41) came from `full_refund_absolute`, where writers paraphrased the planned duration "after a week" as "after just a week" or "after one week". The verifier flagged these as time expressions.
 - **Rule fix:** a duration creates no date, so the family now also allows "a week" and "one week". This is a verifier strictness fix, not a label change.
 - **Re-verification:** the stored writer texts were re-checked under the corrected rules (`reverified.jsonl` in the run directory), with no regeneration. The result is **1,198 of 1,200 accepted**. The two remaining rejections, one in `full_refund_absolute` and one in `partial_refund_distractor`, stay dropped.
+
+## Adjudication protocol
+
+Fixed before the queue was produced.
+
+- **What gets reviewed.** Each queued item is a conversation where both reasoning verifiers disagree with the fact-sheet label on the same field.
+- **What the reviewer sees.** The conversation text, the disputed fields, the label, and both verifiers' values. Nano's answers are **not** shown, so the review stays blind to the model being predicted.
+- **Keep:** the text supports the label under the `extraction_v2` field rules, read literally. The label is what a careful reader applying those rules would extract, even if both verifiers read it differently.
+- **Drop:** the text contradicts the label, or does not support it as the reasonable reading. Typical causes are a writer deviating from the plan:
+  - the customer written in the agent's voice
+  - a refund request worded so it no longer asks for money back
+  - an extra fact that changes the answer
+- **No relabelling.** A label is never edited to match the text; a mismatched item is dropped. This keeps every label traceable to its fact sheet.
+- **Records.** Each decision is recorded in `data/v2/adjudication.jsonl` with a one-sentence reason. The reviewer is the coding agent (Claude), not a human.
