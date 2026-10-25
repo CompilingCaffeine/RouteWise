@@ -193,3 +193,29 @@ def write_all(
         return run_one
 
     return run_parallel([job(s) for s in sheets], concurrency=concurrency, rpm=rpm)  # type: ignore[return-value]
+
+
+def disputed_fields(records_by_verifier: dict[str, Any]) -> list[str]:
+    """Fields that *every* verifier got 'wrong' against the label (candidates for a bad label)."""
+    wrong_sets = [{f for f, ok in r.score["fields"].items() if not ok} for r in records_by_verifier.values()]
+    return sorted(set.intersection(*wrong_sets)) if wrong_sets else []
+
+
+def adjudication_queue(examples: Sequence[Example], records: Sequence[Any]) -> list[dict[str, Any]]:
+    by_example: dict[str, dict[str, Any]] = {}
+    for r in records:
+        by_example.setdefault(r.example_id, {})[r.candidate] = r
+    queue = []
+    for ex in examples:
+        recs = by_example.get(ex.id, {})
+        fields = disputed_fields(recs)
+        if fields:
+            queue.append({
+                "id": ex.id,
+                "family": ex.tags[0],
+                "disputed_fields": fields,
+                "input": ex.input,
+                "label": {f: ex.expected[f] for f in fields},
+                "verifier_answers": {name: {f: (r.parsed or {}).get(f) for f in fields} for name, r in recs.items()},
+            })
+    return queue

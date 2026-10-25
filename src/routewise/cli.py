@@ -46,7 +46,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     probe.add_argument("--candidates", help="comma-separated candidate names (default: all)")
 
     bench = sub.add_parser("benchmark", help="run every candidate on every example of a split")
-    bench.add_argument("--split", default="tune", choices=["tune", "heldout"])
+    bench.add_argument("--dataset", default=dataset.VERSION, help="dataset version under data/ (v1, v2)")
+    bench.add_argument("--split", default="tune", help="split name from the dataset's splits.json, or 'all'")
     bench.add_argument("--candidates", help="comma-separated candidate names (default: all)")
     _add_load_args(bench)
 
@@ -101,6 +102,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     sy.add_argument("--concurrency", type=int, default=8)
     sy.add_argument("--rpm", type=float, default=240)
 
+    sv = sub.add_parser("synth-verify", help="M3: two strong verifiers re-extract every synthesized conversation")
+    sv.add_argument("--run", type=Path, help="synth run directory (default: latest full run)")
+    sv.add_argument("--concurrency", type=int, default=8)
+    sv.add_argument("--rpm", type=float, default=240)
+
+    sb = sub.add_parser("synth-build", help="M3: build data/v2 from a synth run, its verification and the adjudication log")
+    sb.add_argument("--run", type=Path, help="synth run directory (default: latest full run)")
+    sb.add_argument("--verify", type=Path, help="synth-verify run directory (default: latest)")
+
+    rs = sub.add_parser("risk-study", help="M3: train, calibrate and evaluate the failure predictor on v2")
+    rs.add_argument("--nano", type=Path, nargs="+", required=True, help="v2 benchmark runs with Nano answers (one per sample)")
+    rs.add_argument("--strong", type=Path, nargs="+", required=True, help="v2 benchmark runs with Super and Ultra answers")
+
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
@@ -120,6 +134,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "latency-profile": cmd_latency_profile,
         "load-sweep": cmd_load_sweep,
         "synth": cmd_synth,
+        "synth-verify": cmd_synth_verify,
+        "synth-build": cmd_synth_build,
+        "risk-study": cmd_risk_study,
     }
     try:
         return commands[args.command](config, args)
@@ -220,7 +237,8 @@ def cmd_probe(config: Config, args: argparse.Namespace) -> int:
 
 
 def cmd_benchmark(config: Config, args: argparse.Namespace) -> int:
-    examples = _limit(dataset.load_split(args.split), args.limit)
+    pool = dataset.load_examples(args.dataset) if args.split == "all" else dataset.load_split(args.split, args.dataset)
+    examples = _limit(pool, args.limit)
     prompts = _prompts(config)
     client = TokenFactoryClient(base_url=config.base_url)
     snapshot = _snapshot(client, config)
@@ -236,7 +254,7 @@ def cmd_benchmark(config: Config, args: argparse.Namespace) -> int:
         kind="benchmark",
         split=args.split,
         limit=args.limit,
-        dataset={"version": dataset.VERSION, "sha256": dataset.dataset_sha256()},
+        dataset={"version": args.dataset, "sha256": dataset.dataset_sha256(args.dataset)},
         example_ids=[e.id for e in examples],
         prompts={t: _prompt_meta(p) for t, p in prompts.items()},
         load={"concurrency": args.concurrency, "rpm": args.rpm},
@@ -526,6 +544,142 @@ def cmd_synth(config: Config, args: argparse.Namespace) -> int:
     print(f"\naccepted {sum(r['accepted'] for r in records)}/{len(records)}, writer cost ${cost:.3f}")
     print("most common problems:", problems.most_common(8))
     print(f"Records: {_display(run.path)}/records.jsonl")
+    return 0
+
+
+V2_DIR = dataset.DATA_DIR / "v2"
+MODELS_DIR = REPO_ROOT / "models"
+
+
+def _calls_by_example(run_dirs: Sequence[Path], label: str) -> dict[str, CallRecord]:
+    out: dict[str, CallRecord] = {}
+    for d in run_dirs:
+        for r in read_jsonl(d / "calls.jsonl"):
+            if r["candidate"] == label:
+                out[r["example_id"]] = CallRecord.model_validate(r)
+    return out
+
+
+def cmd_risk_study(config: Config, args: argparse.Namespace) -> int:
+    from routewise import risk
+
+    nano_runs = [_calls_by_example([d], "nano") for d in args.nano]
+    super_run, ultra_run = _calls_by_example(args.strong, "super"), _calls_by_example(args.strong, "ultra")
+    splits = {name: dataset.load_split(name, "v2") for name in ("train", "calibration", "test")}
+    missing = [e.id for ex in splits.values() for e in ex
+               if any(e.id not in n for n in nano_runs) or e.id not in super_run or e.id not in ultra_run]
+    if missing:
+        print(f"error: {len(missing)} v2 examples lack recorded answers, e.g. {missing[:5]}", file=sys.stderr)
+        return 1
+    rows = {name: risk.build_rows(ex, nano_runs, super_run, ultra_run) for name, ex in splits.items()}
+    model, summary = risk.run_study(rows["train"], rows["calibration"], rows["test"])
+
+    run = RunDir.create("risk")
+    run.write_manifest(kind="risk_study", nano_runs=[_display(d) for d in args.nano], strong_runs=[_display(d) for d in args.strong],
+                       dataset={"version": "v2", "sha256": dataset.dataset_sha256("v2")}, features=list(model.features),
+                       thresholds=list(risk.THRESHOLDS))
+    (run.path / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    MODELS_DIR.mkdir(exist_ok=True)
+    artifact = {"model_id": run.experiment_id, "kind": "nano_failure_risk", "dataset_sha256": dataset.dataset_sha256("v2"),
+                "trained_on": "v2 train families", "calibrated_on": "v2 calibration families", "model": model.to_dict()}
+    (MODELS_DIR / f"{run.experiment_id}.json").write_text(json.dumps(artifact, indent=2) + "\n")
+
+    t = summary["test"]
+    print(f"Risk study {run.experiment_id}")
+    print(f"  failure rate train/cal/test: " + " / ".join(f"{v:.3f}" for v in summary["failure_rate"].values()))
+    print(f"  chosen C={summary['model_selection']['chosen_C']}; random-CV AUC {summary['leakage']['random_cv_auc']:.3f} "
+          f"vs family-grouped CV AUC {summary['leakage']['grouped_cv_auc']:.3f}")
+    print(f"  test AUC {t['auc']:.3f} (tree {t['tree_auc']:.3f}), AP {t['average_precision']:.3f}, "
+          f"Brier {t['brier']:.4f} vs base-rate {t['brier_base_rate']:.4f}; tau={summary['threshold']['tau']}")
+    _print_table(["policy", "task_acc", "field_acc", "$/1k", "p50_ms", "p95_ms", "super_rate", "missed"],
+                 [[name, f"{m['task_accuracy']:.3f}", f"{m['field_accuracy']:.3f}", f"{m['cost_per_1k_tasks']:.4f}",
+                   _fmt_ms(m["p50_latency_ms"]), _fmt_ms(m["p95_latency_ms"]), f"{m['super_call_rate']:.2f}",
+                   str(m["missed_errors"])] for name, m in t["policies"].items()])
+    rv = t["risk_vs_validator"]
+    print(f"  risk+validator vs validator: accuracy {rv['accuracy_diff']*100:+.1f} pts "
+          f"(95% CI {rv['accuracy_diff_ci95'][0]*100:+.1f} to {rv['accuracy_diff_ci95'][1]*100:+.1f}), cost x{rv['cost_ratio']:.2f}")
+    print(f"  hypotheses: {summary['hypotheses']}")
+    print(f"  decision: {'ADOPT' if summary['decision']['adopt'] else 'do not adopt'} ({summary['decision']['rule']})")
+    print(f"Results: {_display(run.path)}/summary.json; model: {_display(MODELS_DIR / (run.experiment_id + '.json'))}")
+    return 0
+
+
+def _latest_full_synth() -> Path:
+    runs = [r for r in sorted(runlog.RUNS_DIR.glob("synth-*"), reverse=True)
+            if not json.loads((r / "manifest.json").read_text()).get("limit")]
+    if not runs:
+        raise SystemExit("error: no full synth run; run `routewise synth` first")
+    return runs[0]
+
+
+def _synth_examples(run_dir: Path) -> list[Example]:
+    return [Example.model_validate(r["example"]) for r in read_jsonl(run_dir / "records.jsonl") if r["accepted"]]
+
+
+def cmd_synth_verify(config: Config, args: argparse.Namespace) -> int:
+    run_dir = args.run or _latest_full_synth()
+    examples = _synth_examples(run_dir)
+    client = TokenFactoryClient(base_url=config.base_url)
+    snapshot = _snapshot(client, config)
+    verifiers = [config.with_reasoning(config.candidate(name), "on") for name in ("ultra", "super")]
+    plan = [(v, price_for(snapshot, v.model_id)) for v in verifiers]
+    prompts = _prompts(config)
+    run = RunDir.create("synthverify")
+    run.write_manifest(kind="synth_verify", synth_run=_display(run_dir), n_examples=len(examples),
+                       prompts={"extraction": _prompt_meta(prompts["extraction"])},
+                       load={"concurrency": args.concurrency, "rpm": args.rpm}, **_common_manifest(config, snapshot, plan))
+    print(f"Semantic verification {run.experiment_id}: {len(examples)} conversations x {[v.label for v in verifiers]}")
+    records = run_benchmark(client, config, examples, plan, prompts, run, concurrency=args.concurrency, rpm=args.rpm)
+    queue = synth.adjudication_queue(examples, records)
+    V2_DIR.mkdir(parents=True, exist_ok=True)
+    (V2_DIR / "adjudication_queue.jsonl").write_text("".join(json.dumps(q, ensure_ascii=False) + "\n" for q in queue))
+    per_family = Counter(q["family"] for q in queue)
+    fields = Counter(f for q in queue for f in q["disputed_fields"])
+    _print_metrics_table(candidate_metrics(records))
+    print(f"\nAdjudication queue: {len(queue)} of {len(examples)} conversations where both verifiers disagree with the label")
+    print("  by family:", dict(per_family.most_common()))
+    print("  by field:", dict(fields.most_common()))
+    print(f"Queue: {_display(V2_DIR / 'adjudication_queue.jsonl')}")
+    return 0
+
+
+def cmd_synth_build(config: Config, args: argparse.Namespace) -> int:
+    run_dir = args.run or _latest_full_synth()
+    verify_dir = args.verify or _latest(runlog.RUNS_DIR, "synthverify-")
+    records = read_jsonl(run_dir / "records.jsonl")
+    queue = {q["id"]: q for q in read_jsonl(V2_DIR / "adjudication_queue.jsonl")}
+    decisions = {d["id"]: d for d in read_jsonl(V2_DIR / "adjudication.jsonl")} if (V2_DIR / "adjudication.jsonl").exists() else {}
+    undecided = sorted(set(queue) - set(decisions))
+    if undecided:
+        print(f"error: {len(undecided)} queued conversations have no adjudication decision, e.g. {undecided[:5]}", file=sys.stderr)
+        return 1
+    dropped = {i for i, d in decisions.items() if d["decision"] == "drop"}
+    kept = [r for r in records if r["accepted"] and r["id"] not in dropped]
+    examples = sorted((Example.model_validate(r["example"]) for r in kept), key=lambda e: e.id)
+    (V2_DIR / "examples.jsonl").write_text("".join(e.model_dump_json() + "\n" for e in examples))
+    (V2_DIR / "provenance.jsonl").write_text("".join(
+        json.dumps({"id": r["id"], "factsheet": r["factsheet"], "attempts": r["attempts"]}, ensure_ascii=False) + "\n"
+        for r in sorted(kept, key=lambda r: r["id"])))
+    splits = {"seed": 31, **{name: sorted(e.id for e in examples if e.tags[0] in fams) for name, fams in factsheets.SPLIT.items()}}
+    (V2_DIR / "splits.json").write_text(json.dumps(splits, indent=2) + "\n")
+    families = Counter(e.tags[0] for e in examples)
+    manifest = {
+        "version": "v2",
+        "n_examples": len(examples),
+        "synth_run": _display(run_dir),
+        "verify_run": _display(verify_dir),
+        "sheets": len(records),
+        "rejected_by_verifier": sum(not r["accepted"] for r in records),
+        "queued_for_adjudication": len(queue),
+        "dropped_by_adjudication": len(dropped),
+        "per_family": dict(sorted(families.items())),
+        "per_split": {name: len(ids) for name, ids in splits.items() if name != "seed"},
+        "examples_sha256": sha256_file(V2_DIR / "examples.jsonl"),
+        "splits_sha256": sha256_file(V2_DIR / "splits.json"),
+        "adjudication_sha256": sha256_file(V2_DIR / "adjudication.jsonl") if (V2_DIR / "adjudication.jsonl").exists() else None,
+    }
+    (V2_DIR / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    print(json.dumps(manifest, indent=2))
     return 0
 
 
