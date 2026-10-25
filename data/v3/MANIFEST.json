@@ -1,0 +1,10 @@
+{
+  "run": "fresh-20261025T204608Z-e26198",
+  "verifier_run": "freshverify-20261025T204753Z-a97fcb",
+  "n_examples": 595,
+  "dropped_by_adjudication": 4,
+  "protocol_sha256": "ebbf6659aef9a2949ff21e91d51c42cf27a8990ad6f006c0ffc0c79dc41e5849",
+  "dataset_sha256": "8167270ad6eeea1c6c85204d9615cf7cf19cb29604b29bf631f89ccb74eb669a",
+  "split_sha256": "a31b67ffd6c57865682ec8150da38ee411d5afe02d53b7ee10c2fc9bc6fb6282",
+  "source": "synthetic fact sheets; model-written prose"
+}

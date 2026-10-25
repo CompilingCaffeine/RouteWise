@@ -1,0 +1,35 @@
+{
+  "accepted": 599,
+  "planned": 600,
+  "accepted_by_family": {
+    "full_refund_absolute": 30,
+    "refund_no_date": 30,
+    "replacement_only": 30,
+    "partial_refund_distractor": 30,
+    "multi_date": 30,
+    "relative_refund_date": 30,
+    "system_message_first": 30,
+    "counteroffer": 30,
+    "shipping_fee_only": 30,
+    "currency_symbol": 30,
+    "no_amount_stated": 30,
+    "large_amount": 30,
+    "refund_in_past": 30,
+    "negated_refund": 30,
+    "multi_item_sum": 30,
+    "two_orders": 30,
+    "tracking_distractor": 29,
+    "superseded_order": 30,
+    "numeric_order": 30,
+    "product_and_date_not_id": 30
+  },
+  "rejected": [
+    {
+      "id": "v3-new-0-002",
+      "problems": [
+        "message 1 uses a time expression 'today'"
+      ]
+    }
+  ],
+  "writer_cost_usd": 0.26192244
+}

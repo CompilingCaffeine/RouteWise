@@ -1,0 +1,40 @@
+[
+  {
+    "id": "v3-14008",
+    "family": "multi_item_sum",
+    "disputed_fields": [
+      "order_id"
+    ],
+    "input": "[2026-07-20 15:44] Customer: I received my order but the TrailMax 2 tent (AB/841284/UK) at A$313.99 and the cable at A$10.99 both arrived damaged. I'd like a full refund for both please.\n[2026-07-20 15:58] Agent: We'll process a single refund for the combined amount of A$324.98 to your original payment method on July 21.",
+    "label": {
+      "order_id": "AB/841284/UK"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "order_id": null
+      },
+      "ultra+think": {
+        "order_id": null
+      }
+    }
+  },
+  {
+    "id": "v3-new-1-025",
+    "family": "superseded_order",
+    "disputed_fields": [
+      "refund_date"
+    ],
+    "input": "[2026-03-12 09:15] Customer: I would like to request a refund for my current order web_970025. Please note that the old order OLD-500025 is unrelated and should not affect this request.\n[2026-03-12 09:23] Agent: I can confirm the refund for order web_970025 in the amount of USD 45.00. The order was issued on 2026-03-15.",
+    "label": {
+      "refund_date": "2026-03-15"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null
+      },
+      "super+think": {
+        "refund_date": null
+      }
+    }
+  }
+]

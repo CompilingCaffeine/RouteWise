@@ -31,6 +31,13 @@ def test_dates_and_product_digits_are_not_ids_and_contact_is_first_customer():
     assert ev['contact_date'] == '2026-04-01'
 
 
+@pytest.mark.parametrize('phrase,identifier', [('ordered under AB/12345/UK', 'AB/12345/UK'),
+                                              ('ordered with reference AB/12345/UK', 'AB/12345/UK'),
+                                              ('refund for q12345z', 'q12345z')])
+def test_development_paraphrases(phrase, identifier):
+    assert evidence(f'[2026-04-01 09:00] Customer: Please help with the item I {phrase}.')['order_ids'] == [identifier]
+
+
 def test_constrained_request_and_raw_normalization_audit():
     text = '[2026-04-01 09:00] Customer: Refund my order reference web_12345. No amount is stated.'
     expected = dict(refund_requested=True, refund_amount=None, currency=None, order_id='web_12345', contact_date='2026-04-01', refund_date=None)

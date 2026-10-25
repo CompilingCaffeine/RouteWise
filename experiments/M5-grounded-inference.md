@@ -8,7 +8,7 @@ An audit of the two v2 Nano passes found 442 order-ID errors among 546 wrong ans
 
 ## Intervention
 
-Extraction v3 constrains order IDs to complete identifiers found in explicit order/purchase contexts (or conventional ORD-/ORDER-/PO- tokens), constrains numeric amounts to source money candidates, uses null when there is no candidate, and computes the first customer date from message metadata. The model still selects the relevant order/amount and resolves refund semantics. Raw completions and deterministic normalization are retained. No family, writer, fact-sheet or expected-label metadata reaches inference.
+Extraction v3 constrains order IDs to complete identifiers found in explicit order/purchase contexts (including "ordered under/with reference"), conventional ORD-/ORDER-/PO- tokens, or opaque alphanumeric identifiers with at least four digits in order/refund request messages. It constrains numeric amounts to source money candidates, uses null when there is no candidate, and computes the first customer date from message metadata. The model still selects the relevant order/amount and resolves refund semantics. Candidate presence is evidence of a possible identifier, not proof that it is the relevant order. Raw completions and deterministic normalization are retained. No family, writer, fact-sheet or expected-label metadata reaches inference.
 
 The hedge delay is 1,337 ms, frozen from the original v1 tuning split, not optimized on v3. A failed answer escalates once to Super; a slow Nano call starts Super in parallel. Every call is billed, including the unused call. The answer callback fires when a valid answer is ready; accounting completion is recorded separately. Legacy synchronous callers wait for final accounting.
 
