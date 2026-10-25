@@ -48,6 +48,9 @@ class ChatResult:
     ratelimit: dict[str, str] = field(default_factory=dict)
     error: str | None = None
     injected_delay_ms: float = 0.0  # synthetic stall added by routewise.faults (experiments only)
+    streamed: bool = False
+    ttft_ms: float | None = None  # dispatch -> first content/reasoning token (streaming only)
+    decode_ms: float | None = None  # first token -> stream end (streaming only)
 
 
 class TokenFactoryClient:
@@ -99,7 +102,9 @@ class TokenFactoryClient:
         seed: int | None = None,
         response_format: dict[str, Any] | None = None,
         extra_body: dict[str, Any] | None = None,
+        stream: bool = False,
     ) -> ChatResult:
+        """One chat completion. With `stream=True`, also records time-to-first-token and decode time."""
         params: dict[str, Any] = {
             "model": model,
             "messages": messages,
@@ -112,6 +117,9 @@ class TokenFactoryClient:
             params["response_format"] = response_format
         if extra_body:
             params["extra_body"] = extra_body
+        if stream:
+            params["stream"] = True
+            params["stream_options"] = {"include_usage": True}
 
         started_at = datetime.now(UTC).isoformat()
         t_start = time.perf_counter()
@@ -136,8 +144,11 @@ class TokenFactoryClient:
                     attempts=attempts,
                     error=_describe(exc),
                 )
+            if stream:
+                result = _consume_stream(model, started_at, raw.parse(), raw.headers, t_dispatch)
+            else:
+                result = _to_result(model, started_at, raw.parse(), raw.headers)
             latency_ms = _ms_since(t_dispatch)
-            result = _to_result(model, started_at, raw.parse(), raw.headers)
             result.latency_ms = latency_ms
             result.total_ms = _ms_since(t_start)
             result.attempts = attempts
@@ -175,6 +186,54 @@ def _to_result(model: str, started_at: str, completion: Any, headers: httpx.Head
         cached_tokens=getattr(prompt_details, "cached_tokens", None),
         ratelimit={h: headers[h] for h in RATELIMIT_HEADERS if h in headers},
         error=None if choice else "response contained no choices",
+    )
+
+
+def _consume_stream(model: str, started_at: str, stream: Any, headers: httpx.Headers, t_dispatch: float) -> ChatResult:
+    """Drain a streamed completion. Errors mid-stream are recorded, not retried (tokens may be billed)."""
+    content, reasoning = [], []
+    finish_reason = None
+    usage = None
+    t_first = None
+    error = None
+    try:
+        for chunk in stream:
+            if chunk.usage is not None:
+                usage = chunk.usage
+            for choice in chunk.choices:
+                delta = choice.delta
+                extra = (delta.model_extra or {}) if delta else {}
+                piece = (delta.content if delta else None) or ""
+                rpiece = extra.get("reasoning_content") or extra.get("reasoning") or ""
+                if (piece or rpiece) and t_first is None:
+                    t_first = time.perf_counter()
+                content.append(piece)
+                reasoning.append(rpiece)
+                if choice.finish_reason:
+                    finish_reason = choice.finish_reason
+    except (openai.APIError, httpx.HTTPError) as exc:
+        error = f"stream interrupted: {_describe(exc)}"
+    t_end = time.perf_counter()
+    completion_details = getattr(usage, "completion_tokens_details", None)
+    prompt_details = getattr(usage, "prompt_tokens_details", None)
+    return ChatResult(
+        model_id=model,
+        started_at=started_at,
+        latency_ms=None,
+        total_ms=0.0,
+        attempts=0,
+        content="".join(content) or None,
+        reasoning_content="".join(reasoning) or None,
+        finish_reason=finish_reason,
+        prompt_tokens=getattr(usage, "prompt_tokens", None),
+        completion_tokens=getattr(usage, "completion_tokens", None),
+        reasoning_tokens=getattr(completion_details, "reasoning_tokens", None),
+        cached_tokens=getattr(prompt_details, "cached_tokens", None),
+        ratelimit={h: headers[h] for h in RATELIMIT_HEADERS if h in headers},
+        error=error,
+        streamed=True,
+        ttft_ms=round((t_first - t_dispatch) * 1000, 1) if t_first is not None else None,
+        decode_ms=round((t_end - t_first) * 1000, 1) if t_first is not None else None,
     )
 
 

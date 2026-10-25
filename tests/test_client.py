@@ -64,3 +64,22 @@ def test_gives_up_after_max_attempts():
     assert result.attempts == 4
     assert result.error.startswith("gave up after 4 attempts")
     assert len(client.sleeps) == 3
+
+
+def test_streaming_records_ttft_decode_and_usage():
+    from fakes import sse_body
+
+    seen = []
+
+    def chat(body):
+        seen.append(body)
+        return httpx.Response(200, headers={"content-type": "text/event-stream"},
+                              content=sse_body('{"category":"other"}', completion_tokens=7))
+
+    result = make_client(chat).chat(model="nvidia/x", messages=[{"role": "user", "content": "hi"}], max_tokens=8, stream=True)
+    assert seen[0]["stream"] is True and seen[0]["stream_options"] == {"include_usage": True}
+    assert result.error is None and result.streamed
+    assert result.content == '{"category":"other"}' and result.finish_reason == "stop"
+    assert (result.prompt_tokens, result.completion_tokens) == (500, 7)
+    assert result.ttft_ms is not None and result.decode_ms is not None
+    assert result.ttft_ms + result.decode_ms <= result.latency_ms + 1

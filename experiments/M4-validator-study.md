@@ -50,3 +50,15 @@ The recommended validator is the cheapest one whose simulated end-to-end held-ou
 
 - The 186 answers come from 62 distinct examples (three samples each), so they are not independent.
 - Super's escalation answers come from a single pass.
+
+## Judge design pass (tuning split): `validators-20261025T182020Z-a57d2a`
+
+| Validator | Error recall | False-positive rate | $ / 1k tasks |
+| --- | --- | --- | --- |
+| deterministic | 100% (in-sample) | 2% | $0.081 |
+| judge_nano | 88% | 40% | $0.171 |
+| judge_super | 88% | 8% | $0.263 |
+
+- **Nano judge:** its false alarms are spread across every field (refund_date 12, currency 8, refund_amount 7, ...). That is general unreliability, not a misreading a prompt can fix.
+- **Super judge:** its 4 false alarms are definition disagreements, such as a wrong-colour item counted as `damaged_item`, and the full-refund amount in `ext-h09`.
+- **Decision:** the allowed revision was **not used**. `judge_*_v1` prompts are frozen as committed before any held-out judge call.

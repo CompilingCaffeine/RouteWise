@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from routewise import dataset, faults, policy as policy_mod, runlog
+from routewise import dataset, faults, judge as judge_mod, policy as policy_mod, runlog, validator_study
 from routewise.benchmark import candidate_metrics, run_benchmark
 from routewise.client import MissingCredentials, TokenFactoryClient
 from routewise.config import REPO_ROOT, Candidate, Config, load_config, load_dotenv
@@ -67,6 +67,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     ev.add_argument("--inject-seed", type=int, default=7)
     _add_load_args(ev)
 
+    vs = sub.add_parser("validator-study", help="M4: compare validators, incl. LLM judges, on recorded first answers")
+    vs.add_argument("--answers", type=Path, nargs="+", required=True,
+                    help="evaluation runs (always-smallest first answers) or benchmark runs")
+    vs.add_argument("--escalation", type=Path, required=True, help="benchmark run with the escalation model's answers")
+    vs.add_argument("--primary", default="nano")
+    vs.add_argument("--escalate-to", default="super")
+    vs.add_argument("--judges", default="nano,super", help="comma-separated judge candidates")
+    vs.add_argument("--concurrency", type=int, default=6)
+    vs.add_argument("--rpm", type=float, default=90)
+
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
@@ -82,6 +92,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "route": cmd_route,
         "evaluate": cmd_evaluate,
         "report": cmd_report,
+        "validator-study": cmd_validator_study,
     }
     try:
         return commands[args.command](config, args)
@@ -330,6 +341,67 @@ def cmd_report(config: Config, args: argparse.Namespace) -> int:
     _print_evaluation(summary, policy)
     print(f"\nRewrote {_display(run_dir)}/summary.json and summary.csv from {len(traces)} recorded traces")
     return 0
+
+
+def cmd_validator_study(config: Config, args: argparse.Namespace) -> int:
+    examples = {e.id: e for e in dataset.load_examples()}
+    samples = validator_study.load_samples(args.answers, args.primary, examples)
+    escalation = validator_study.load_escalation(args.escalation, args.escalate_to)
+    missing = sorted({s.example.id for s in samples} - set(escalation))
+    if not samples or missing:
+        print(f"error: {len(samples)} samples; escalation answers missing for {missing[:10]}", file=sys.stderr)
+        return 1
+    judges = args.judges.split(",") if args.judges else []
+    client = TokenFactoryClient(base_url=config.base_url)
+    snapshot = _snapshot(client, config)
+    prompts = judge_mod.load_judge_prompts()
+    splits = json.loads((dataset.DATA_DIR / dataset.VERSION / "splits.json").read_text())
+    ids = {s.example.id for s in samples}
+    split = next((name for name in ("tune", "heldout") if ids <= set(splits[name])), "mixed")
+
+    run = RunDir.create("validators")
+    run.write_manifest(
+        kind="validator_study",
+        split=split,
+        answers=[_display(p) for p in args.answers],
+        escalation=_display(args.escalation),
+        primary=args.primary,
+        escalate_to=args.escalate_to,
+        judges=judges,
+        judge_prompts={t: {"version": p.version, "sha256": p.sha256} for t, p in prompts.items()},
+        n_samples=len(samples),
+        dataset={"version": dataset.VERSION, "sha256": dataset.dataset_sha256()},
+        load={"concurrency": args.concurrency, "rpm": args.rpm},
+        **_common_manifest(config, snapshot, [(c, price_for(snapshot, c.model_id)) for c in config.candidates]),
+    )
+    print(f"Validator study {run.experiment_id}: {len(samples)} first answers ({split}), judges {judges}")
+    records = validator_study.run_judges(client, config, samples, judges, _label_prices(config, snapshot), prompts,
+                                         run, concurrency=args.concurrency, rpm=args.rpm)
+    judged = {(r.judge, r.sample_id): r for r in records}
+    summary = validator_study.evaluate_validators(config, samples, judges, judged, escalation)
+    summary["split"] = split
+    (run.path / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+
+    rows = []
+    for name, scopes in summary["validators"].items():
+        o = scopes["overall"]
+        rows.append([
+            name, _pct(o["error_recall"]), _pct(o["escalation_precision"]), _pct(o["false_positive_rate"]),
+            _pct(o["correction_rate"]),
+            *[f"{scopes[t]['task_accuracy']:.3f}" for t in sorted(k for k in scopes if k != "overall")],
+            f"{o['cost_per_1k_tasks']:.4f}", _fmt_ms(o["judge_p50_ms"]),
+            "yes" if all(scopes[t]["meets_quality"] for t in scopes if t != "overall") else "no",
+        ])
+    tasks = sorted(k for k in next(iter(summary["validators"].values())) if k != "overall")
+    _print_table(["validator", "recall", "precision", "FPR", "fixed", *[f"{t[:5]}_acc" for t in tasks], "$/1k",
+                  "judge_p50", "meets"], rows)
+    print(f"\nRecommended (cheapest meeting the quality thresholds): {summary['recommended']}")
+    print(f"Results: {_display(run.path)}/summary.json, judge_calls.jsonl")
+    return 0
+
+
+def _pct(v: float | None) -> str:
+    return "-" if v is None else f"{v * 100:.0f}%"
 
 
 def _print_evaluation(summary: dict[str, Any], policy: dict[str, Any]) -> None:
