@@ -1,0 +1,338 @@
+{
+  "n_rows": {
+    "train": 1498,
+    "calibration": 300,
+    "test": 598
+  },
+  "failure_rate": {
+    "train": 0.2349799732977303,
+    "calibration": 0.17666666666666667,
+    "test": 0.23578595317725753
+  },
+  "model_selection": {
+    "cv": {
+      "0.1": {
+        "auc": 0.49406780501348563,
+        "log_loss": 0.7839458186879995
+      },
+      "1.0": {
+        "auc": 0.5042415318102491,
+        "log_loss": 0.9214854597233669
+      },
+      "10.0": {
+        "auc": 0.510473683166746,
+        "log_loss": 1.0218787300784713
+      }
+    },
+    "chosen_C": 0.1
+  },
+  "leakage": {
+    "random_cv_auc": 0.7995101538949707,
+    "grouped_cv_auc": 0.49406780501348563,
+    "gap": 0.3054423488814851
+  },
+  "calibration": {
+    "platt_a": 0.33228342051758114,
+    "platt_b": -1.1167166131305428
+  },
+  "threshold": {
+    "tau": 0.25,
+    "table": [
+      {
+        "tau": 0.05,
+        "task_accuracy": 1.0,
+        "cost_per_1k_tasks": 0.297412,
+        "within_budget": false
+      },
+      {
+        "tau": 0.1,
+        "task_accuracy": 1.0,
+        "cost_per_1k_tasks": 0.297412,
+        "within_budget": false
+      },
+      {
+        "tau": 0.15,
+        "task_accuracy": 0.9466666666666667,
+        "cost_per_1k_tasks": 0.2014656,
+        "within_budget": false
+      },
+      {
+        "tau": 0.2,
+        "task_accuracy": 0.9366666666666666,
+        "cost_per_1k_tasks": 0.16413919999999999,
+        "within_budget": false
+      },
+      {
+        "tau": 0.25,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.3,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.35,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.4,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.45,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.5,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.55,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.6,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.65,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.7,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.75,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.8,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.85,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.9,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      },
+      {
+        "tau": 0.95,
+        "task_accuracy": 0.8333333333333334,
+        "cost_per_1k_tasks": 0.06874519999999999,
+        "within_budget": true
+      }
+    ]
+  },
+  "test": {
+    "auc": 0.48354982385896306,
+    "average_precision": 0.43546770258152845,
+    "tree_auc": 0.7691621273491939,
+    "brier": 0.18902186397841225,
+    "brier_base_rate": 0.18019158706511587,
+    "reliability": [
+      {
+        "bin": "0.0-0.1",
+        "n": 122,
+        "mean_predicted": 0.06626744218887497,
+        "observed_failure_rate": 0.4098360655737705
+      },
+      {
+        "bin": "0.1-0.2",
+        "n": 410,
+        "mean_predicted": 0.1599142198047372,
+        "observed_failure_rate": 0.11463414634146342
+      },
+      {
+        "bin": "0.2-0.3",
+        "n": 64,
+        "mean_predicted": 0.26654792206006733,
+        "observed_failure_rate": 0.65625
+      },
+      {
+        "bin": "0.3-0.4",
+        "n": 2,
+        "mean_predicted": 0.3227134912604462,
+        "observed_failure_rate": 1.0
+      }
+    ],
+    "policies": {
+      "always_smallest": {
+        "n": 598,
+        "task_accuracy": 0.7642140468227425,
+        "field_accuracy": 0.9565217391304348,
+        "cost_per_1k_tasks": 0.06560046822742475,
+        "p50_latency_ms": 689.95,
+        "p95_latency_ms": 3554.7749999999955,
+        "super_call_rate": 0.0,
+        "missed_errors": 141
+      },
+      "always_strongest": {
+        "n": 598,
+        "task_accuracy": 0.9966555183946488,
+        "field_accuracy": 0.9994425863991081,
+        "cost_per_1k_tasks": 1.0098428093645486,
+        "p50_latency_ms": 855.5,
+        "p95_latency_ms": 1207.9999999999998,
+        "super_call_rate": 0.0,
+        "missed_errors": 0
+      },
+      "validator": {
+        "n": 598,
+        "task_accuracy": 0.9565217391304348,
+        "field_accuracy": 0.992196209587514,
+        "cost_per_1k_tasks": 0.12773909698996655,
+        "p50_latency_ms": 751.1500000000001,
+        "p95_latency_ms": 4811.814999999999,
+        "super_call_rate": 0.2157190635451505,
+        "missed_errors": 18
+      },
+      "risk_only": {
+        "n": 598,
+        "task_accuracy": 0.8277591973244147,
+        "field_accuracy": 0.967391304347826,
+        "cost_per_1k_tasks": 0.08727190635451504,
+        "p50_latency_ms": 733.0999999999999,
+        "p95_latency_ms": 3476.9449999999983,
+        "super_call_rate": 0.09698996655518395,
+        "missed_errors": 101
+      },
+      "risk+validator": {
+        "n": 598,
+        "task_accuracy": 0.9581939799331104,
+        "field_accuracy": 0.9924749163879598,
+        "cost_per_1k_tasks": 0.13049147157190633,
+        "p50_latency_ms": 761.5,
+        "p95_latency_ms": 4786.255,
+        "super_call_rate": 0.24749163879598662,
+        "missed_errors": 17
+      },
+      "oracle": {
+        "n": 598,
+        "task_accuracy": 0.9899665551839465,
+        "field_accuracy": 0.9983277591973244,
+        "cost_per_1k_tasks": 0.1187280602006689,
+        "p50_latency_ms": 749.7,
+        "p95_latency_ms": 3564.3949999999986,
+        "super_call_rate": 0.23578595317725753,
+        "missed_errors": 0
+      }
+    },
+    "per_sample": {
+      "0": {
+        "validator": {
+          "n": 299,
+          "task_accuracy": 0.9632107023411371,
+          "field_accuracy": 0.9933110367892977,
+          "cost_per_1k_tasks": 0.12632729096989964,
+          "p50_latency_ms": 1224.9,
+          "p95_latency_ms": 7241.640000000005,
+          "super_call_rate": 0.21070234113712374,
+          "missed_errors": 7
+        },
+        "risk+validator": {
+          "n": 299,
+          "task_accuracy": 0.9632107023411371,
+          "field_accuracy": 0.9933110367892977,
+          "cost_per_1k_tasks": 0.12954561872909698,
+          "p50_latency_ms": 1100.6,
+          "p95_latency_ms": 6634.800000000016,
+          "super_call_rate": 0.24414715719063546,
+          "missed_errors": 7
+        }
+      },
+      "1": {
+        "validator": {
+          "n": 299,
+          "task_accuracy": 0.9498327759197325,
+          "field_accuracy": 0.9910813823857302,
+          "cost_per_1k_tasks": 0.12915090301003343,
+          "p50_latency_ms": 736.8,
+          "p95_latency_ms": 1997.7800000000007,
+          "super_call_rate": 0.22073578595317725,
+          "missed_errors": 11
+        },
+        "risk+validator": {
+          "n": 299,
+          "task_accuracy": 0.9531772575250836,
+          "field_accuracy": 0.9916387959866221,
+          "cost_per_1k_tasks": 0.1314373244147157,
+          "p50_latency_ms": 742.2,
+          "p95_latency_ms": 1983.9000000000003,
+          "super_call_rate": 0.2508361204013378,
+          "missed_errors": 10
+        }
+      }
+    },
+    "risk_vs_validator": {
+      "accuracy_diff": 0.0016722408026755842,
+      "accuracy_diff_ci95": [
+        0.0,
+        0.005016722408026756
+      ],
+      "cost_ratio": 1.0215468454591938
+    }
+  },
+  "coefficients": {
+    "n_messages": 0.05170714934746999,
+    "n_customer_messages": 0.08031355496295588,
+    "n_agent_messages": 0.001633892166622055,
+    "chars": -0.08621825488283873,
+    "days_spanned": 0.0,
+    "first_not_customer": 0.0,
+    "n_money_mentions": -0.11152189220841846,
+    "n_distinct_amounts": -0.8423882273440856,
+    "n_amounts_in_refund_sentences": -0.6989617990060679,
+    "has_non_usd": -0.19120604260744276,
+    "has_currency_symbol_only": 0.031185662147810538,
+    "n_explicit_dates": 0.2580549746010439,
+    "n_relative_dates": -0.9890720344010034,
+    "n_distinct_dates": -0.43056753173959317,
+    "refund_date_statement": 0.361845610486878,
+    "n_order_like": -0.8945709555742578,
+    "negated_refund_cue": 0.12108463536678078,
+    "counteroffer_cue": 0.3981896540920869,
+    "fee_cue": 0.13609339491401765,
+    "multi_item_cue": 1.0939313105862787
+  },
+  "hypotheses": {
+    "H3a_auc_ge_0.70": false,
+    "H3b_leakage_gap_ge_0.05": true,
+    "H3c_more_accurate_within_2x_cost": true,
+    "H3d_brier_beats_base_rate": false
+  },
+  "decision": {
+    "adopt": false,
+    "rule": "pooled paired-bootstrap 95% CI of accuracy diff excludes 0 and cost ratio <= 2"
+  }
+}

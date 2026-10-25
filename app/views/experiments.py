@@ -102,16 +102,22 @@ with tab3:
         c[2].metric("Accuracy vs. validator-only", f"{rv['accuracy_diff'] * 100:+.1f} pts",
                     help=f"95% paired bootstrap CI {rv['accuracy_diff_ci95'][0] * 100:+.1f} to {rv['accuracy_diff_ci95'][1] * 100:+.1f} pts")
         c[3].metric("Cost vs. validator-only", f"{rv['cost_ratio']:.2f}×")
+        lo, hi = rv["accuracy_diff_ci95"]
+        rule = "adopt only if the accuracy gain's 95% CI excludes zero at ≤ 2× the validator's cost"
         if s["decision"]["adopt"]:
-            st.success("Decision (pre-registered rule): **adopt** — the accuracy gain's CI excludes zero within 2× cost.", icon=":material/check_circle:")
+            st.success(f"Pre-registered decision: **adopt** ({rule}; CI {lo * 100:+.1f} to {hi * 100:+.1f} pts).", icon=":material/check_circle:")
         else:
-            st.warning("Decision (pre-registered rule): **do not adopt** — " + s["decision"]["rule"] + " is not met.", icon=":material/do_not_disturb_on:")
+            st.warning(f"Pre-registered decision: **do not adopt**. The rule is to {rule}; the CI is {lo * 100:+.1f} to "
+                       f"{hi * 100:+.1f} pts, so it does not exclude zero.", icon=":material/do_not_disturb_on:")
 
         names = ["always_smallest", "validator", "risk+validator", "risk_only", "oracle", "always_strongest"]
         df = pd.DataFrame([{"policy": n, **t["policies"][n]} for n in names])
+        # validator and risk+validator land on the same point; one honest label instead of two colliding ones.
+        df["label"] = df["policy"].map({"validator": "validator ≈ risk+validator", "risk+validator": ""}).fillna(df["policy"])
         st.markdown(f"**Unseen test families ({t['policies']['validator']['n']} requests × Nano samples): accuracy vs. cost**")
         st.altair_chart(tradeoff_chart(df, series="policy", domain=names, threshold=0.85,
-                                       emphasize=["risk+validator", "validator"], y_floor=0.8), width="stretch")
+                                       emphasize=["risk+validator", "validator"], y_floor=0.8, label_field="label"),
+                        width="stretch")
         st.dataframe([{
             "policy": n, "task acc": pct(t["policies"][n]["task_accuracy"]), "field acc": pct(t["policies"][n]["field_accuracy"]),
             "$ / 1k tasks": money(t["policies"][n]["cost_per_1k_tasks"]), "p95": ms(t["policies"][n]["p95_latency_ms"]),
@@ -127,6 +133,18 @@ with tab3:
             coef = pd.DataFrame([{"feature": k, "coefficient": v} for k, v in s["coefficients"].items()])
             st.altair_chart(signed_bars(coef, label="feature", value="coefficient", x_title="← lowers risk · raises risk →"),
                             width="stretch")
+        st.markdown(
+            f"- **It learned the families, not the difficulty.** With random folds it looks useful (AUC "
+            f"{s['leakage']['random_cv_auc']:.2f}); grouped by family it is at chance ({s['leakage']['grouped_cv_auc']:.2f}), "
+            f"and on the four unseen families it scores {t['auc']:.2f}. Relative-date phrases signal *easy* cases in the "
+            "training families but are the core difficulty of an unseen test family, so the predictor rates its hardest "
+            "test family as low-risk.\n"
+            "- **The validator already captures most of the available headroom.** On the same unseen families it catches "
+            "87% of Nano's wrong answers with a 1.3% false-alarm rate. The validator policy reaches 95.7% accuracy "
+            "against an oracle ceiling of 99.0%, at roughly the oracle's cost and 87% below always-Ultra.\n"
+            "- **Exploratory only:** a depth-3 decision tree scored 0.77 AUC on the test families. It wasn't the "
+            "pre-registered model and comes from a single split, so it's a lead for a future run, not a result."
+        )
         st.caption(f"Run `{run.id}` · threshold τ = {s['threshold']['tau']} chosen on calibration families · "
                    f"dataset v2: {m2['queued_for_adjudication']} conversations adjudicated, {m2['dropped_by_adjudication']} dropped")
 

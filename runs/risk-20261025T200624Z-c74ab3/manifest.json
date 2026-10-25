@@ -1,0 +1,63 @@
+{
+  "experiment_id": "risk-20261025T200624Z-c74ab3",
+  "created_at": "2026-10-25T20:06:24.820763+00:00",
+  "git": {
+    "sha": "d8f061860becd66a86c81bdddb3d9a9265b73eb4",
+    "dirty": true
+  },
+  "kind": "risk_study",
+  "nano_runs": [
+    "runs/benchmark-20261025T193706Z-f623b3",
+    "runs/benchmark-20261025T195333Z-f05929"
+  ],
+  "strong_runs": [
+    "runs/benchmark-20261025T194746Z-b88ebe"
+  ],
+  "dataset": {
+    "version": "v2",
+    "sha256": "4df0fd7aa3f6be074e619a4b3d5595d0d95a6f39a37bc4ec4d5843a7d30085a6"
+  },
+  "features": [
+    "n_messages",
+    "n_customer_messages",
+    "n_agent_messages",
+    "chars",
+    "days_spanned",
+    "first_not_customer",
+    "n_money_mentions",
+    "n_distinct_amounts",
+    "n_amounts_in_refund_sentences",
+    "has_non_usd",
+    "has_currency_symbol_only",
+    "n_explicit_dates",
+    "n_relative_dates",
+    "n_distinct_dates",
+    "refund_date_statement",
+    "n_order_like",
+    "negated_refund_cue",
+    "counteroffer_cue",
+    "fee_cue",
+    "multi_item_cue"
+  ],
+  "thresholds": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ]
+}

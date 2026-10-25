@@ -136,3 +136,62 @@ Fixed before the queue was produced.
   - `refund_in_past`, 6 cases: Ultra reads "I requested a refund last week and it hasn't arrived" as not requesting money back.
 
   Under the `extraction_v2` rules ("the customer asks for money back anywhere"; an amount "stated" by the customer for the refund) the labels stand. These are nonetheless subtle readings, and Nano may disagree with them in the same way, which is relevant because both families are test families.
+
+## Production answers on v2
+
+| Run | Model | Task accuracy | Cost |
+| --- | --- | --- | --- |
+| `benchmark-20261025T193706Z-f623b3` | Nano, sample 1 | 77.5% | |
+| `benchmark-20261025T195333Z-f05929` | Nano, sample 2 | 77.0% | |
+| `benchmark-20261025T194746Z-b88ebe` | Super, Ultra | 98.6%, 99.9% | |
+
+The Nano runs used the identical `v2c` pool.
+
+Nano fails 22.5% of conversations overall. Failure rates by family range from 100% (`no_amount_stated`, where Nano always invents an amount) down to 6.7%.
+
+## Results: `risk-20261025T200624Z-c74ab3` (model in `models/`)
+
+| | Value |
+| --- | --- |
+| Failure rate train / calibration / test | 23.5% / 17.7% / 23.6% |
+| Chosen C (family-grouped CV log-loss) | 0.1 |
+| **Random-split CV AUC** (train families) | **0.800** |
+| **Family-grouped CV AUC** (train families) | **0.494** |
+| Test AUC, calibrated logistic (unseen families) | **0.484** |
+| Test AUC, depth-3 tree (secondary, exploratory) | 0.769 |
+| Test Brier vs constant base rate | 0.189 vs 0.180 |
+| τ chosen on calibration families | 0.25 |
+
+**Policies on the unseen test families** (299 conversations × 2 Nano samples, every call billed):
+
+| Policy | Task acc. | $ / 1k tasks | p95 | Super calls | Nano errors shipped |
+| --- | --- | --- | --- | --- | --- |
+| always_smallest | 76.4% | $0.066 | 3555 ms | 0% | 141 |
+| validator (RouteWise) | 95.7% | $0.128 | 4812 ms | 22% | 18 |
+| risk + validator | 95.8% | $0.131 | 4786 ms | 25% | 17 |
+| risk only | 82.8% | $0.087 | 3477 ms | 10% | 101 |
+| oracle (not deployable) | 99.0% | $0.119 | 3564 ms | 24% | 0 |
+| always_strongest | 99.7% | $1.010 | 1208 ms | – | 0 |
+
+The p95 figures include a Nano latency spike in sample 1, where its p95 was 17 s.
+
+**Hypotheses**
+
+- **H3a, not supported.** The test AUC is 0.48, at chance.
+- **H3b, supported, strongly.** Random folds overstate the AUC by 0.31: the predictor recognizes *families*, not difficulty.
+- **H3c, met by the letter, practically negligible.** The accuracy gain is +0.17 points (95% CI 0.0 to +0.5) at 1.02× cost.
+- **H3d, not supported.** The calibrated probabilities score worse than a constant guess on unseen families. The reliability bins are non-monotonic (observed failure rates of 41%, 12% and 66%).
+
+**Decision (pre-registered): do not adopt.** The paired bootstrap CI's lower bound is 0.0, so it does not exclude zero.
+
+**Why it fails: family shift.** The learned weights encode family-specific shortcuts.
+- `n_relative_dates` has a strongly *negative* weight. In the training families, relative-date phrases appear in easy cases, such as "the replacement ships tomorrow" or "we'll email a label today". In the unseen test family `relative_refund_date`, relative dates are the core difficulty, and Nano fails 45% of them. The predictor therefore rates the hardest test family as low-risk.
+- `multi_item_cue` is the top positive weight, largely because "two open orders" identifies the `two_orders` training family.
+
+This is the leakage the experiment was designed to expose. It would have been invisible with a random split, where the AUC is 0.80.
+
+**What already works.** On the same unseen families, the deterministic validator catches **87.2%** of Nano's wrong first answers (123 of 141), with 95.3% precision and a 1.3% false-positive rate. The `validator` policy therefore reaches 95.7% accuracy at 87% lower cost than always-Ultra. The remaining headroom up to the oracle is 3.3 points, and 12 of the 18 misses are in `partial_refund_distractor`: the known blind spot where the quoted price and the agreed partial refund both sit in refund sentences.
+
+**Exploratory, not pre-registered.** The depth-3 tree's 0.77 test AUC suggests that a few threshold rules on amount and date counts may transfer better than a linear model. It was not the pre-registered model and comes from one test split, so it is a hypothesis for a future pre-registered run, not a result.
+
+**Cost of M3.** $0.55 for the writers, $3.06 for verification, $0.16 for the two Nano passes, and $1.54 for the Super and Ultra passes: about **$5.3** in total.

@@ -69,6 +69,7 @@ def tradeoff_chart(
     emphasize: list[str] | None = None,
     height: int = 300,
     y_floor: float = 0.5,
+    label_field: str | None = None,
 ) -> alt.LayerChart:
     """Cost (log x) vs task accuracy (y), one point per series, direct-labelled.
 
@@ -114,7 +115,7 @@ def tradeoff_chart(
         tooltip=tooltip,
     )
     labels = base.mark_text(align="left", dx=10, dy=-8, fontSize=12, color=ink["secondary"]).encode(
-        text=f"{series}:N", tooltip=tooltip
+        text=f"{label_field or series}:N", tooltip=tooltip
     )
     layers = [points, labels]
     if threshold is not None:

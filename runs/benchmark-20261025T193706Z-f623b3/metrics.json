@@ -1,0 +1,20 @@
+[
+  {
+    "candidate": "nano",
+    "task": "extraction",
+    "n": 1198,
+    "task_accuracy": 0.7746243739565943,
+    "field_accuracy": 0.9439343350027823,
+    "cost_usd_total": 0.07745303999999999,
+    "cost_per_1k_tasks": 0.0646519532554257,
+    "p50_latency_ms": 677.65,
+    "p95_latency_ms": 17124.37500000003,
+    "escalation_rate": 0.0,
+    "hedge_rate": 0.0,
+    "incomplete_cost_count": 0,
+    "schema_valid_rate": 0.998330550918197,
+    "error_rate": 0.0,
+    "mean_completion_tokens": 78.41151919866444,
+    "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+  }
+]
