@@ -6,7 +6,69 @@ RouteWise benchmarks several NVIDIA open models on *your* labelled workload. It 
 
 > For a structured information-extraction workload, RouteWise reduces total inference cost while meeting a stated quality target.
 
-> **Status:** in active development for the Nebius × NVIDIA Global AI Hackathon. Measured results will be published here once the held-out evaluation has run. Nothing in this README is a claimed result yet.
+Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track). All inference runs on **Nebius Token Factory** with **NVIDIA Nemotron 3 Nano, Super and Ultra**.
+
+## Results
+
+All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
+
+**Declared requirements.** Extraction: task accuracy ≥ 85%, field accuracy ≥ 95%, p95 ≤ 4 s. Classification: task accuracy ≥ 95%, p95 ≤ 3 s.
+
+### Primary result (pre-registered): `eval-20261025T170223Z-7e4682`
+
+| Strategy (62 held-out tasks) | Task acc. | Extraction acc. / field acc. | Extraction p95 | $ per 1k tasks | Meets all thresholds |
+| --- | --- | --- | --- | --- | --- |
+| Always Nemotron 3 Nano | 88.7% | 85.4% / 97.6% | 4434 ms | $0.050 | no (latency) |
+| Always Nemotron 3 Ultra | 100% | 100% / 100% | 1319 ms | $0.769 | yes |
+| **RouteWise** (Nano; validator-triggered escalation to Super) | **95.2%** | **95.1% / 99.2%** | **5010 ms** | **$0.068** | **no (latency)** |
+
+**Verdict: hypothesis not supported as declared.**
+
+- **Quality:** RouteWise met every accuracy target, escalating 6.5% of requests.
+- **Cost:** 91.2% below always-Ultra. The paired bootstrap 95% CI on the cost difference is −$0.76 to −$0.64 per 1k tasks.
+- **Latency:** it **missed the 4 s extraction p95 ceiling**. The cause was two ~3-second windows in which Nano's serverless endpoint answered in 4–7 s.
+  - There were no retries, no rate limiting, and no contribution from escalation.
+  - Always-Nano missed the same ceiling.
+- **Accuracy vs Ultra:** RouteWise traded 4.8 points of overall task accuracy for that saving (95% CI −11.3 to 0 points).
+
+### Evidence trail
+
+Every held-out run is listed here. Nothing is omitted. The roles are recorded in `results/runs.yaml`.
+
+| Run | Role | Strategy | Extraction acc. | Extraction p95 | Cost vs always-Ultra | Meets thresholds |
+| --- | --- | --- | --- | --- | --- | --- |
+| `…170223Z-7e4682` | Primary (pre-registered) | RouteWise | 95.1% | 5010 ms | −91.2% | no |
+| `…171615Z-4ca4e4` | Follow-up (post-hoc) | RouteWise | 92.7% | 1653 ms | −91.8% | yes |
+| `…171615Z-4ca4e4` | Follow-up (post-hoc) | RouteWise + hedging | 97.6% | 1769 ms | −90.6% | yes |
+| `…174144Z-d1e7da` | Controlled fault injection | RouteWise | 95.1% | 4268 ms | −91.1% | no |
+| `…174144Z-d1e7da` | Controlled fault injection | RouteWise + hedging | 92.7% | **2680 ms** | −89.4% | **yes** |
+
+- **Hedged escalation** was added *after* the primary run. If Nano has not answered by its own tuning-split p95 (1337 ms), Super is started in parallel and the first valid answer wins. Both calls are billed, and a request never makes more than 2 calls.
+- **Follow-up run:** no latency bursts occurred, so hedging never fired. The two RouteWise variants behaved identically there. Their 92.7% vs 97.6% gap is pure run-to-run variance; outputs are not deterministic even at temperature 0.
+- **Fault-injection run:** a seeded 10% of extraction requests (4 of 41) had a synthetic 3–6 s stall added to every Nano call, identically for every strategy.
+  - Hedging fired on exactly those 4 requests. Super answered each one correctly in 2.5–2.9 s instead of 4.0–5.2 s.
+  - The cost of those requests rose because both calls are billed.
+  - The synthetic stalls are included in the recorded latency and flagged on each call.
+
+### What the validator buys
+
+- **Precision:** across all held-out runs the deterministic validator never escalated a correct answer (0 false positives), and every error it caught was corrected by escalation.
+- **Recall:** it caught 43–71% of the cheap model's wrong first answers, depending on the run.
+- **Errors it misses:**
+  - a date returned as an order ID
+  - a relative date ("tomorrow") anchored to the wrong message when no "issue/process" verb is present
+  - classification errors, where only the schema is checked
+
+  These were found on held-out data and deliberately **not** patched, to avoid tuning on the test set.
+- **Error analysis on the tuning split** found that Nano copied example values from the v1 prompt into absent fields (`ORD-48213`, `1250.0`). That led to prompt v2 and two new rules (`order_id_in_source`, `refund_date_matches_statement`).
+
+### Limitations
+
+- **Sample size:** 62 held-out tasks (41 extraction). The accuracy CIs are wide, and the p95 is roughly the third-slowest request.
+- **Classification is too easy:** every model scored 100% on the classification tuning items, so they don't separate the models.
+- **Synthetic labels:** most extraction items come from templates, with labels correct by construction. 10 items are hand-written.
+- **Single-day measurements:** latency was measured on one day against shared serverless endpoints.
+- **Total API spend** for every committed run: **$0.36**.
 
 ## Why not just use a generic router?
 
@@ -89,8 +151,10 @@ routewise prices                       # snapshot live prices → config/prices.
 routewise probe --reasoning both       # one example × every candidate; checks JSON mode, usage, reasoning toggle
 routewise benchmark --split tune       # every candidate × every tuning example → runs/benchmark-*/
 routewise policy                       # cheapest qualifying route per task → policies/policy-*.json (no API calls)
-routewise evaluate                     # 3 strategies × held-out split, live → runs/eval-*/summary.json
-routewise route --example ext-025      # follow one request through validation/escalation
+routewise evaluate                     # baselines + RouteWise (+ hedged variant) × held-out split, live → runs/eval-*/
+routewise evaluate --inject-stalls nano:0.10:3000-6000   # controlled fault injection (seeded, identical per strategy)
+routewise report --run runs/eval-…     # recompute a summary from recorded traces (no API calls)
+routewise route --example ext-025      # follow one request through validation/escalation/hedging
 streamlit run app/streamlit_app.py     # dashboard
 ```
 
