@@ -1,9 +1,16 @@
+import importlib
 import sys
 from pathlib import Path
 
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent))
+
+import ui  # noqa: E402
+
+# Streamlit Cloud pulls new commits without restarting the process; reload the shared
+# helpers so pages never run against a stale copy.
+importlib.reload(ui)
 
 st.set_page_config(page_title="RouteWise", page_icon=":material/alt_route:", layout="wide")
 
