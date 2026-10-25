@@ -1,0 +1,66 @@
+{
+  "experiment_id": "synth-20261025T193042Z-3f4d3b",
+  "created_at": "2026-10-25T19:30:42.175287+00:00",
+  "git": {
+    "sha": "30f4cd72cd908ff1f83a5dbcccf827c21f42e686",
+    "dirty": true
+  },
+  "kind": "synth",
+  "per_family": 75,
+  "limit": null,
+  "n_sheets": 1200,
+  "writer_prompt_sha256": "8846df789b2273c833760c24182a298b92ec04f26a562a51bf75313e3f77285d",
+  "factsheets_sha256": "ad9833f5d0ac625dea5a50821dd1065562d527d8c147a301f28c2bfcd15acd95",
+  "load": {
+    "concurrency": 8,
+    "rpm": 240.0
+  },
+  "config_sha256": "7e06d900429de83836a577233681baa7ef4b77ab467465b7e5fdfdfcc66c1441",
+  "prices": {
+    "sha256": "ce9b74ae2483a470de9d85f87be74ea9957855210d1232a045ee8a9c610e569c",
+    "fetched_at": "2026-10-25T16:52:04.284177+00:00"
+  },
+  "generation": {
+    "temperature": 0.0,
+    "seed": 7,
+    "response_format": "json_schema"
+  },
+  "thresholds": {
+    "extraction": {
+      "min_task_accuracy": 0.85,
+      "min_field_accuracy": 0.95,
+      "max_p95_latency_ms": 4000
+    },
+    "classification": {
+      "min_task_accuracy": 0.95,
+      "min_field_accuracy": null,
+      "max_p95_latency_ms": 3000
+    }
+  },
+  "candidates": [
+    {
+      "label": "super",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.3,
+      "usd_per_1m_output": 0.8999999999999999
+    },
+    {
+      "label": "ultra",
+      "model_id": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 1.0,
+      "usd_per_1m_output": 3.0
+    }
+  ]
+}

@@ -95,3 +95,10 @@ Otherwise, report that it is not worth deploying.
 - The conversations are synthetic and written by Nemotron models, so Nemotron readers may find them easier or harder than human-written text.
 - Adjudication is done by the coding agent, not a human.
 - There are four test families. Generalization to unseen families is measured, but only on these four.
+
+## Generation log
+
+- **Full synthesis run:** `synth-20261025T193042Z-3f4d3b`. 1,200 fact sheets; writer cost $0.55.
+- **Initial acceptance:** 1,159 of 1,200. Most rejections (40 of 41) came from `full_refund_absolute`, where writers paraphrased the planned duration "after a week" as "after just a week" or "after one week". The verifier flagged these as time expressions.
+- **Rule fix:** a duration creates no date, so the family now also allows "a week" and "one week". This is a verifier strictness fix, not a label change.
+- **Re-verification:** the stored writer texts were re-checked under the corrected rules (`reverified.jsonl` in the run directory), with no regeneration. The result is **1,198 of 1,200 accepted**. The two remaining rejections, one in `full_refund_absolute` and one in `partial_refund_distractor`, stay dropped.

@@ -130,7 +130,7 @@ def _order_hint(ctx: _Ctx) -> str:
 
 def _full_refund_absolute(ctx: _Ctx):
     rd = ctx.contact + timedelta(days=ctx.rng.randint(1, 7))
-    ctx.allow("after a week")
+    ctx.allow("after a week", "a week", "one week")  # a duration, never a date
     plan = [PlanMessage("Customer", 0, f"says their {ctx.product} stopped working after a week{_order_hint(ctx)}, and asks for a full refund", ctx.order_ref()),
             PlanMessage("Agent", 0, "apologizes, approves a full refund of the stated amount and says on which date the refund will be issued",
                         [ctx.money(ctx.price), ctx.date(rd)])]

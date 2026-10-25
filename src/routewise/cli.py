@@ -102,6 +102,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     sy.add_argument("--concurrency", type=int, default=8)
     sy.add_argument("--rpm", type=float, default=240)
 
+    sr = sub.add_parser("synth-reverify", help="M3: re-check stored writer texts against the current verification rules")
+    sr.add_argument("--run", type=Path, help="synth run directory (default: latest full run)")
+
     sv = sub.add_parser("synth-verify", help="M3: two strong verifiers re-extract every synthesized conversation")
     sv.add_argument("--run", type=Path, help="synth run directory (default: latest full run)")
     sv.add_argument("--concurrency", type=int, default=8)
@@ -134,6 +137,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "latency-profile": cmd_latency_profile,
         "load-sweep": cmd_load_sweep,
         "synth": cmd_synth,
+        "synth-reverify": cmd_synth_reverify,
         "synth-verify": cmd_synth_verify,
         "synth-build": cmd_synth_build,
         "risk-study": cmd_risk_study,
@@ -612,8 +616,32 @@ def _latest_full_synth() -> Path:
     return runs[0]
 
 
+def _synth_records(run_dir: Path) -> list[dict[str, Any]]:
+    """Writer records, with acceptance from `reverified.jsonl` when the rules were re-applied."""
+    path = run_dir / "reverified.jsonl"
+    return read_jsonl(path) if path.exists() else read_jsonl(run_dir / "records.jsonl")
+
+
 def _synth_examples(run_dir: Path) -> list[Example]:
-    return [Example.model_validate(r["example"]) for r in read_jsonl(run_dir / "records.jsonl") if r["accepted"]]
+    return [Example.model_validate(r["example"]) for r in _synth_records(run_dir) if r["accepted"]]
+
+
+def cmd_synth_reverify(config: Config, args: argparse.Namespace) -> int:
+    run_dir = args.run or _latest_full_synth()
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    sheets = {s.id: s for s in factsheets.sample_factsheets(per_family=manifest["per_family"])}
+    out, changed = [], Counter()
+    for r in read_jsonl(run_dir / "records.jsonl"):
+        sheet = sheets[r["id"]]
+        problems = synth.verify(sheet, r["texts"]) if r["texts"] else ["no writer text"]
+        accepted = not problems
+        if accepted != r["accepted"]:
+            changed[(sheet.family, r["accepted"], accepted)] += 1
+        out.append({**r, "accepted": accepted, "reverify_problems": problems, "factsheet": sheet.to_dict(),
+                    "example": synth.to_example(sheet, r["texts"]).model_dump() if accepted else None})
+    (run_dir / "reverified.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in out))
+    print(f"accepted {sum(r['accepted'] for r in out)}/{len(out)} under current rules; changes: {dict(changed)}")
+    return 0
 
 
 def cmd_synth_verify(config: Config, args: argparse.Namespace) -> int:
@@ -646,7 +674,7 @@ def cmd_synth_verify(config: Config, args: argparse.Namespace) -> int:
 def cmd_synth_build(config: Config, args: argparse.Namespace) -> int:
     run_dir = args.run or _latest_full_synth()
     verify_dir = args.verify or _latest(runlog.RUNS_DIR, "synthverify-")
-    records = read_jsonl(run_dir / "records.jsonl")
+    records = _synth_records(run_dir)
     queue = {q["id"]: q for q in read_jsonl(V2_DIR / "adjudication_queue.jsonl")}
     decisions = {d["id"]: d for d in read_jsonl(V2_DIR / "adjudication.jsonl")} if (V2_DIR / "adjudication.jsonl").exists() else {}
     undecided = sorted(set(queue) - set(decisions))
