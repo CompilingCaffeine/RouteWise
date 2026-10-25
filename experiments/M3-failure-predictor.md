@@ -116,3 +116,23 @@ Fixed before the queue was produced.
   - an extra fact that changes the answer
 - **No relabelling.** A label is never edited to match the text; a mismatched item is dropped. This keeps every label traceable to its fact sheet.
 - **Records.** Each decision is recorded in `data/v2/adjudication.jsonl` with a one-sentence reason. The reviewer is the coding agent (Claude), not a human.
+
+## Semantic verification: `synthverify-20261025T193647Z-4e6543`
+
+| Verifier | Agreement with fact-sheet labels (all 6 fields) | Cost |
+| --- | --- | --- |
+| Ultra, reasoning on | 99.4% of 1,198 conversations | $2.32 |
+| Super, reasoning on | 99.1% | $0.74 |
+
+**The adjudication queue was empty.** On no conversation did both verifiers disagree with the label on the same field, so `adjudication.jsonl` has no decisions and nothing was dropped.
+
+**Extra sanity review** (not required by the protocol). I read all 18 conversations where *either* verifier disagreed:
+- **Verifier glitches:** an empty answer (`v2-03045`) and an impossible date (`2026-28-20`, `v2-10005`).
+- **Super inferring dates that aren't there:**
+  - `v2-01050` gets a refund date from "approved", but the text only promises a confirmation email.
+  - `v2-07036` gets a wrong contact date.
+- **Systematic single-verifier readings in two families:**
+  - `relative_refund_date`, 8 cases: Super returns a null amount when only the customer states the refund amount and the agent confirms the refund without repeating it.
+  - `refund_in_past`, 6 cases: Ultra reads "I requested a refund last week and it hasn't arrived" as not requesting money back.
+
+  Under the `extraction_v2` rules ("the customer asks for money back anywhere"; an amount "stated" by the customer for the refund) the labels stand. These are nonetheless subtle readings, and Nano may disagree with them in the same way, which is relevant because both families are test families.

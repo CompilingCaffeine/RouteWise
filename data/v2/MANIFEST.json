@@ -1,0 +1,36 @@
+{
+  "version": "v2",
+  "n_examples": 1198,
+  "synth_run": "runs/synth-20261025T193042Z-3f4d3b",
+  "verify_run": "runs/synthverify-20261025T193647Z-4e6543",
+  "sheets": 1200,
+  "rejected_by_verifier": 2,
+  "queued_for_adjudication": 0,
+  "dropped_by_adjudication": 0,
+  "per_family": {
+    "counteroffer": 75,
+    "currency_symbol": 75,
+    "full_refund_absolute": 74,
+    "large_amount": 75,
+    "multi_date": 75,
+    "multi_item_sum": 75,
+    "negated_refund": 75,
+    "no_amount_stated": 75,
+    "partial_refund_distractor": 74,
+    "refund_in_past": 75,
+    "refund_no_date": 75,
+    "relative_refund_date": 75,
+    "replacement_only": 75,
+    "shipping_fee_only": 75,
+    "system_message_first": 75,
+    "two_orders": 75
+  },
+  "per_split": {
+    "test": 299,
+    "calibration": 150,
+    "train": 749
+  },
+  "examples_sha256": "4df0fd7aa3f6be074e619a4b3d5595d0d95a6f39a37bc4ec4d5843a7d30085a6",
+  "splits_sha256": "80f8d56d9f59488931a28bc478c3b92c2c298292ec9735103050b9585d3e8ea0",
+  "adjudication_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
