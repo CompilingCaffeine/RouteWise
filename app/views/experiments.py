@@ -8,13 +8,35 @@ from ui import line_chart, money, ms, pct, reliability_chart, signed_bars, stack
 config = load_config()
 st.title("Experiments")
 st.markdown(
-    "Four follow-up experiments from the project's roadmap. Each was pre-registered (question, design, hypotheses) "
+    "Follow-up experiments from the project's roadmap. Each has a pre-registered question, design and decision rule "
     "in [`experiments/`](https://github.com/CompilingCaffeine/RouteWise/tree/main/experiments) before it ran, and "
     "each has raw per-call records in `runs/`. None of them changes the headline result."
 )
 
-tab4, tab3, tab1, tab2 = st.tabs(["M4 · Is validation worth it?", "M3 · Can we predict failures?",
+tab5, tab4, tab3, tab1, tab2 = st.tabs(["M5 · Grounding + live hedging", "M4 · Is validation worth it?", "M3 · Can we predict failures?",
                                   "M1 · Where does latency go?", "M2 · Latency under load"])
+
+with tab5:
+    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()]
+    st.markdown('**Can source-grounded extraction and live hedging satisfy a stricter quality target at lower cost '
+                'than the cheapest qualifying fixed model?** Nine live arms include fixed Nano/Super/Ultra, grounded '
+                'fixed-model controls, and a two-by-two grounding/hedging ablation. Requirements: task accuracy ≥95%, '
+                'field accuracy ≥95%, p95 ≤4 seconds, with confidence bounds on task accuracy and deadline misses.')
+    if not runs:
+        st.info('Fresh-data confirmation is not complete yet. Protocol: experiments/M5-grounded-inference.md.')
+    else:
+        run = runs[0]
+        s = artifacts.load_json(run.path/'summary.json')
+        st.success('M5 hypothesis supported') if s['hypothesis_supported'] else st.warning('M5 hypothesis not supported')
+        st.dataframe([{'configuration': name, 'accuracy': pct(m['task_accuracy']),
+                       'accuracy lower 95%': pct(m['accuracy_lower95']), 'p95': ms(m['p95_latency_ms']),
+                       'deadline-miss upper 95%': pct(m['deadline_miss_upper95']), '$ / 1k': money(m['cost_per_1k_tasks'])}
+                      for name, m in s['metrics'].items()], hide_index=True, width='stretch')
+        st.caption(f"{s['n_unique']} fresh conversations · frozen fixed comparator: {s['frozen_fixed_comparator']} · "
+                   f"lowest-cost qualifying choice: {s['cheapest_qualifying'] or 'none'} · run {run.id}")
+        st.markdown('Open **Workload optimizer** to explore requirements, inspect source evidence, download results, '
+                    'or benchmark your own labelled workload. Synthetic examples and one-day measurements limit '
+                    'external validity; the original primary result remains unchanged.')
 
 # ---------------------------------------------------------------- M4
 with tab4:

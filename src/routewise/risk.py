@@ -229,7 +229,11 @@ def reliability(probs: Sequence[float], y: Sequence[int], bins: int = 10) -> lis
     return out
 
 
-def paired_bootstrap(a: Sequence[float], b: Sequence[float], n: int = 4000, seed: int = 0) -> tuple[float, float]:
+def paired_bootstrap(a: Sequence[float], b: Sequence[float], n: int = 4000, seed: int = 0,
+                     groups: Sequence[str] | None = None) -> tuple[float, float]:
+    if groups is not None:
+        from routewise.statistics import cluster_ci
+        return cluster_ci([x - y for x, y in zip(a, b)], groups, resamples=n, seed=seed)
     rng = Random(seed)
     k = len(a)
     diffs = sorted(sum(a[j] - b[j] for j in (rng.randrange(k) for _ in range(k))) / k for _ in range(n))
@@ -279,7 +283,8 @@ def run_study(train: Sequence[Row], calib: Sequence[Row], test: Sequence[Row]) -
     x_te, _ = _xy(test)
     policies = {name: policy_metrics(test, name, p_te, tau) for name in POLICIES}
     rv, val = policies["risk+validator"], policies["validator"]
-    acc_ci = paired_bootstrap([float(c) for c in rv["_correct"]], [float(c) for c in val["_correct"]])
+    acc_ci = paired_bootstrap([float(c) for c in rv["_correct"]], [float(c) for c in val["_correct"]],
+                              groups=[r.example.id for r in test])
     per_sample = {}
     for s in sorted({r.sample for r in test}):
         idx = [i for i, r in enumerate(test) if r.sample == s]
@@ -323,5 +328,5 @@ def run_study(train: Sequence[Row], calib: Sequence[Row], test: Sequence[Row]) -
     }
     lo, _ = acc_ci
     summary["decision"] = {"adopt": lo > 0 and (h["risk_vs_validator"]["cost_ratio"] or 99) <= 2,
-                           "rule": "pooled paired-bootstrap 95% CI of accuracy diff excludes 0 and cost ratio <= 2"}
+                           "rule": "conversation-clustered paired-bootstrap 95% CI of accuracy diff excludes 0 and cost ratio <= 2"}
     return model, summary

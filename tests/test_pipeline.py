@@ -83,8 +83,8 @@ def test_end_to_end(sandbox, capsys):
     assert run_cli(sandbox, "evaluate", "--limit", "12", "--rpm", "0") == 0
     (ev,) = (sandbox.root / "runs").glob("eval-*")
     traces = runlog.read_jsonl(ev / "traces.jsonl")
-    assert len(traces) == 24 * 3
-    assert {t["strategy"] for t in traces} == {"always_smallest", "always_strongest", "routewise"}
+    assert len(traces) == 24 * 4
+    assert {t["strategy"] for t in traces} == {"always_smallest", "always_super", "always_strongest", "routewise"}
     for t in traces:
         assert len(t["calls"]) <= 2
         assert t["escalated"] == (len(t["calls"]) == 2)

@@ -66,8 +66,14 @@ with live_tab:
         prices = {c.label: price_for(snapshot, c.model_id) for c in config.candidates}
         prompts = {t: load_prompt(p, t) for t, p in config.prompts.items()}
         routers = build_routers(client, config, policy, prices, prompts)
+        ready = st.empty()
+        def show_answer(answer):
+            with ready.container():
+                st.caption(f"Answer ready in {answer['latency_ms']:,.0f} ms · {answer['answered_by']}; finishing cost accounting…")
+                st.json(answer['output'])
         with st.spinner("Calling Nebius Token Factory…"):
-            trace = routers[strategy].route(task, text, example_id=example_id, expected=expected)
+            trace = routers[strategy].route(task, text, example_id=example_id, expected=expected, on_answer=show_answer)
+        ready.empty()
         st.session_state["live_routes"] = used + 1
         st.session_state["live_trace"] = trace.model_dump()
     st.caption(f"{used}/{MAX_LIVE_ROUTES} live requests used this session.")

@@ -6,6 +6,7 @@ import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 from typing import Any
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -77,6 +78,7 @@ class Router:
         example_id: str | None = None,
         expected: dict[str, Any] | None = None,
         request_id: str | None = None,
+        on_answer: Callable[[dict[str, Any]], None] | None = None,
     ) -> Trace:
         t0 = time.perf_counter()
         timeline: dict[str, float] = {"received": 0.0}
@@ -96,6 +98,16 @@ class Router:
             return n
 
         answer, escalated, hedged = 1, False, False
+        published = False
+
+        def publish() -> None:
+            nonlocal published
+            timeline.setdefault("response_complete", _ms(t0))
+            if on_answer is not None and not published:
+                record, check = results[answer]
+                on_answer({'output': record.parsed, 'valid': check.passed, 'answered_by': record.candidate,
+                           'latency_ms': timeline['response_complete']})
+            published = True
         if option.escalate_to is None:
             hop(1, option.primary)
         elif option.hedge_after_ms is None:
@@ -121,7 +133,10 @@ class Router:
                         answer = 1 if results[1][1].passed else 2
                         escalated = answer == 2
                     timeline["response_complete"] = _ms(t0)
+                    publish()  # deliver the answer before waiting for the unused call's billing
         timeline.setdefault("response_complete", _ms(t0))
+        publish()
+        timeline['accounting_complete'] = _ms(t0)
 
         calls = [results[n][0] for n in sorted(results)]
         validations = [results[n][1].to_dict() for n in sorted(results)]

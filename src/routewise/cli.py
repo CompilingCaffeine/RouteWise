@@ -121,6 +121,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
+    confirm = sub.add_parser('confirmation', help='M5: fresh workload, source grounding and live confirmation')
+    confirm.add_argument('stage', choices=('prepare', 'build', 'tune', 'evaluate', 'report'))
+    confirm.add_argument('--run', type=Path, help='confirmation run to resume or report')
+
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     load_dotenv(config.path.parent.parent / ".env")
@@ -141,6 +145,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "synth-verify": cmd_synth_verify,
         "synth-build": cmd_synth_build,
         "risk-study": cmd_risk_study,
+        "confirmation": cmd_confirmation,
     }
     try:
         return commands[args.command](config, args)
@@ -153,6 +158,19 @@ def _add_load_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--concurrency", type=int, default=4)
     p.add_argument("--rpm", type=float, default=50, help="client-side request budget per minute")
     p.add_argument("--limit", type=int, help="only the first N examples per task (smoke runs)")
+
+
+def cmd_confirmation(config: Config, args: argparse.Namespace) -> int:
+    from routewise import confirmation
+    if args.stage == 'evaluate':
+        confirmation.evaluate(args.run)
+    elif args.stage == 'report':
+        if not args.run:
+            raise ValueError('confirmation report requires --run')
+        confirmation.report(args.run)
+    else:
+        getattr(confirmation, args.stage)()
+    return 0
 
 
 # ---------------------------------------------------------------- commands

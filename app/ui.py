@@ -23,6 +23,7 @@ INK = {
 }
 STRATEGY_LABELS = {
     "always_smallest": "Always smallest",
+    "always_super": "Always Super",
     "always_strongest": "Always strongest",
     "routewise": "RouteWise",
     "routewise_hedged": "RouteWise + hedging",
@@ -172,6 +173,9 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
                     st.json(call["parsed"], expanded=True)
                 else:
                     st.code(call["content"] or call.get("error") or "(empty)", language=None)
+                if call.get('grounding'):
+                    with st.expander('Source evidence and raw model output'):
+                        st.json(call['grounding'])
             with right:
                 st.caption("Deterministic checks")
                 for chk in check["checks"]:
@@ -187,6 +191,9 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
 
     if trace.get("score"):
         render_ground_truth(trace, expected)
+    if 'accounting_complete' in trace.get('timeline_ms', {}):
+        st.caption(f"Answer ready: {ms(trace['latency_ms'])} · final accounting: "
+                   f"{ms(trace['timeline_ms']['accounting_complete'])}. Unused hedge calls are included in cost.")
 
 
 def render_ground_truth(trace: dict[str, Any], expected: dict[str, Any] | None) -> None:

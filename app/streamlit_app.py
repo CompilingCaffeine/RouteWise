@@ -17,6 +17,7 @@ st.set_page_config(page_title="RouteWise", page_icon=":material/alt_route:", lay
 pages = [
     st.Page("views/overview.py", title="Overview", icon=":material/home:", default=True),
     st.Page("views/benchmark.py", title="Benchmark", icon=":material/leaderboard:"),
+    st.Page("views/workload.py", title="Workload optimizer", icon=":material/tune:"),
     st.Page("views/live_router.py", title="Live router", icon=":material/alt_route:"),
     st.Page("views/evaluation.py", title="Held-out evaluation", icon=":material/fact_check:"),
     st.Page("views/experiments.py", title="Experiments", icon=":material/science:"),

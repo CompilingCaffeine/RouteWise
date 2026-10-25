@@ -75,7 +75,7 @@ def _simulate_one(option: RouteOption, ex: Example, index: dict[tuple[str, str],
 
 
 def _lat(record: CallRecord) -> float:
-    return record.latency_ms if record.latency_ms is not None else record.total_ms
+    return record.total_ms  # include transport retries/backoff in deployment estimates
 
 
 def _outcome(ex: Example, *, final: CallRecord, calls: list[CallRecord], latency: float,

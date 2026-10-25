@@ -18,10 +18,25 @@ class PromptTemplate:
     sha256: str
     text: str
 
+    @property
+    def grounded(self) -> bool:
+        return self.task == "extraction" and "{evidence}" in self.text
+
+    def output_schema(self, ticket: str) -> dict[str, Any]:
+        schema = output_json_schema(self.task)
+        if self.grounded:
+            from routewise.grounding import grounded_schema
+            schema = grounded_schema(schema, ticket)
+        return schema
+
     def messages(self, ticket: str) -> list[dict[str, str]]:
-        schema = json.dumps(output_json_schema(self.task), separators=(",", ":"))
+        schema = json.dumps(self.output_schema(ticket), separators=(",", ":"))
+        text = self.text.replace("{schema}", schema)
+        if self.grounded:
+            from routewise.grounding import evidence
+            text = text.replace("{evidence}", json.dumps(evidence(ticket), ensure_ascii=False))
         return [
-            {"role": "system", "content": self.text.replace("{schema}", schema)},
+            {"role": "system", "content": text},
             {"role": "user", "content": ticket},
         ]
 
@@ -36,11 +51,11 @@ def load_prompt(path: Path, task: Task) -> PromptTemplate:
     )
 
 
-def response_format(task: Task, mode: str) -> dict[str, Any] | None:
+def response_format(task: Task, mode: str, schema: dict[str, Any] | None = None) -> dict[str, Any] | None:
     if mode == "json_schema":
         return {
             "type": "json_schema",
-            "json_schema": {"name": f"{task}_output", "schema": output_json_schema(task), "strict": True},
+            "json_schema": {"name": f"{task}_output", "schema": schema or output_json_schema(task), "strict": True},
         }
     if mode == "json_object":
         return {"type": "json_object"}

@@ -131,7 +131,8 @@ def verify(sheet: FactSheet, texts: Sequence[str]) -> list[str]:
         if bad_time:
             problems.append(f"message {i} uses a time expression {bad_time.group(0)!r}")
         for oid in ORDER_LIKE.findall(text):
-            if oid not in sheet.order_ids:
+            if not any(oid == allowed or (allowed.startswith(oid) and allowed[len(oid):len(oid)+1] in ('-', '_', '/'))
+                       for allowed in sheet.order_ids):
                 problems.append(f"message {i} mentions an unexpected reference {oid!r}")
     return problems
 

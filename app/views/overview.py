@@ -12,7 +12,7 @@ latest_eval = artifacts.headline_eval(evals)
 
 st.title("RouteWise")
 st.markdown(
-    "#### Pay for the strong model only when the cheap one gets it wrong.\n"
+    "#### Find the lowest-cost model configuration your evidence supports.\n"
     "RouteWise benchmarks NVIDIA Nemotron models on Nebius Token Factory against **your labelled workload**, "
     "picks the cheapest route that meets the quality and latency targets you declare, validates every answer "
     "with deterministic checks, and escalates a failed answer **once** to a stronger model."
@@ -21,8 +21,8 @@ st.markdown(
 with st.container(border=True):
     st.markdown(
         "**Hypothesis under test** — for a structured information-extraction workload, RouteWise reduces total "
-        "inference cost while meeting a stated quality target, measured on held-out data against two fixed-model "
-        "baselines (always-smallest, always-strongest)."
+    "inference cost while meeting a stated quality target. The original experiment used smallest/strongest "
+    "baselines; M5 adds Super and grounded fixed-model controls on fresh data."
     )
 
 if latest_eval and (latest_eval.path / "summary.json").exists():
@@ -46,6 +46,13 @@ else:
             icon=":material/hourglass_empty:")
 
 registry = artifacts.run_registry()
+confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()]
+if confirmations:
+    fresh = artifacts.load_json(confirmations[0].path/'summary.json')
+    st.subheader('Fresh-data confirmation · M5')
+    st.markdown(f"Lowest-cost qualifying configuration: **{fresh['cheapest_qualifying'] or 'none'}**. "
+                f"Tested on {fresh['n_unique']} fresh synthetic conversations with a 95% task target and a 4 s p95 deadline. "
+                'Open **Workload optimizer** for every fixed-model comparison, confidence bound and trace.')
 cited = [(e, next((r for r in evals if r.id == e["run"]), None)) for e in registry.get("evaluations", [])]
 cited = [(e, r) for e, r in cited if r and (r.path / "summary.json").exists()]
 if cited:

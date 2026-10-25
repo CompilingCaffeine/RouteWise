@@ -22,7 +22,7 @@ from routewise.router import Router, Trace
 from routewise.runlog import RunDir
 from routewise.schema import Example
 
-STRATEGIES = ("always_smallest", "always_strongest", "routewise", "routewise_hedged")
+STRATEGIES = ("always_smallest", "always_super", "always_strongest", "routewise", "routewise_hedged")
 ROUTEWISE_VARIANTS = ("routewise", "routewise_hedged")
 VARIANT_NAMES = {"routewise": "RouteWise", "routewise_hedged": "RouteWise + hedging"}
 
@@ -41,6 +41,8 @@ def build_routers(
         "always_smallest": {t: RouteOption(smallest) for t in tasks},
         "always_strongest": {t: RouteOption(strongest) for t in tasks},
     }
+    if any(c.name == 'super' for c in config.candidates):
+        fixed['always_super'] = {t: RouteOption(config.candidate('super').label) for t in tasks}
     routers = {
         name: Router(client, config, prices, prompts, options, strategy=name) for name, options in fixed.items()
     }

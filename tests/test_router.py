@@ -106,3 +106,15 @@ def test_hedge_is_counted_in_evaluation_outcomes():
     trace = route(make_router({NANO: (0.3, PROBE.expected), SUPER: (0.0, PROBE.expected)},
                               RouteOption("nano", "super", hedge_after_ms=50)))
     assert trace.hedged and trace_outcome(trace).hedged
+
+
+def test_answer_callback_delivers_before_unused_call_accounting():
+    router = make_router({NANO: (0.6, PROBE.expected), SUPER: (0.03, PROBE.expected)}, RouteOption('nano', 'super', 50))
+    received = []
+    start = time.perf_counter()
+    trace = router.route('extraction', PROBE.input, on_answer=lambda answer: received.append((time.perf_counter()-start, answer)))
+    assert len(received) == 1 and received[0][0] < .4
+    assert received[0][1]['output'] == PROBE.expected
+    assert trace.timeline_ms['accounting_complete'] > 500
+    assert trace.latency_ms < 400
+    assert len(trace.calls) == 2 and trace.cost_complete

@@ -6,6 +6,7 @@ Shared by the probe, benchmark and router so every path measures calls identical
 from __future__ import annotations
 
 import uuid
+import json
 
 from routewise.client import TokenFactoryClient
 from routewise.config import Candidate, Config
@@ -31,10 +32,15 @@ def call_candidate(
         max_tokens=candidate.max_tokens,
         temperature=config.temperature,
         seed=config.seed,
-        response_format=response_format(prompt.task, config.response_format),
+        response_format=response_format(prompt.task, config.response_format, prompt.output_schema(text)),
         extra_body=candidate.extra_body,
     )
     parsed = parse_output(prompt.task, result.content)
+    audit = None
+    if prompt.grounded and parsed.schema_valid:
+        from routewise.grounding import normalize
+        data, audit = normalize(parsed.data, text)
+        parsed = parse_output(prompt.task, json.dumps(data))
     has_usage = result.prompt_tokens is not None and result.completion_tokens is not None
     cost = (
         call_cost_usd(price, result.prompt_tokens, result.completion_tokens, result.cached_tokens or 0)
@@ -69,6 +75,7 @@ def call_candidate(
         error=result.error,
         ratelimit=result.ratelimit,
         injected_delay_ms=result.injected_delay_ms,
+        grounding=audit,
     )
 
 
