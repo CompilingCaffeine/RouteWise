@@ -66,13 +66,31 @@ Every held-out run is listed here. Nothing is omitted. The roles are recorded in
   These were found on held-out data and deliberately **not** patched, to avoid tuning on the test set.
 - **Error analysis on the tuning split** found that Nano copied example values from the v1 prompt into absent fields (`ORD-48213`, `1250.0`). That led to prompt v2 and two new rules (`order_id_in_source`, `refund_date_matches_statement`).
 
+### Follow-up experiments
+
+Each experiment was pre-registered in [`experiments/`](experiments/), with its question, design, hypotheses and decision rule committed before it ran. Each has raw records in `runs/`, and all three appear on the dashboard's **Experiments** page. None of them changes the headline result.
+
+- **M4 · Is validation worth it?** (`validators-20261025T182255Z-812767`). We compared validators on 186 held-out Nano answers, simulating each one end to end with Super escalations and billing every judge call.
+  - **The deterministic validator** is precise and nearly free: 100% escalation precision, 0 false alarms, and +28% cost over no validation.
+  - **A Nemotron 3 Super judge** adds recall, mostly on classification, where the rules only check the schema. It costs 3.5× more per task and adds about 0.8 s to *every* request, which pushes the extraction p95 over the 4 s ceiling.
+  - **A Nano judge** flags 31–43% of correct answers.
+  - **The pre-registered decision rule picks "no validation"**, because pooled Nano alone clears the lenient 85% bar. We report that as is, along with the rule's weaknesses.
+- **M1 · Where does latency go?** (`latency-20261025T182959Z-f1a8c6`). We streamed 144 calls across 3 models × 3 prompt sizes × 2 output shapes, with prefix caching defeated by a per-call nonce.
+  - **Time to first token has a fixed floor** of about 0.74 s for Nano and 1.1 s for Super and Ultra. It is flat up to ~1,800 prompt tokens and makes up 68–92% of an extraction call.
+  - **Decode speed per token doesn't follow model size:** Ultra is fastest at ≈1.9 ms/token.
+  - **Super's tail events appeared in both phases:** a slow first token in one case, a mid-stream decode stall in another. That supports hedging on total elapsed time.
+- **M2-lite · Latency under load** (`load-20261025T183316Z-43e65f`). We ran a closed-loop sweep at 1/4/8/16 concurrent requests for Nano and Super.
+  - **Throughput scales sub-linearly:** Nano reaches 10.4 req/s at c = 16, with p95 ≤ 1.8 s.
+  - **Super's tail was noisier than Nano's** in this run, so hedging is only as good as the backup model's own tail.
+  - **No rate-limit pressure was reached** at 48 requests per level.
+
 ### Limitations
 
 - **Sample size:** 62 held-out tasks (41 extraction). The accuracy CIs are wide, and the p95 is roughly the third-slowest request.
 - **Classification is too easy:** every model scored 100% on the classification tuning items, so they don't separate the models.
 - **Synthetic labels:** most extraction items come from templates, with labels correct by construction. 10 items are hand-written.
 - **Single-day measurements:** latency was measured on one day against shared serverless endpoints.
-- **Total API spend** for every committed run: **$0.36**.
+- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). Every committed run, including the follow-up experiments, comes to **$0.68** for 2,311 model calls.
 
 ## Why not just use a generic router?
 

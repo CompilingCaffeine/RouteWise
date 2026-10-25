@@ -68,6 +68,7 @@ def tradeoff_chart(
     threshold: float | None,
     emphasize: list[str] | None = None,
     height: int = 300,
+    y_floor: float = 0.5,
 ) -> alt.LayerChart:
     """Cost (log x) vs task accuracy (y), one point per series, direct-labelled.
 
@@ -81,7 +82,7 @@ def tradeoff_chart(
     else:
         colors = SERIES[m][: len(domain)]
     surface = "#1a1a19" if m == "dark" else "#fcfcfb"
-    y_min = max(0.0, min(0.5, float(df["task_accuracy"].min()) - 0.05))
+    y_min = max(0.0, min(y_floor, float(df["task_accuracy"].min()) - 0.05))
 
     y_scale = alt.Scale(domain=[y_min, 1.0], zero=False, nice=False)
     base = alt.Chart(df).encode(
@@ -193,14 +194,18 @@ def trace_json(trace: dict[str, Any]) -> str:
     return json.dumps(trace, indent=2)
 
 
-def _axis(ink: dict[str, str], title: str, fmt: str | None = None, grid: bool = True) -> alt.Axis:
+def _axis(ink: dict[str, str], title: str, fmt: str | None = None, grid: bool = True,
+          values: list[float] | None = None) -> alt.Axis:
     style = {"format": fmt} if fmt else {}
+    if values:
+        style["values"] = values
     return alt.Axis(title=title, grid=grid, gridColor=ink["grid"], domainColor=ink["baseline"],
                     tickColor=ink["baseline"], labelColor=ink["secondary"], titleColor=ink["secondary"], **style)
 
 
 def line_chart(df: pd.DataFrame, *, x: str, y: str, series: str, domain: list[str], x_title: str, y_title: str,
-               x_log: bool = False, y_format: str = ",.0f", height: int = 260) -> alt.LayerChart:
+               x_log: bool = False, y_format: str = ",.0f", height: int = 260,
+               x_values: list[float] | None = None) -> alt.LayerChart:
     """One line per series with >=8px markers, the last point direct-labelled, one y-axis."""
     m = mode()
     ink = INK[m]
@@ -208,7 +213,7 @@ def line_chart(df: pd.DataFrame, *, x: str, y: str, series: str, domain: list[st
     color = alt.Color(f"{series}:N", scale=alt.Scale(domain=domain, range=SERIES[m][: len(domain)]),
                       legend=alt.Legend(title=None, orient="bottom", labelColor=ink["secondary"]))
     x_enc = alt.X(f"{x}:Q", scale=alt.Scale(type="log" if x_log else "linear", zero=False, nice=False, padding=16),
-                  axis=_axis(ink, x_title, grid=False))
+                  axis=_axis(ink, x_title, grid=False, values=x_values))
     y_enc = alt.Y(f"{y}:Q", axis=_axis(ink, y_title, y_format), scale=alt.Scale(zero=True))
     tooltip = [alt.Tooltip(f"{series}:N"), alt.Tooltip(f"{x}:Q", title=x_title, format=",.0f"),
                alt.Tooltip(f"{y}:Q", title=y_title, format=y_format)]
@@ -221,18 +226,18 @@ def line_chart(df: pd.DataFrame, *, x: str, y: str, series: str, domain: list[st
 
 
 def stacked_bar(df: pd.DataFrame, *, category: str, segment: str, value: str, seg_domain: list[str],
-                x_title: str, height: int = 150) -> alt.Chart:
+                x_title: str, step: int = 34) -> alt.Chart:
     """Horizontal stacked bars (two segments), separated by a 2px surface gap."""
     m = mode()
     ink = INK[m]
     surface = "#1a1a19" if m == "dark" else "#fcfcfb"
     order = {s: i for i, s in enumerate(seg_domain)}
     df = df.assign(_order=df[segment].map(order))
-    return alt.Chart(df).mark_bar(stroke=surface, strokeWidth=2, cornerRadiusEnd=4, height=22).encode(
+    return alt.Chart(df).mark_bar(stroke=surface, strokeWidth=2, cornerRadiusEnd=4).encode(
         y=alt.Y(f"{category}:N", sort=None, axis=_axis(ink, "", grid=False)),
         x=alt.X(f"{value}:Q", stack="zero", axis=_axis(ink, x_title, ",.0f")),
         color=alt.Color(f"{segment}:N", scale=alt.Scale(domain=seg_domain, range=SERIES[m][: len(seg_domain)]),
                         legend=alt.Legend(title=None, orient="bottom", labelColor=ink["secondary"])),
         order=alt.Order("_order:Q"),
         tooltip=[alt.Tooltip(f"{category}:N"), alt.Tooltip(f"{segment}:N"), alt.Tooltip(f"{value}:Q", format=",.0f")],
-    ).properties(height=height).configure_view(stroke=None)
+    ).properties(height=alt.Step(step)).configure_view(stroke=None)

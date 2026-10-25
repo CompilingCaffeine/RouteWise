@@ -39,12 +39,14 @@ with tab4:
         c[3].metric("Cost of adding a Super judge", f"{v['deterministic+judge_super']['overall']['cost_per_1k_tasks'] / v['deterministic']['overall']['cost_per_1k_tasks']:.1f}×",
                     help="Cost per 1k tasks, deterministic + Super judge vs deterministic alone.")
 
-        shown = ["none", "deterministic", "judge_nano", "judge_super", "deterministic+judge_super"]
+        # judge_super sits on top of deterministic+judge_super for extraction; the table lists every validator.
+        shown = ["none", "deterministic", "judge_nano", "deterministic+judge_super"]
         df = pd.DataFrame([{"validator": name, **v[name]["extraction"]} for name in shown])
         st.markdown("**Extraction: accuracy vs. cost per 1,000 tasks**")
         st.altair_chart(tradeoff_chart(df, series="validator", domain=shown,
                                        threshold=config.thresholds["extraction"].min_task_accuracy,
-                                       emphasize=["deterministic", "deterministic+judge_super"]), width="stretch")
+                                       emphasize=["deterministic", "deterministic+judge_super"], y_floor=0.8),
+                        width="stretch")
         rows = []
         for name, scopes in v.items():
             o, e, k = scopes["overall"], scopes.get("extraction", {}), scopes.get("classification", {})
@@ -125,6 +127,7 @@ with tab2:
         run = runs[0]
         rows = artifacts.load_json(run.path / "summary.json")
         models = [m for m in ("nano", "super") if any(r["model"] == m for r in rows)]
+        levels = sorted({r["concurrency"] for r in rows})
         st.markdown(
             f"A closed-loop load generator holds *c* requests in flight ({run.manifest['requests_per_level']} "
             "requests per level, the production extraction prompt, streamed), with a cool-down between levels so "
@@ -136,13 +139,14 @@ with tab2:
         with left:
             st.markdown("**p95 end-to-end latency**")
             st.altair_chart(line_chart(df, x="concurrency", y="p95 latency (ms)", series="model", domain=models,
-                                       x_title="concurrent requests (log scale)", y_title="p95 latency (ms)", x_log=True),
+                                       x_title="concurrent requests (log scale)", y_title="p95 latency (ms)", x_log=True,
+                                       x_values=levels),
                             width="stretch")
         with right:
             st.markdown("**Throughput**")
             st.altair_chart(line_chart(df, x="concurrency", y="throughput (req/s)", series="model", domain=models,
                                        x_title="concurrent requests (log scale)", y_title="requests per second",
-                                       x_log=True, y_format=",.1f"), width="stretch")
+                                       x_log=True, y_format=",.1f", x_values=levels), width="stretch")
         st.dataframe([{
             "model": r["model"], "concurrency": r["concurrency"], "requests": r["n"], "errors": r["errors"],
             "req/s": f"{r['throughput_rps']:.2f}", "output tok/s": f"{r['output_tokens_per_s']:,.0f}",
@@ -150,4 +154,14 @@ with tab2:
             "end-to-end p50 / p95 / p99": f"{r['e2e_ms']['p50']:,.0f} / {r['e2e_ms']['p95']:,.0f} / {r['e2e_ms']['p99']:,.0f} ms",
             "429 retries": r["retried_requests"], "over-limit": r["over_limit_responses"],
         } for r in rows], hide_index=True, width="stretch")
-        st.caption(f"Run `{run.id}`")
+        st.markdown(
+            "- **Throughput scales sub-linearly.** Nano reaches 10.7× at 16× concurrency; its p95 rises steadily but "
+            "stays under 1.8 s.\n"
+            "- **Super's tail is noisier than its load.** Its p95 is not monotonic in concurrency (it peaks at c = 8). "
+            "Because Super is RouteWise's escalation and hedge target, hedging can only bound the tail as well as "
+            "Super's own tail allows.\n"
+            "- **No rate-limit pressure appeared.** 48 requests per level never crossed Nano's 100-requests-per-minute "
+            "budget, so the throttling regime was not reached. Super's prefix cache warmed up across levels "
+            "(cost per level halved), which confounds comparisons across levels."
+        )
+        st.caption(f"Run `{run.id}` · {sum(r['n'] for r in rows)} streamed requests · ${sum(r['cost_usd_total'] for r in rows):.2f}")
