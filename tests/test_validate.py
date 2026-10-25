@@ -48,17 +48,34 @@ def test_currency_must_agree_with_source_marker():
 
 
 def test_missing_stated_refund_date_is_caught():
-    assert check(dict(PROBE.expected, refund_date=None)).failed_rules == ["required_dates_present"]
+    assert check(dict(PROBE.expected, refund_date=None)).failed_rules == ["refund_date_matches_statement"]
 
 
 def test_unstated_date_is_caught():
-    assert check(dict(PROBE.expected, refund_date="2026-03-18")).failed_rules == ["dates_in_source"]
+    v = check(dict(PROBE.expected, refund_date="2026-03-18"))
+    assert v.failed_rules == ["dates_in_source", "refund_date_matches_statement"]
 
 
 def test_order_date_is_not_a_contact_date():
     # March 2 is stated (order date), so it passes dates_in_source, but no customer wrote on that day.
-    v = check(dict(PROBE.expected, contact_date="2026-03-02"))
-    assert v.failed_rules == ["required_dates_present"]
+    assert check(dict(PROBE.expected, contact_date="2026-03-02")).failed_rules == ["contact_date_valid"]
+
+
+def test_order_date_is_not_the_refund_date():
+    assert check(dict(PROBE.expected, refund_date="2026-03-02")).failed_rules == ["refund_date_matches_statement"]
+
+
+def test_relative_date_resolved_from_wrong_message_is_caught():
+    # "tomorrow" in the agent's 07-05 message means 07-06; 07-05 is a stated date but not the refund date.
+    ex = {e.id: e for e in load_examples()}["ext-036"]
+    assert check(dict(ex.expected, refund_date="2026-07-05"), ex).failed_rules == ["refund_date_matches_statement"]
+
+
+def test_order_id_must_come_from_the_source():
+    ex = {e.id: e for e in load_examples()}["ext-030"]  # no order id in this conversation
+    assert check(dict(ex.expected, order_id="ORD-48213"), ex).failed_rules == ["order_id_in_source"]
+    assert check(dict(ex.expected, order_id="Halo baby monitor"), ex).failed_rules == ["order_id_in_source"]
+    assert check(dict(PROBE.expected, order_id="#ord-48213")).passed
 
 
 def test_schema_failure_short_circuits():

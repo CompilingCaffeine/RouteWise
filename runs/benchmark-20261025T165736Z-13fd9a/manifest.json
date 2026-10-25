@@ -1,0 +1,149 @@
+{
+  "experiment_id": "benchmark-20261025T165736Z-13fd9a",
+  "created_at": "2026-10-25T16:57:36.066053+00:00",
+  "git": {
+    "sha": "a7dc972edc3b79e63fe65b5d4a994c581d20e5a3",
+    "dirty": true
+  },
+  "kind": "benchmark",
+  "split": "tune",
+  "limit": null,
+  "dataset": {
+    "version": "v1",
+    "sha256": "2bb6732e28b6d9679e7a35b35b0d59127cf24218b34d3dc81a21bf39452ca61c"
+  },
+  "example_ids": [
+    "ext-004",
+    "ext-005",
+    "ext-006",
+    "ext-007",
+    "ext-008",
+    "ext-012",
+    "ext-013",
+    "ext-015",
+    "ext-019",
+    "ext-020",
+    "ext-021",
+    "ext-022",
+    "ext-025",
+    "ext-026",
+    "ext-027",
+    "ext-030",
+    "ext-033",
+    "ext-035",
+    "ext-036",
+    "ext-038",
+    "ext-039",
+    "ext-041",
+    "ext-049",
+    "ext-050",
+    "ext-053",
+    "ext-056",
+    "ext-057",
+    "ext-058",
+    "ext-059",
+    "ext-060",
+    "ext-061",
+    "ext-063",
+    "ext-064",
+    "ext-065",
+    "ext-066",
+    "ext-h01",
+    "ext-h02",
+    "ext-h04",
+    "ext-h09",
+    "cls-001",
+    "cls-005",
+    "cls-008",
+    "cls-009",
+    "cls-015",
+    "cls-018",
+    "cls-023",
+    "cls-024",
+    "cls-025",
+    "cls-026",
+    "cls-029",
+    "cls-030",
+    "cls-032",
+    "cls-034",
+    "cls-035",
+    "cls-037",
+    "cls-038",
+    "cls-039",
+    "cls-040"
+  ],
+  "prompts": {
+    "extraction": {
+      "version": "extraction_v2",
+      "sha256": "6eaf3b06d7ef2a4fd80238124dcea7702449f6d12981d42cc0d2fcc14dc57fcb"
+    },
+    "classification": {
+      "version": "classification_v1",
+      "sha256": "1e78ff616aed2db7d06aadf90d48fb7996257987dce9fbeba7299c9f59b00692"
+    }
+  },
+  "load": {
+    "concurrency": 6,
+    "rpm": 90.0
+  },
+  "config_sha256": "f1512fdb8ab7c828cf5b0aec8d7a57ed18cf858ed71824f091b34ef48cfaaf7d",
+  "prices": {
+    "sha256": "ce9b74ae2483a470de9d85f87be74ea9957855210d1232a045ee8a9c610e569c",
+    "fetched_at": "2026-10-25T16:52:04.284177+00:00"
+  },
+  "generation": {
+    "temperature": 0.0,
+    "seed": 7,
+    "response_format": "json_schema"
+  },
+  "thresholds": {
+    "extraction": {
+      "min_task_accuracy": 0.85,
+      "min_field_accuracy": 0.95,
+      "max_p95_latency_ms": 4000
+    },
+    "classification": {
+      "min_task_accuracy": 0.95,
+      "min_field_accuracy": null,
+      "max_p95_latency_ms": 3000
+    }
+  },
+  "candidates": [
+    {
+      "label": "nano",
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.06,
+      "usd_per_1m_output": 0.24
+    },
+    {
+      "label": "super",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.3,
+      "usd_per_1m_output": 0.8999999999999999
+    },
+    {
+      "label": "ultra",
+      "model_id": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 1.0,
+      "usd_per_1m_output": 3.0
+    }
+  ]
+}

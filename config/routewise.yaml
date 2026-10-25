@@ -58,5 +58,5 @@ thresholds:
     max_p95_latency_ms: 3000
 
 prompts:
-  extraction: prompts/extraction_v1.txt
+  extraction: prompts/extraction_v2.txt
   classification: prompts/classification_v1.txt

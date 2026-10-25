@@ -51,8 +51,10 @@ incoming request (known task) ─► selected Nemotron model ─► deterministi
 | `amount_in_source` | A non-null refund amount appears as a money value in the conversation |
 | `amount_refund_context` | ...in a sentence that talks about a refund |
 | `currency_consistent` | Amount and currency are both set or both null, and agree with the source's marker |
+| `order_id_in_source` | A non-null order ID appears verbatim in the conversation and contains a digit |
 | `dates_in_source` | Every non-null date is stated in, or derivable from, the conversation |
-| `required_dates_present` | `contact_date` is a customer-message date; `refund_date` is not null when the source states when a refund is or was issued |
+| `contact_date_valid` | `contact_date` is the date of a customer message |
+| `refund_date_matches_statement` | When the conversation says when a refund is or was issued, `refund_date` is one of the dates in those sentences, with relative dates resolved from that message |
 
 Known blind spot: a well-formed answer that the text supports but that is semantically wrong. An example is picking the customer's requested amount instead of the agent's counter-offer when both appear in refund sentences. The evaluation measures this as validator recall against ground truth.
 

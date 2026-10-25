@@ -72,11 +72,16 @@ class Money:
 
 @dataclass(frozen=True)
 class SourceFacts:
+    text: str
     messages: tuple[Message, ...]
     money: tuple[Money, ...]
     dates: frozenset[date]  # every date stated or derivable (timestamps, absolute, relative)
     customer_dates: frozenset[date]  # timestamp dates of customer messages
-    refund_date_stated: bool  # some sentence says when a refund is/was issued
+    refund_statement_dates: frozenset[date]  # dates in sentences saying when a refund is/was issued
+
+    @property
+    def refund_date_stated(self) -> bool:
+        return bool(self.refund_statement_dates)
 
 
 def parse_messages(text: str) -> list[Message]:
@@ -130,7 +135,7 @@ def analyze(text: str) -> SourceFacts:
     messages = parse_messages(text)
     money: list[Money] = []
     all_dates: set[date] = set()
-    refund_date_stated = False
+    refund_statement_dates: set[date] = set()
     for msg in messages:
         anchor = msg.when.date()
         all_dates.add(anchor)
@@ -140,14 +145,15 @@ def analyze(text: str) -> SourceFacts:
                 money.append(Money(amount=amount, currency=currency, sentence=sent, refund_context=refund_cue))
             sent_dates = dates_in(sent, anchor)
             all_dates |= sent_dates
-            if refund_cue and _ISSUE_CUE.search(sent) and sent_dates:
-                refund_date_stated = True
+            if refund_cue and _ISSUE_CUE.search(sent):
+                refund_statement_dates |= sent_dates
     return SourceFacts(
+        text=text,
         messages=tuple(messages),
         money=tuple(money),
         dates=frozenset(all_dates),
         customer_dates=frozenset(m.when.date() for m in messages if m.speaker.lower() == "customer"),
-        refund_date_stated=refund_date_stated,
+        refund_statement_dates=frozenset(refund_statement_dates),
     )
 
 

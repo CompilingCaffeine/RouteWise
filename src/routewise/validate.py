@@ -5,9 +5,12 @@ Rules (extraction):
   amount_in_source        a non-null refund_amount appears as a money value in the source
   amount_refund_context   ...in a sentence that talks about a refund
   currency_consistent     amount and currency are both null or both set, and agree with the source marker
+  order_id_in_source      a non-null order_id appears verbatim in the source and contains a digit
   dates_in_source         every non-null date is stated in, or derivable from, the source
-  required_dates_present  contact_date is a customer-message date; refund_date is non-null when the
-                          source states when a refund is/was issued
+  contact_date_valid      contact_date is the date of a customer message
+  refund_date_matches_statement
+                          when the source says when a refund is/was issued, refund_date is one of the
+                          dates in those sentences (relative dates resolved from that message)
 
 Known blind spot: a well-formed answer that is supported by the text but semantically wrong
 (e.g. the quoted price instead of the agreed partial refund, if both sit in refund sentences).
@@ -88,15 +91,39 @@ def _extraction_checks(facts: SourceFacts, data: dict[str, Any]) -> list[Check]:
     ]
     dates_check = Check("dates_in_source", not bad_dates, "; ".join(f"{b} not stated in source" for b in bad_dates))
 
-    missing = []
-    if facts.customer_dates:
-        contact = data["contact_date"]
-        if contact is None:
-            missing.append("contact_date is null but the conversation has customer messages")
-        elif date.fromisoformat(contact) not in facts.customer_dates:
-            missing.append(f"contact_date={contact} is not the date of any customer message")
-    if facts.refund_date_stated and data["refund_date"] is None:
-        missing.append("refund_date is null but the source states when a refund is/was issued")
-    required = Check("required_dates_present", not missing, "; ".join(missing))
+    contact = data["contact_date"]
+    if not facts.customer_dates:
+        contact_check = Check("contact_date_valid", True, "no customer messages")
+    elif contact is None:
+        contact_check = Check("contact_date_valid", False, "contact_date is null but the conversation has customer messages")
+    elif date.fromisoformat(contact) not in facts.customer_dates:
+        contact_check = Check("contact_date_valid", False, f"contact_date={contact} is not the date of any customer message")
+    else:
+        contact_check = Check("contact_date_valid", True)
 
-    return [in_source, context, currency_check, dates_check, required]
+    refund_date = data["refund_date"]
+    stated = sorted(d.isoformat() for d in facts.refund_statement_dates)
+    if not stated:
+        refund_check = Check("refund_date_matches_statement", True, "no refund-date statement")
+    elif refund_date is None:
+        refund_check = Check("refund_date_matches_statement", False,
+                             f"refund_date is null but the source states when a refund is/was issued ({', '.join(stated)})")
+    elif refund_date not in stated:
+        refund_check = Check("refund_date_matches_statement", False,
+                             f"refund_date={refund_date} is not a date the refund statement gives ({', '.join(stated)})")
+    else:
+        refund_check = Check("refund_date_matches_statement", True)
+
+    order_id = data["order_id"]
+    if order_id is None:
+        order_check = Check("order_id_in_source", True, "no order id extracted")
+    else:
+        normalized = order_id.strip().lstrip("#").strip().casefold()
+        found = bool(normalized) and normalized in facts.text.casefold()
+        has_digit = any(ch.isdigit() for ch in normalized)
+        detail = "" if found and has_digit else (
+            f"order_id={order_id!r} does not appear in the source" if not found else f"order_id={order_id!r} contains no digits"
+        )
+        order_check = Check("order_id_in_source", found and has_digit, detail)
+
+    return [in_source, context, currency_check, order_check, dates_check, contact_check, refund_check]

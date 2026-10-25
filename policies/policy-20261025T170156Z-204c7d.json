@@ -1,0 +1,289 @@
+{
+  "policy_id": "policy-20261025T170156Z-204c7d",
+  "created_at": "2026-10-25T17:01:56.746943+00:00",
+  "source_run": "benchmark-20261025T165736Z-13fd9a",
+  "dataset_sha256": "2bb6732e28b6d9679e7a35b35b0d59127cf24218b34d3dc81a21bf39452ca61c",
+  "examples_used": 58,
+  "ladder": [
+    "nano",
+    "super",
+    "ultra"
+  ],
+  "tasks": {
+    "extraction": {
+      "status": "ok",
+      "choice": {
+        "primary": "nano",
+        "escalate_to": "super"
+      },
+      "choice_label": "nano -> super on fail",
+      "reason": "cheapest of 5 qualifying options on 39 tuning examples: task acc 1.000, field acc 1.000, p95 1844 ms, $0.1346 per 1k tasks",
+      "thresholds": {
+        "min_task_accuracy": 0.85,
+        "min_field_accuracy": 0.95,
+        "max_p95_latency_ms": 4000
+      },
+      "options": [
+        {
+          "option": {
+            "primary": "nano",
+            "escalate_to": null
+          },
+          "label": "nano",
+          "metrics": {
+            "n": 39,
+            "task_accuracy": 0.7435897435897436,
+            "field_accuracy": 0.9316239316239316,
+            "cost_usd_total": 0.00245148,
+            "cost_per_1k_tasks": 0.06285846153846153,
+            "p50_latency_ms": 807.0,
+            "p95_latency_ms": 1070.31,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": false,
+          "violations": [
+            "task accuracy 0.744 < 0.85",
+            "field accuracy 0.932 < 0.95"
+          ]
+        },
+        {
+          "option": {
+            "primary": "super",
+            "escalate_to": null
+          },
+          "label": "super",
+          "metrics": {
+            "n": 39,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.011021999999999999,
+            "cost_per_1k_tasks": 0.2826153846153846,
+            "p50_latency_ms": 1051.6,
+            "p95_latency_ms": 1396.74,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "ultra",
+            "escalate_to": null
+          },
+          "label": "ultra",
+          "metrics": {
+            "n": 39,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.037682,
+            "cost_per_1k_tasks": 0.9662051282051282,
+            "p50_latency_ms": 939.1,
+            "p95_latency_ms": 1089.27,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "nano",
+            "escalate_to": "super"
+          },
+          "label": "nano -> super on fail",
+          "metrics": {
+            "n": 39,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.00525108,
+            "cost_per_1k_tasks": 0.13464307692307692,
+            "p50_latency_ms": 882.0,
+            "p95_latency_ms": 1844.22,
+            "escalation_rate": 0.2564102564102564,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "nano",
+            "escalate_to": "ultra"
+          },
+          "label": "nano -> ultra on fail",
+          "metrics": {
+            "n": 39,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.01202348,
+            "cost_per_1k_tasks": 0.308294358974359,
+            "p50_latency_ms": 882.0,
+            "p95_latency_ms": 1780.24,
+            "escalation_rate": 0.2564102564102564,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "super",
+            "escalate_to": "ultra"
+          },
+          "label": "super -> ultra on fail",
+          "metrics": {
+            "n": 39,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.011954,
+            "cost_per_1k_tasks": 0.30651282051282047,
+            "p50_latency_ms": 1051.8,
+            "p95_latency_ms": 1441.02,
+            "escalation_rate": 0.02564102564102564,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        }
+      ]
+    },
+    "classification": {
+      "status": "ok",
+      "choice": {
+        "primary": "nano",
+        "escalate_to": null
+      },
+      "choice_label": "nano",
+      "reason": "cheapest of 6 qualifying options on 19 tuning examples: task acc 1.000, field acc 1.000, p95 640 ms, $0.0233 per 1k tasks",
+      "thresholds": {
+        "min_task_accuracy": 0.95,
+        "min_field_accuracy": null,
+        "max_p95_latency_ms": 3000
+      },
+      "options": [
+        {
+          "option": {
+            "primary": "nano",
+            "escalate_to": null
+          },
+          "label": "nano",
+          "metrics": {
+            "n": 19,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.00044303999999999996,
+            "cost_per_1k_tasks": 0.023317894736842103,
+            "p50_latency_ms": 476.0,
+            "p95_latency_ms": 639.5000000000001,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "super",
+            "escalate_to": null
+          },
+          "label": "super",
+          "metrics": {
+            "n": 19,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.0014773199999999998,
+            "cost_per_1k_tasks": 0.07775368421052631,
+            "p50_latency_ms": 706.0,
+            "p95_latency_ms": 1132.68,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "ultra",
+            "escalate_to": null
+          },
+          "label": "ultra",
+          "metrics": {
+            "n": 19,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.007142,
+            "cost_per_1k_tasks": 0.3758947368421053,
+            "p50_latency_ms": 629.3,
+            "p95_latency_ms": 686.35,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "nano",
+            "escalate_to": "super"
+          },
+          "label": "nano -> super on fail",
+          "metrics": {
+            "n": 19,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.00044303999999999996,
+            "cost_per_1k_tasks": 0.023317894736842103,
+            "p50_latency_ms": 476.0,
+            "p95_latency_ms": 639.5000000000001,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "nano",
+            "escalate_to": "ultra"
+          },
+          "label": "nano -> ultra on fail",
+          "metrics": {
+            "n": 19,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.00044303999999999996,
+            "cost_per_1k_tasks": 0.023317894736842103,
+            "p50_latency_ms": 476.0,
+            "p95_latency_ms": 639.5000000000001,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        },
+        {
+          "option": {
+            "primary": "super",
+            "escalate_to": "ultra"
+          },
+          "label": "super -> ultra on fail",
+          "metrics": {
+            "n": 19,
+            "task_accuracy": 1.0,
+            "field_accuracy": 1.0,
+            "cost_usd_total": 0.0014773199999999998,
+            "cost_per_1k_tasks": 0.07775368421052631,
+            "p50_latency_ms": 706.0,
+            "p95_latency_ms": 1132.68,
+            "escalation_rate": 0.0,
+            "incomplete_cost_count": 0
+          },
+          "qualifies": true,
+          "violations": []
+        }
+      ]
+    }
+  }
+}

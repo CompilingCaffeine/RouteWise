@@ -47,7 +47,7 @@ def test_probe_writes_scored_priced_records(sandbox, capsys):
 
     (run_dir,) = (sandbox / "runs").iterdir()
     manifest = json.loads((run_dir / "manifest.json").read_text())
-    assert manifest["prompts"]["extraction"]["version"] == "extraction_v1"
+    assert manifest["prompts"]["extraction"]["version"].startswith("extraction_v")
     assert [c["label"] for c in manifest["candidates"]] == ["nano", "super"]
 
     records = runlog.read_jsonl(run_dir / "calls.jsonl")
