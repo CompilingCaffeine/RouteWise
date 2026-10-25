@@ -1,0 +1,308 @@
+{
+  "policy_id": "policy-20261025T171555Z-5ab287",
+  "n_examples": 62,
+  "strategies": {
+    "always_smallest": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 0.9193548387096774,
+        "field_accuracy": 0.9731182795698925,
+        "cost_usd_total": 0.00306978,
+        "cost_per_1k_tasks": 0.049512580645161286,
+        "p50_latency_ms": 647.6500000000001,
+        "p95_latency_ms": 884.6750000000001,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 0.9024390243902439,
+        "field_accuracy": 0.983739837398374,
+        "cost_usd_total": 0.0025734,
+        "cost_per_1k_tasks": 0.06276585365853658,
+        "p50_latency_ms": 687.6,
+        "p95_latency_ms": 924.3,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8048780487804879,
+          0.975609756097561
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 0.9523809523809523,
+        "field_accuracy": 0.9523809523809523,
+        "cost_usd_total": 0.0004963799999999999,
+        "cost_per_1k_tasks": 0.023637142857142853,
+        "p50_latency_ms": 424.7,
+        "p95_latency_ms": 559.7,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8571428571428571,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 3,
+        "false_positive": 0,
+        "false_negative": 2,
+        "true_negative": 57,
+        "error_recall": 0.6,
+        "escalation_precision": 1.0,
+        "false_positive_rate": 0.0,
+        "correction_rate": 0.0
+      }
+    },
+    "always_strongest": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 1.0,
+        "field_accuracy": 1.0,
+        "cost_usd_total": 0.047674999999999995,
+        "cost_per_1k_tasks": 0.7689516129032257,
+        "p50_latency_ms": 712.45,
+        "p95_latency_ms": 1017.4000000000001,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 1.0,
+        "field_accuracy": 1.0,
+        "cost_usd_total": 0.0397,
+        "cost_per_1k_tasks": 0.9682926829268292,
+        "p50_latency_ms": 918.8,
+        "p95_latency_ms": 1080.9,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 1.0,
+        "field_accuracy": 1.0,
+        "cost_usd_total": 0.007975,
+        "cost_per_1k_tasks": 0.37976190476190474,
+        "p50_latency_ms": 622.3,
+        "p95_latency_ms": 686.4,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 0,
+        "true_negative": 62,
+        "error_recall": null,
+        "escalation_precision": null,
+        "false_positive_rate": 0.0,
+        "correction_rate": null
+      }
+    },
+    "routewise": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 0.9354838709677419,
+        "field_accuracy": 0.9758064516129032,
+        "cost_usd_total": 0.00392148,
+        "cost_per_1k_tasks": 0.06324967741935485,
+        "p50_latency_ms": 632.5,
+        "p95_latency_ms": 1020.1350000000003,
+        "escalation_rate": 0.04838709677419355,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 0.926829268292683,
+        "field_accuracy": 0.9878048780487805,
+        "cost_usd_total": 0.0034251,
+        "cost_per_1k_tasks": 0.0835390243902439,
+        "p50_latency_ms": 679.9,
+        "p95_latency_ms": 1653.0,
+        "escalation_rate": 0.07317073170731707,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8292682926829268,
+          1.0
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 0.9523809523809523,
+        "field_accuracy": 0.9523809523809523,
+        "cost_usd_total": 0.0004963799999999999,
+        "cost_per_1k_tasks": 0.023637142857142853,
+        "p50_latency_ms": 466.8,
+        "p95_latency_ms": 887.6,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8571428571428571,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 3,
+        "false_positive": 0,
+        "false_negative": 4,
+        "true_negative": 55,
+        "error_recall": 0.42857142857142855,
+        "escalation_precision": 1.0,
+        "false_positive_rate": 0.0,
+        "correction_rate": 1.0
+      }
+    },
+    "routewise_hedged": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 0.967741935483871,
+        "field_accuracy": 0.9811827956989247,
+        "cost_usd_total": 0.00449796,
+        "cost_per_1k_tasks": 0.07254774193548387,
+        "p50_latency_ms": 638.0999999999999,
+        "p95_latency_ms": 1741.1900000000007,
+        "escalation_rate": 0.08064516129032258,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 0.975609756097561,
+        "field_accuracy": 0.9959349593495935,
+        "cost_usd_total": 0.004001579999999999,
+        "cost_per_1k_tasks": 0.09759951219512195,
+        "p50_latency_ms": 680.8,
+        "p95_latency_ms": 1768.7,
+        "escalation_rate": 0.12195121951219512,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.926829268292683,
+          1.0
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 0.9523809523809523,
+        "field_accuracy": 0.9523809523809523,
+        "cost_usd_total": 0.0004963799999999999,
+        "cost_per_1k_tasks": 0.023637142857142853,
+        "p50_latency_ms": 439.0,
+        "p95_latency_ms": 568.1,
+        "escalation_rate": 0.0,
+        "hedge_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8571428571428571,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 5,
+        "false_positive": 0,
+        "false_negative": 2,
+        "true_negative": 55,
+        "error_recall": 0.7142857142857143,
+        "escalation_precision": 1.0,
+        "false_positive_rate": 0.0,
+        "correction_rate": 1.0
+      }
+    }
+  },
+  "lead_strategy": "routewise_hedged",
+  "routewise_vs_strongest": {
+    "n_pairs": 62,
+    "cost_savings_fraction": 0.9056536969061353,
+    "cost_diff_per_1k_tasks": -0.6964038709677419,
+    "cost_diff_per_1k_ci95": [
+      -0.7580735483870967,
+      -0.6333438709677419
+    ],
+    "task_accuracy_diff": -0.03225806451612903,
+    "task_accuracy_diff_ci95": [
+      -0.08064516129032258,
+      0.0
+    ]
+  },
+  "verdict": {
+    "hypothesis_supported": true,
+    "quality_met": true,
+    "summary": "RouteWise + hedging met every declared threshold on held-out data. Its total cost was 90.6% lower than always using the strongest model. Note: always-smallest also met the thresholds, so routing added cost without a quality need."
+  },
+  "comparisons": {
+    "routewise": {
+      "n_pairs": 62,
+      "cost_savings_fraction": 0.9177455689564762,
+      "cost_diff_per_1k_tasks": -0.705701935483871,
+      "cost_diff_per_1k_ci95": [
+        -0.7672451612903225,
+        -0.6423896774193548
+      ],
+      "task_accuracy_diff": -0.06451612903225806,
+      "task_accuracy_diff_ci95": [
+        -0.12903225806451613,
+        -0.016129032258064516
+      ]
+    },
+    "routewise_hedged": {
+      "n_pairs": 62,
+      "cost_savings_fraction": 0.9056536969061353,
+      "cost_diff_per_1k_tasks": -0.6964038709677419,
+      "cost_diff_per_1k_ci95": [
+        -0.7580735483870967,
+        -0.6333438709677419
+      ],
+      "task_accuracy_diff": -0.03225806451612903,
+      "task_accuracy_diff_ci95": [
+        -0.08064516129032258,
+        0.0
+      ]
+    }
+  },
+  "verdicts": {
+    "routewise": {
+      "hypothesis_supported": true,
+      "quality_met": true,
+      "summary": "RouteWise met every declared threshold on held-out data. Its total cost was 91.8% lower than always using the strongest model. Note: always-smallest also met the thresholds, so routing added cost without a quality need."
+    },
+    "routewise_hedged": {
+      "hypothesis_supported": true,
+      "quality_met": true,
+      "summary": "RouteWise + hedging met every declared threshold on held-out data. Its total cost was 90.6% lower than always using the strongest model. Note: always-smallest also met the thresholds, so routing added cost without a quality need."
+    }
+  }
+}
