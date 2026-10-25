@@ -1,0 +1,197 @@
+{
+  "inputs": {
+    "runs/benchmark-20261025T193706Z-f623b3/calls.jsonl": "1b84c65c26e0c670b280f16f8559acc1c58968df0c31a1aae81532c645f4582d",
+    "runs/benchmark-20261025T195333Z-f05929/calls.jsonl": "de2fbdf22c277bbb1738799d2c6572053e2ee59bb4f95aeda2d6a10015511e8d"
+  },
+  "n_incorrect_answers": 546,
+  "wrong_fields": {
+    "order_id": 442,
+    "refund_date": 65,
+    "contact_date": 9,
+    "refund_amount": 150,
+    "currency": 150
+  },
+  "unflagged_m3_test_errors": [
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-03035",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    },
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-03027",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-43242",
+      "actual_order_id": "43242"
+    },
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-03039",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    },
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-03047",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "9 July 2026"
+    },
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-03052",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    },
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-03055",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-30608",
+      "actual_order_id": "30608"
+    },
+    {
+      "run": "benchmark-20261025T193706Z-f623b3",
+      "id": "v2-11013",
+      "family": "large_amount",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-70306",
+      "actual_order_id": "70306"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-03016",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-12933",
+      "actual_order_id": "12933"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-03035",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-03039",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-03047",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "9 July 2026"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-03052",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-03074",
+      "family": "partial_refund_distractor",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-81368",
+      "actual_order_id": "81368"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-05001",
+      "family": "relative_refund_date",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-91486",
+      "actual_order_id": "91486"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-05025",
+      "family": "relative_refund_date",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-87404",
+      "actual_order_id": "87404"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-05069",
+      "family": "relative_refund_date",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-50357",
+      "actual_order_id": "50357"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-11018",
+      "family": "large_amount",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": "ORD-26898",
+      "actual_order_id": "26898"
+    },
+    {
+      "run": "benchmark-20261025T195333Z-f05929",
+      "id": "v2-12029",
+      "family": "refund_in_past",
+      "wrong_fields": [
+        "order_id"
+      ],
+      "expected_order_id": null,
+      "actual_order_id": "TrailMax 2 tent"
+    }
+  ],
+  "interpretation": "All 18 unflagged test errors concern order_id; family membership did not identify the wrong field."
+}

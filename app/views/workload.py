@@ -77,7 +77,8 @@ with explore:
             st.dataframe(result['windows'], hide_index=True)
             st.json(result['sentinels'])
         st.subheader('Inspect an answer and its evidence')
-        arm = st.selectbox('Configuration', list(metrics))
+        names = list(metrics)
+        arm = st.selectbox('Configuration', names, index=names.index(selected) if selected else names.index('grounded_hedged'))
         choices = [t for (_, name), t in first.items() if name == arm]
         chosen = st.selectbox('Recorded request', choices, format_func=lambda t: f"{t['example_id']} · {'correct' if t['score']['task_correct'] else 'incorrect'}")
         data_path = artifacts.artifacts_root()/'data/v3/examples.jsonl'
@@ -145,9 +146,14 @@ with upload:
             budget = 2000 if own_key else 500
             used = st.session_state.get('workload_calls', 0)
             need = len(tune_examples)*3
-            if used+need > budget:
+            total_need = need + len(heldout)*5
+            tested = hashlib.sha256(raw).hexdigest() in st.session_state.get('tested_workloads', set())
+            if used+total_need > budget and 'plan' not in state:
                 st.info('This workload exceeds the session call budget. Use fewer records or supply your own key.')
-            if st.button(f'Benchmark tuning split · {need} model calls', disabled=not key or used+need > budget):
+            if tested and 'evaluation' not in state:
+                st.info('This workload has already been tested in this session. Further tuning needs fresh held-out conversations.')
+            if st.button(f'Benchmark tuning split · {need} model calls',
+                         disabled=not key or used+total_need > budget or tested):
                 st.session_state['workload_calls'] = used+need
                 records = []
                 class MemoryLog:
@@ -169,8 +175,10 @@ with upload:
                 selected = plan['selected']
                 need = len(heldout)*5  # three fixed models + selected route, at most two calls
                 used = st.session_state.get('workload_calls', 0)
+                if selected and used+need > budget and 'evaluation' not in state:
+                    st.info(f'The held-out comparison needs up to {need} calls; {budget-used} remain in this session.')
                 if selected and st.button(f'Test frozen choice on held-out split · up to {need} calls',
-                                          disabled=not key or used+need > budget or 'evaluation' in state):
+                                          disabled=not key or used+need > budget or 'evaluation' in state or tested):
                     st.session_state['workload_calls'] = used+need
                     prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
                     prompt = load_prompt(REPO_ROOT/'prompts/extraction_v3.txt', 'extraction')
@@ -187,6 +195,7 @@ with upload:
                                for name in routers}
                     state['evaluation'] = {'metrics': metrics, 'traces': [t.model_dump() for t in traces],
                                            'frozen_choice': selected, 'requirements': plan['requirements']}
+                    st.session_state.setdefault('tested_workloads', set()).add(hashlib.sha256(raw).hexdigest())
                 if state.get('evaluation'):
                     evaluation = state['evaluation']
                     eligible = cheapest_qualifying(evaluation['metrics'], accuracy=acc, field_accuracy=fld, deadline_ms=deadline)

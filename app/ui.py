@@ -208,9 +208,10 @@ def render_ground_truth(trace: dict[str, Any], expected: dict[str, Any] | None) 
     rows = [{"field": f, "shipped answer": json.dumps(final.get(f)),
              "correct value": json.dumps(expected.get(f)) if expected else "–"} for f in wrong]
     st.dataframe(rows, hide_index=True)
-    last_check_passed = trace["validations"][-1]["passed"]
+    last_check_passed = trace.get('final_valid', trace["validations"][-1]["passed"])
     answered_by = trace.get("answered_by") or trace["calls"][-1]["candidate"]  # older traces lack answered_by
-    if not trace["strategy"].startswith("routewise"):
+    routed = ' -> ' in trace.get('route', '') or trace['strategy'].startswith('routewise')
+    if not routed:
         why = ("This fixed baseline never escalates, so its answer ships whether or not the validator flags it."
                if not last_check_passed else "This fixed baseline never escalates, and the validator did not flag this answer.")
     elif trace["escalated"] or answered_by != trace["calls"][0]["candidate"]:
