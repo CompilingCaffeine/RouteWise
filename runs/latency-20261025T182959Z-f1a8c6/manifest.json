@@ -1,0 +1,89 @@
+{
+  "experiment_id": "latency-20261025T182959Z-f1a8c6",
+  "created_at": "2026-10-25T18:29:59.388318+00:00",
+  "git": {
+    "sha": "989969cdcad6d2d31719849df72a0b31a8545ca1",
+    "dirty": true
+  },
+  "kind": "latency_profile",
+  "example_id": "ext-043",
+  "input_sizes": {
+    "short": 400,
+    "medium": 2000,
+    "long": 8000
+  },
+  "output_shapes": [
+    "json",
+    "text"
+  ],
+  "reps": 8,
+  "seed": 7,
+  "prompt": {
+    "version": "extraction_v2",
+    "sha256": "6eaf3b06d7ef2a4fd80238124dcea7702449f6d12981d42cc0d2fcc14dc57fcb"
+  },
+  "load": {
+    "concurrency": 2,
+    "rpm": 60.0
+  },
+  "config_sha256": "7e06d900429de83836a577233681baa7ef4b77ab467465b7e5fdfdfcc66c1441",
+  "prices": {
+    "sha256": "ce9b74ae2483a470de9d85f87be74ea9957855210d1232a045ee8a9c610e569c",
+    "fetched_at": "2026-10-25T16:52:04.284177+00:00"
+  },
+  "generation": {
+    "temperature": 0.0,
+    "seed": 7,
+    "response_format": "json_schema"
+  },
+  "thresholds": {
+    "extraction": {
+      "min_task_accuracy": 0.85,
+      "min_field_accuracy": 0.95,
+      "max_p95_latency_ms": 4000
+    },
+    "classification": {
+      "min_task_accuracy": 0.95,
+      "min_field_accuracy": null,
+      "max_p95_latency_ms": 3000
+    }
+  },
+  "candidates": [
+    {
+      "label": "nano",
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.06,
+      "usd_per_1m_output": 0.24
+    },
+    {
+      "label": "super",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 0.3,
+      "usd_per_1m_output": 0.8999999999999999
+    },
+    {
+      "label": "ultra",
+      "model_id": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "max_tokens": 512,
+      "extra_body": {
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "usd_per_1m_input": 1.0,
+      "usd_per_1m_output": 3.0
+    }
+  ]
+}
