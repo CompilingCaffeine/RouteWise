@@ -41,11 +41,13 @@ def show_metrics(metrics, selected):
 
 
 with explore:
-    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()]
+    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
+            and artifacts.load_json(r.path/'summary.json').get('complete')]
     if not runs:
-        st.info('The M5 confirmation study has not finished yet. The original evidence remains on Held-out evaluation.')
+        st.info('Fresh-data confirmation has not finished yet. The original evidence remains on Held-out evaluation; '
+                'Experiments records the M5 measurement abort and its replacement protocol.')
     else:
-        run = st.selectbox('M5 run', runs, format_func=lambda r: r.id)
+        run = st.selectbox('Confirmation run', runs, format_func=lambda r: r.id)
         result = artifacts.load_json(run.path/'summary.json')
         st.caption(f"{result['n_unique']} unique fresh conversations · synthetic data · three time windows. "
                    'Edits below explore this recorded test set; they do not constitute a new confirmation experiment.')
@@ -81,7 +83,7 @@ with explore:
         arm = st.selectbox('Configuration', names, index=names.index(selected) if selected else names.index('grounded_hedged'))
         choices = [t for (_, name), t in first.items() if name == arm]
         chosen = st.selectbox('Recorded request', choices, format_func=lambda t: f"{t['example_id']} · {'correct' if t['score']['task_correct'] else 'incorrect'}")
-        data_path = artifacts.artifacts_root()/'data/v3/examples.jsonl'
+        data_path = artifacts.artifacts_root()/'data'/run.manifest.get('dataset','v3')/'examples.jsonl'
         examples = {r['id']: r for r in (json.loads(l) for l in data_path.read_text().splitlines())} if data_path.exists() else {}
         ex = examples.get(chosen['example_id'])
         if ex:
@@ -94,6 +96,8 @@ with explore:
         if st.button('Run this configuration live', disabled=not key or not text or used >= 15):
             cfg = load_config()
             version, option = OPTIONS[arm]
+            if run.manifest.get('study') == 'm6' and version == 'v3':
+                version = 'v4'
             snapshot = artifacts.load_prices()
             prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
             prompt = load_prompt(REPO_ROOT/f'prompts/extraction_{version}.txt', 'extraction')
@@ -159,7 +163,7 @@ with upload:
                 class MemoryLog:
                     def append(self, name, record): records.append(record)
                 prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
-                prompt = load_prompt(REPO_ROOT/'prompts/extraction_v3.txt', 'extraction')
+                prompt = load_prompt(REPO_ROOT/'prompts/extraction_v4.txt', 'extraction')
                 with st.spinner('Benchmarking Nano, Super and Ultra on the tuning split…'):
                     run_benchmark(TokenFactoryClient(api_key=key, base_url=cfg.base_url), cfg, tune_examples,
                                   [(c, prices[c.label]) for c in cfg.candidates], {'extraction': prompt}, MemoryLog(),
@@ -181,7 +185,7 @@ with upload:
                                           disabled=not key or used+need > budget or 'evaluation' in state or tested):
                     st.session_state['workload_calls'] = used+need
                     prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
-                    prompt = load_prompt(REPO_ROOT/'prompts/extraction_v3.txt', 'extraction')
+                    prompt = load_prompt(REPO_ROOT/'prompts/extraction_v4.txt', 'extraction')
                     client = TokenFactoryClient(api_key=key, base_url=cfg.base_url)
                     options = {f'fixed_{c.label}': RouteOption(c.label) for c in cfg.candidates}
                     options['selected_route'] = RouteOption(**plan['options'][selected])

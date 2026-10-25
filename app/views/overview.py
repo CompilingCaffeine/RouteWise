@@ -46,10 +46,11 @@ else:
             icon=":material/hourglass_empty:")
 
 registry = artifacts.run_registry()
-confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()]
+confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
+                 and artifacts.load_json(r.path/'summary.json').get('complete')]
 if confirmations:
     fresh = artifacts.load_json(confirmations[0].path/'summary.json')
-    st.subheader('Fresh-data confirmation · M5')
+    st.subheader(f"Fresh-data confirmation · {fresh.get('study', 'm5').upper()}")
     st.markdown(f"Lowest-cost qualifying configuration: **{fresh['cheapest_qualifying'] or 'none'}**. "
                 f"Tested on {fresh['n_unique']} fresh synthetic conversations with a 95% task target and a 4 s p95 deadline. "
                 'Open **Workload optimizer** for every fixed-model comparison, confidence bound and trace.')

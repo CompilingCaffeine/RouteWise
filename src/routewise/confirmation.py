@@ -31,6 +31,8 @@ from routewise.synth import adjudication_queue, write_all
 
 DATA = REPO_ROOT / 'data/v3'
 PROTOCOL = REPO_ROOT / 'experiments/M5-grounded-inference.md'
+ACTIVE_STUDY = 'm5'
+GROUNDED_VERSION = 'v3'
 OPTIONS = {
     'fixed_nano': ('v2', RouteOption('nano')),
     'fixed_super': ('v2', RouteOption('super')),
@@ -45,6 +47,17 @@ OPTIONS = {
 TARGET = {'task_accuracy': 0.95, 'field_accuracy': 0.95, 'deadline_ms': 4000}
 
 
+def configure(study: str) -> None:
+    global DATA, PROTOCOL, ACTIVE_STUDY, GROUNDED_VERSION, SEED, fresh_sheets, split_name, save_plan, OPTIONS
+    if study == 'm6':
+        from routewise import issue_workload
+        DATA = REPO_ROOT/'data/v4'
+        PROTOCOL = REPO_ROOT/'experiments/M6-issue-date-confirmation.md'
+        ACTIVE_STUDY, GROUNDED_VERSION, SEED = 'm6', 'v4', issue_workload.SEED
+        fresh_sheets, split_name, save_plan = issue_workload.fresh_sheets, issue_workload.split_name, issue_workload.save_plan
+        OPTIONS = {k: ('v4' if v == 'v3' else v, option) for k, (v, option) in OPTIONS.items()}
+
+
 def dump(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, indent=2, default=str) + '\n')
 
@@ -53,6 +66,8 @@ def source_hashes() -> dict[str, str]:
     files = [*sorted((REPO_ROOT/'src/routewise').glob('*.py')),
              REPO_ROOT/'prompts/extraction_v2.txt', REPO_ROOT/'prompts/extraction_v3.txt', PROTOCOL,
              REPO_ROOT/'config/routewise.yaml']
+    if ACTIVE_STUDY == 'm6':
+        files.append(REPO_ROOT/'prompts/extraction_v4.txt')
     return {str(p.relative_to(REPO_ROOT)): sha256_file(p) for p in files}
 
 
@@ -90,7 +105,7 @@ def context(snapshot_path: Path):
     snapshot = load_snapshot(snapshot_path)
     client = StudyClient(config, snapshot)
     prices = {c.label: price_for(snapshot, c.model_id) for c in config.candidates}
-    prompts = {v: load_prompt(REPO_ROOT/f'prompts/extraction_{v}.txt', 'extraction') for v in ('v2', 'v3')}
+    prompts = {v: load_prompt(REPO_ROOT/f'prompts/extraction_{v}.txt', 'extraction') for v in ('v2', GROUNDED_VERSION)}
     return config, snapshot, client, prices, prompts
 
 
@@ -100,32 +115,41 @@ def prepare() -> None:
     save_plan(DATA)
     config = load_config()
     load_dotenv(REPO_ROOT/'.env')
-    run = RunDir.create('fresh')
+    sheets = fresh_sheets()
+    run = RunDir.create('fresh6' if ACTIVE_STUDY == 'm6' else 'fresh')
     fetch_snapshot(TokenFactoryClient(base_url=config.base_url), config.base_url, run.path/'prices.json')
     config, snapshot, client, prices, prompts = context(run.path/'prices.json')
-    run.write_manifest(protocol_sha256=sha256_file(PROTOCOL), sources=source_hashes(), seed=SEED,
-                       factsheets_sha256=sha256_file(DATA/'factsheets.jsonl'), planned_n=600,
+    run.write_manifest(study=ACTIVE_STUDY, protocol_sha256=sha256_file(PROTOCOL), sources=source_hashes(), seed=SEED,
+                       factsheets_sha256=sha256_file(DATA/'factsheets.jsonl'), planned_n=len(sheets),
                        price_sha256=sha256_file(run.path/'prices.json'), purpose='v3 synthesis and label verification')
     print(f'Synthesis run: {run.path}', flush=True)
-    records = write_all(client, config, fresh_sheets(), prices, concurrency=8, rpm=360,
+    records = write_all(client, config, sheets, prices, concurrency=8, rpm=360,
                         sink=lambda r: run.append('writers.jsonl', r))
     examples = [Example(**r['example']) for r in records if r['accepted']]
-    dump(run.path/'generation_summary.json', {'accepted': len(examples), 'planned': 600,
+    dump(run.path/'generation_summary.json', {'accepted': len(examples), 'planned': len(sheets),
          'accepted_by_family': dict(Counter(e.tags[0] for e in examples)),
          'rejected': [{'id': r['id'], 'problems': r['attempts'][-1]['problems']} for r in records if not r['accepted']],
          'writer_cost_usd': client.spent})
-    print(f'{len(examples)}/600 accepted; checking labels with reasoning Super and Ultra', flush=True)
-    verifier_run = RunDir.create('freshverify')
-    verifier_run.write_manifest(source_run=run.experiment_id, source_hashes=source_hashes(), n_examples=len(examples))
+    print(f'{len(examples)}/{len(sheets)} accepted; checking labels with reasoning Super and Ultra', flush=True)
+    verifier_run = RunDir.create('freshverify6' if ACTIVE_STUDY == 'm6' else 'freshverify')
+    verifier_run.write_manifest(study=ACTIVE_STUDY, source_run=run.experiment_id, source_hashes=source_hashes(), n_examples=len(examples))
     candidates = [(config.with_reasoning(config.candidate(name), 'on'), prices[name]) for name in ('super', 'ultra')]
     verification = run_benchmark(client, config, examples, candidates, {'extraction': prompts['v2']}, verifier_run,
                                  concurrency=8, rpm=360)
     queue = adjudication_queue(examples, verification)
     dump(run.path/'adjudication_queue.json', queue)
+    # Preserve all disagreements for a broader blinded label audit before Nano inference.
+    by_id = {e.id: e for e in examples}
+    any_wrong = defaultdict(dict)
+    for r in verification:
+        if not r.score['task_correct']:
+            any_wrong[r.example_id][r.candidate] = {f: (r.parsed or {}).get(f) for f, ok in r.score['fields'].items() if not ok}
+    dump(run.path/'all_disagreements.json', [{'id': eid, 'input': by_id[eid].input,
+         'label': by_id[eid].expected, 'disagreements': answers} for eid, answers in any_wrong.items()])
     dump(run.path/'verification.json', {'run': verifier_run.experiment_id, 'queued': len(queue),
          'any_disagreement': sum(not r.score['task_correct'] for r in verification),
          'total_cost_usd': client.spent})
-    dump(DATA/'source.json', {'run': run.experiment_id, 'verifier_run': verifier_run.experiment_id})
+    dump(DATA/'source.json', {'study': ACTIVE_STUDY, 'run': run.experiment_id, 'verifier_run': verifier_run.experiment_id})
     print(f'Queue: {len(queue)}. Review {run.path}/adjudication_queue.json, then build.', flush=True)
 
 
@@ -182,10 +206,10 @@ def tune() -> None:
     config, snapshot, client, prices, prompts = context(snapshot_path)
     examples = examples_for('tune')
     run = RunDir.create('confirmtune')
-    run.write_manifest(dataset='v3', split='tune', n_examples=len(examples), sources=source_hashes(),
+    run.write_manifest(study=ACTIVE_STUDY, dataset=DATA.name, split='tune', n_examples=len(examples), sources=source_hashes(),
                        protocol_sha256=sha256_file(PROTOCOL), data_sha256=sha256_file(DATA/'examples.jsonl'))
     print(f'Tuning run: {run.path}', flush=True)
-    for version in ('v2', 'v3'):
+    for version in ('v2', GROUNDED_VERSION):
         candidates = [(c, prices[c.label]) for c in config.candidates if version == 'v2' or c.name != 'ultra']
         # Each version gets a distinct log; candidate labels remain real model names.
         class Log:
@@ -193,11 +217,11 @@ def tune() -> None:
                 run.append(f'{version}-'+name, record)
         run_benchmark(client, config, examples, candidates, {'extraction': prompts[version]}, Log(), concurrency=8, rpm=300)
     indexes = {v: {(r.candidate, r.example_id): r for x in read_jsonl(run.path/f'{v}-calls.jsonl')
-                   if (r := CallRecord(**x))} for v in ('v2', 'v3')}
+                   if (r := CallRecord(**x))} for v in ('v2', GROUNDED_VERSION)}
     metrics = {name: deployment_metrics(simulate(opt, examples, indexes[v])) for name, (v, opt) in OPTIONS.items()}
     fixed = {k: v for k, v in metrics.items() if k.startswith('fixed_')}
     comparator = cheapest_qualifying(fixed, accuracy=.95, deadline_ms=4000)
-    seal = {'tune_run': run.experiment_id, 'created_before_heldout': True, 'sources': source_hashes(),
+    seal = {'study': ACTIVE_STUDY, 'tune_run': run.experiment_id, 'created_before_heldout': True, 'sources': source_hashes(),
             'data_sha256': sha256_file(DATA/'examples.jsonl'), 'split_sha256': sha256_file(DATA/'splits.json'),
             'price_sha256': sha256_file(snapshot_path), 'price_path': str(snapshot_path.relative_to(REPO_ROOT)),
             'comparator': comparator, 'requirements': TARGET, 'hedge_after_ms': 1337,
@@ -223,6 +247,8 @@ def evaluate(run_path: Path | None = None, gap_s: float = 60) -> Path:
         Random(SEED+i).shuffle(blocks[i])
     if run_path:
         run = RunDir.existing(run_path)
+        if (run.path/'status.json').exists():
+            raise ValueError('This run was aborted; it cannot be resumed or represented as confirmation')
         old = json.loads((run.path/'manifest.json').read_text())
         if old['seal_sha256'] != sha256_file(DATA/'seal.json'):
             raise ValueError('Resume seal mismatch')
@@ -231,7 +257,7 @@ def evaluate(run_path: Path | None = None, gap_s: float = 60) -> Path:
             if json.loads(p.read_text()).get('seal_sha256') == sha256_file(DATA/'seal.json'):
                 raise ValueError(f'A run for this seal already exists; resume with --run {p.parent}')
         run = RunDir.create('confirmation')
-        run.write_manifest(dataset='v3', split='heldout', seal=seal, seal_sha256=sha256_file(DATA/'seal.json'),
+        run.write_manifest(study=ACTIVE_STUDY, dataset=DATA.name, split='heldout', seal=seal, seal_sha256=sha256_file(DATA/'seal.json'),
                            n_unique=len(examples), n_sentinels=len(sentinels), arms=list(OPTIONS),
                            n_expected_observations=sum(len(b) for b in blocks)*len(OPTIONS),
                            price_path=seal['price_path'], block_gap_seconds=gap_s, randomized_seed=SEED)
@@ -350,7 +376,8 @@ def report(run_path: Path) -> dict:
         repeats[name] = {'n_outcomes': len(rows), 'n_conversations': len({r['trace']['example_id'] for r in rows}),
                          'task_accuracy': sum(values)/len(values),
                          'accuracy_cluster_ci95': cluster_ci(values, [r['trace']['example_id'] for r in rows])}
-    result = {'complete': complete, 'n_unique': expected, 'n_observations': len(observations), 'requirements': TARGET,
+    result = {'study': manifest.get('study', 'm5'), 'dataset': manifest.get('dataset', 'v3'),
+              'complete': complete, 'n_unique': expected, 'n_observations': len(observations), 'requirements': TARGET,
               'metrics': metrics, 'families': family_rows, 'windows': window_rows, 'paired': paired,
               'sentinels': repeats, 'frozen_fixed_comparator': comparator, 'cheapest_qualifying': choice,
               'cheapest_qualifying_fixed': fixed_choice, 'intervention_qualifies': qualifies,
@@ -366,7 +393,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('stage', choices=('prepare', 'build', 'tune', 'evaluate', 'report'))
     parser.add_argument('--run', type=Path)
+    parser.add_argument('--study', choices=('m5','m6'), default='m5')
     args = parser.parse_args()
+    configure(args.study)
     if args.stage == 'prepare': prepare()
     elif args.stage == 'build': build()
     elif args.stage == 'tune': tune()

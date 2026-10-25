@@ -14,11 +14,11 @@ NEW_FAMILIES = ('tracking_distractor', 'superseded_order', 'numeric_order', 'pro
 ID_FORMATS = ('ORD-{n}', 'web_{n}', 'AB/{n}/UK', '{n}', 'q{n}z', 'SHOP-{n}-B')
 
 
-def fresh_sheets() -> list[FactSheet]:
-    sheets = sample_factsheets(30, seed=SEED)
+def fresh_sheets(*, seed: int = SEED, per_family: int = 30, version: str = 'v3') -> list[FactSheet]:
+    sheets = sample_factsheets(per_family, seed=seed)
     for i, sheet in enumerate(sheets):
-        sheet.id = sheet.id.replace('v2-', 'v3-')
-        replacements = {old: ID_FORMATS[(i + j) % len(ID_FORMATS)].format(n=840000 + i * 3 + j)
+        sheet.id = sheet.id.replace('v2-', version+'-')
+        replacements = {old: ID_FORMATS[(i + j) % len(ID_FORMATS)].format(n=(840000 if version == 'v3' else 1140000) + i * 3 + j)
                         for j, old in enumerate(sheet.order_ids)}
         for old, new in replacements.items():
             for msg in sheet.messages:
@@ -27,12 +27,12 @@ def fresh_sheets() -> list[FactSheet]:
             if sheet.expected['order_id'] == old:
                 sheet.expected['order_id'] = new
         sheet.order_ids = list(replacements.values())
-    rng = Random(SEED)
+    rng = Random(seed)
     for family in NEW_FAMILIES:
-        for i in range(30):
+        for i in range(per_family):
             day = date(2026, 2, 1) + timedelta(days=rng.randrange(200))
             refund = day + timedelta(days=3)
-            oid = ID_FORMATS[i % len(ID_FORMATS)].format(n=970000 + i)
+            oid = ID_FORMATS[i % len(ID_FORMATS)].format(n=(970000 if version == 'v3' else 1270000) + i)
             amount = float(20 + i)
             money = f'USD {amount:.2f}'
             if family == 'tracking_distractor':
@@ -55,7 +55,7 @@ def fresh_sheets() -> list[FactSheet]:
                                        f'OLD-{500000 + i}' if family == 'superseded_order' else None) if s]
             expected = {'refund_requested': True, 'refund_amount': amount, 'currency': 'USD', 'order_id': oid,
                         'contact_date': day.isoformat(), 'refund_date': refund.isoformat()}
-            sheets.append(FactSheet(id=f'v3-new-{NEW_FAMILIES.index(family)}-{i:03d}', family=family,
+            sheets.append(FactSheet(id=f'{version}-new-{NEW_FAMILIES.index(family)}-{i:03d}', family=family,
                 writer=('super', 'ultra')[i % 2], tone=('terse', 'formal', 'frustrated')[i % 3], typos=i % 4 == 0,
                 contact=day.isoformat(), start=f'{day.isoformat()}T09:15', messages=plan, expected=expected,
                 allowed_amounts=[(amount, 'USD')], allowed_dates=[day.isoformat(), refund.isoformat(), (day-timedelta(days=5)).isoformat()],

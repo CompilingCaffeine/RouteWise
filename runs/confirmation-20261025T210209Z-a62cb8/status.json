@@ -1,0 +1,13 @@
+{
+  "status": "aborted_invalid_measurement",
+  "reason": "Tuning-only audit found arrival dates labelled as refund issue dates. The frozen field contract requires issue dates. Heldout quality results were not inspected before this decision. No labels were changed and no successful hypothesis is claimed.",
+  "evidence_tune_ids": [
+    "v3-00004",
+    "v3-07000",
+    "v3-15008"
+  ],
+  "ended_at": "2026-10-25T21:08:50.604832+00:00",
+  "completed_observations": 565,
+  "accounted_api_cost_usd": 0.13029686,
+  "incomplete_cost_requests": 0
+}

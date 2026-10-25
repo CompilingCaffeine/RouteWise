@@ -13,21 +13,29 @@ st.markdown(
     "each has raw per-call records in `runs/`. None of them changes the headline result."
 )
 
-tab5, tab4, tab3, tab1, tab2 = st.tabs(["M5 · Grounding + live hedging", "M4 · Is validation worth it?", "M3 · Can we predict failures?",
+tab5, tab4, tab3, tab1, tab2 = st.tabs(["M5/M6 · Grounding + live hedging", "M4 · Is validation worth it?", "M3 · Can we predict failures?",
                                   "M1 · Where does latency go?", "M2 · Latency under load"])
 
 with tab5:
-    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()]
+    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
+            and artifacts.load_json(r.path/'summary.json').get('complete')]
+    aborted = [r for r in artifacts.list_runs('confirmation') if (r.path/'status.json').exists()]
+    for old in aborted:
+        status = artifacts.load_json(old.path/'status.json')
+        st.warning(f"M5 measurement abort: {status['reason']}")
+        st.caption(f"{status['completed_observations']} completed calls preserved; accounted cost "
+                   f"{money(status['accounted_api_cost_usd'])}. New M6 data explicitly binds issue dates and includes arrival-only negatives.")
     st.markdown('**Can source-grounded extraction and live hedging satisfy a stricter quality target at lower cost '
                 'than the cheapest qualifying fixed model?** Nine live arms include fixed Nano/Super/Ultra, grounded '
                 'fixed-model controls, and a two-by-two grounding/hedging ablation. Requirements: task accuracy ≥95%, '
                 'field accuracy ≥95%, p95 ≤4 seconds, with confidence bounds on task accuracy and deadline misses.')
     if not runs:
-        st.info('Fresh-data confirmation is not complete yet. Protocol: experiments/M5-grounded-inference.md.')
+        st.info('Fresh-data confirmation is not complete yet. Replacement protocol: experiments/M6-issue-date-confirmation.md.')
     else:
         run = runs[0]
         s = artifacts.load_json(run.path/'summary.json')
-        st.success('M5 hypothesis supported') if s['hypothesis_supported'] else st.warning('M5 hypothesis not supported')
+        label = s.get('study','m5').upper()
+        st.success(f'{label} hypothesis supported') if s['hypothesis_supported'] else st.warning(f'{label} hypothesis not supported')
         st.dataframe([{'configuration': name, 'accuracy': pct(m['task_accuracy']),
                        'accuracy lower 95%': pct(m['accuracy_lower95']), 'p95': ms(m['p95_latency_ms']),
                        'deadline-miss upper 95%': pct(m['deadline_miss_upper95']), '$ / 1k': money(m['cost_per_1k_tasks'])}

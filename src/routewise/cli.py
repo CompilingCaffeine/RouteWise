@@ -124,6 +124,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     confirm = sub.add_parser('confirmation', help='M5: fresh workload, source grounding and live confirmation')
     confirm.add_argument('stage', choices=('prepare', 'build', 'tune', 'evaluate', 'report'))
     confirm.add_argument('--run', type=Path, help='confirmation run to resume or report')
+    confirm.add_argument('--study', choices=('m5','m6'), default='m5')
 
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
@@ -162,6 +163,7 @@ def _add_load_args(p: argparse.ArgumentParser) -> None:
 
 def cmd_confirmation(config: Config, args: argparse.Namespace) -> int:
     from routewise import confirmation
+    confirmation.configure(args.study)
     if args.stage == 'evaluate':
         confirmation.evaluate(args.run)
     elif args.stage == 'report':
