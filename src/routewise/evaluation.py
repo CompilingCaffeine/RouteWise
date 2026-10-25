@@ -186,17 +186,20 @@ def _verdict(results: dict[str, Any], comparison: dict[str, Any], tasks: list[st
     cheaper = savings is not None and savings > 0
     smallest_ok = all(results["always_smallest"][t]["meets_thresholds"] for t in tasks)
     supported = not unmet and cheaper
+    quality_met = not any(not v.startswith("p95") for vs in unmet.values() for v in vs)
     lines = []
     if unmet:
-        lines.append("RouteWise did NOT meet the declared thresholds on held-out data: "
-                     + "; ".join(f"{t}: {', '.join(v)}" for t, v in unmet.items()))
+        lines.append("RouteWise did NOT meet every declared threshold on held-out data ("
+                     + "; ".join(f"{t}: {', '.join(v)}" for t, v in unmet.items()) + ").")
+        if quality_met:
+            lines.append("It did meet every quality (accuracy) threshold.")
     else:
         lines.append("RouteWise met every declared threshold on held-out data.")
     if savings is not None:
         lines.append(f"Its total cost was {abs(savings) * 100:.1f}% {'lower' if cheaper else 'higher'} than always using the strongest model.")
     if smallest_ok:
         lines.append("Note: always-smallest also met the thresholds, so routing added cost without a quality need.")
-    return {"hypothesis_supported": supported, "summary": " ".join(lines)}
+    return {"hypothesis_supported": supported, "quality_met": quality_met, "summary": " ".join(lines)}
 
 
 def _scale(ci: tuple[float, float] | None, k: float) -> tuple[float, float] | None:

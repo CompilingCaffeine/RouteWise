@@ -47,6 +47,13 @@ class RunDir:
     def create(cls, kind: str, root: Path | None = None) -> RunDir:
         return cls(new_experiment_id(kind), root)
 
+    @classmethod
+    def existing(cls, path: Path) -> RunDir:
+        run = cls.__new__(cls)
+        run.experiment_id = path.name
+        run.path = path
+        return run
+
     def write_manifest(self, **fields: Any) -> Path:
         manifest = {
             "experiment_id": self.experiment_id,

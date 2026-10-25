@@ -20,6 +20,7 @@ from routewise.policy import load_policy, optimize, save_policy
 from routewise.prices import PriceNotFound, fetch_snapshot, load_snapshot, nvidia_models, price_for
 from routewise.prompts import PromptTemplate, load_prompt
 from routewise.runlog import RunDir, read_jsonl, sha256_file
+from routewise.router import Trace
 from routewise.schema import TASKS, CallRecord, Example
 
 DEFAULT_PROBE_EXAMPLE = REPO_ROOT / "data" / "probe" / "extraction_probe.json"
@@ -62,6 +63,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     ev.add_argument("--split", default="heldout", choices=["tune", "heldout"])
     _add_load_args(ev)
 
+    rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
+    rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
+
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     load_dotenv(config.path.parent.parent / ".env")
@@ -73,6 +77,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "policy": cmd_policy,
         "route": cmd_route,
         "evaluate": cmd_evaluate,
+        "report": cmd_report,
     }
     try:
         return commands[args.command](config, args)
@@ -296,7 +301,26 @@ def cmd_evaluate(config: Config, args: argparse.Namespace) -> int:
     traces = run_evaluation(routers, examples, run, concurrency=args.concurrency, rpm=args.rpm)
     summary = summarize_evaluation(traces, examples, config, policy)
     write_summary(summary, run)
+    _print_evaluation(summary, policy)
+    print(f"\nResults: {_display(run.path)}/summary.json, traces.jsonl")
+    return 0
 
+
+def cmd_report(config: Config, args: argparse.Namespace) -> int:
+    run_dir = args.run or _latest(runlog.RUNS_DIR, "eval-")
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    policy = load_policy(REPO_ROOT / manifest["policy"]["path"])
+    wanted = set(manifest["example_ids"])
+    examples = [e for e in dataset.load_examples() if e.id in wanted]
+    traces = [Trace.model_validate(t) for t in read_jsonl(run_dir / "traces.jsonl")]
+    summary = summarize_evaluation(traces, examples, config, policy)
+    write_summary(summary, RunDir.existing(run_dir))
+    _print_evaluation(summary, policy)
+    print(f"\nRewrote {_display(run_dir)}/summary.json and summary.csv from {len(traces)} recorded traces")
+    return 0
+
+
+def _print_evaluation(summary: dict[str, Any], policy: dict[str, Any]) -> None:
     rows = []
     for strategy, entry in summary["strategies"].items():
         for scope in ["overall", *policy["tasks"]]:
@@ -309,8 +333,6 @@ def cmd_evaluate(config: Config, args: argparse.Namespace) -> int:
     _print_table(["strategy", "scope", "task_acc", "field_acc", "$/1k", "p50_ms", "p95_ms", "esc_rate", "meets"], rows)
     print(f"\nValidator (RouteWise first calls): {summary['strategies']['routewise']['validator']}")
     print(f"\nVerdict: {summary['verdict']['summary']}")
-    print(f"\nResults: {_display(run.path)}/summary.json, traces.jsonl")
-    return 0
 
 
 # ---------------------------------------------------------------- helpers

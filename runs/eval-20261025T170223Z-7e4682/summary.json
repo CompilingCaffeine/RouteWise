@@ -1,0 +1,200 @@
+{
+  "policy_id": "policy-20261025T170157Z-c699b1",
+  "n_examples": 62,
+  "strategies": {
+    "always_smallest": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 0.8870967741935484,
+        "field_accuracy": 0.967741935483871,
+        "cost_usd_total": 0.0030702599999999996,
+        "cost_per_1k_tasks": 0.049520322580645156,
+        "p50_latency_ms": 884.8,
+        "p95_latency_ms": 3758.025000000004,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 0.8536585365853658,
+        "field_accuracy": 0.975609756097561,
+        "cost_usd_total": 0.0025738799999999997,
+        "cost_per_1k_tasks": 0.06277756097560976,
+        "p50_latency_ms": 989.5,
+        "p95_latency_ms": 4433.6,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [
+          "p95 latency 4434 ms > 4000 ms"
+        ],
+        "meets_thresholds": false,
+        "task_accuracy_ci95": [
+          0.7317073170731707,
+          0.9512195121951219
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 0.9523809523809523,
+        "field_accuracy": 0.9523809523809523,
+        "cost_usd_total": 0.0004963799999999999,
+        "cost_per_1k_tasks": 0.023637142857142853,
+        "p50_latency_ms": 470.7,
+        "p95_latency_ms": 614.4,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8571428571428571,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 4,
+        "false_positive": 0,
+        "false_negative": 3,
+        "true_negative": 55,
+        "error_recall": 0.5714285714285714,
+        "escalation_precision": 1.0,
+        "false_positive_rate": 0.0,
+        "correction_rate": 0.0
+      }
+    },
+    "always_strongest": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 1.0,
+        "field_accuracy": 1.0,
+        "cost_usd_total": 0.047674999999999995,
+        "cost_per_1k_tasks": 0.7689516129032257,
+        "p50_latency_ms": 906.5,
+        "p95_latency_ms": 1319.005,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 1.0,
+        "field_accuracy": 1.0,
+        "cost_usd_total": 0.0397,
+        "cost_per_1k_tasks": 0.9682926829268292,
+        "p50_latency_ms": 942.6,
+        "p95_latency_ms": 1319.4,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 1.0,
+        "field_accuracy": 1.0,
+        "cost_usd_total": 0.007975,
+        "cost_per_1k_tasks": 0.37976190476190474,
+        "p50_latency_ms": 651.0,
+        "p95_latency_ms": 711.7,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 0,
+        "true_negative": 62,
+        "error_recall": null,
+        "escalation_precision": null,
+        "false_positive_rate": 0.0,
+        "correction_rate": null
+      }
+    },
+    "routewise": {
+      "overall": {
+        "n": 62,
+        "task_accuracy": 0.9516129032258065,
+        "field_accuracy": 0.9784946236559139,
+        "cost_usd_total": 0.004192619999999999,
+        "cost_per_1k_tasks": 0.06762290322580644,
+        "p50_latency_ms": 841.45,
+        "p95_latency_ms": 4427.0750000000035,
+        "escalation_rate": 0.06451612903225806,
+        "incomplete_cost_count": 0
+      },
+      "extraction": {
+        "n": 41,
+        "task_accuracy": 0.9512195121951219,
+        "field_accuracy": 0.991869918699187,
+        "cost_usd_total": 0.0036962399999999995,
+        "cost_per_1k_tasks": 0.0901521951219512,
+        "p50_latency_ms": 930.4,
+        "p95_latency_ms": 5009.5,
+        "escalation_rate": 0.0975609756097561,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [
+          "p95 latency 5010 ms > 4000 ms"
+        ],
+        "meets_thresholds": false,
+        "task_accuracy_ci95": [
+          0.8780487804878049,
+          1.0
+        ]
+      },
+      "classification": {
+        "n": 21,
+        "task_accuracy": 0.9523809523809523,
+        "field_accuracy": 0.9523809523809523,
+        "cost_usd_total": 0.0004963799999999999,
+        "cost_per_1k_tasks": 0.023637142857142853,
+        "p50_latency_ms": 480.3,
+        "p95_latency_ms": 683.4,
+        "escalation_rate": 0.0,
+        "incomplete_cost_count": 0,
+        "threshold_violations": [],
+        "meets_thresholds": true,
+        "task_accuracy_ci95": [
+          0.8571428571428571,
+          1.0
+        ]
+      },
+      "validator": {
+        "true_positive": 4,
+        "false_positive": 0,
+        "false_negative": 3,
+        "true_negative": 55,
+        "error_recall": 0.5714285714285714,
+        "escalation_precision": 1.0,
+        "false_positive_rate": 0.0,
+        "correction_rate": 1.0
+      }
+    }
+  },
+  "routewise_vs_strongest": {
+    "n_pairs": 62,
+    "cost_savings_fraction": 0.9120583114840063,
+    "cost_diff_per_1k_tasks": -0.7013287096774193,
+    "cost_diff_per_1k_ci95": [
+      -0.7627251612903225,
+      -0.6389870967741935
+    ],
+    "task_accuracy_diff": -0.04838709677419355,
+    "task_accuracy_diff_ci95": [
+      -0.11290322580645161,
+      0.0
+    ]
+  },
+  "verdict": {
+    "hypothesis_supported": false,
+    "quality_met": true,
+    "summary": "RouteWise did NOT meet every declared threshold on held-out data (extraction: p95 latency 5010 ms > 4000 ms). It did meet every quality (accuracy) threshold. Its total cost was 91.2% lower than always using the strongest model."
+  }
+}
