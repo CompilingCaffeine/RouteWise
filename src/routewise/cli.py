@@ -5,11 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
+from random import Random
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from routewise import dataset, faults, judge as judge_mod, policy as policy_mod, runlog, validator_study
+from routewise import dataset, faults, judge as judge_mod, latency, policy as policy_mod, runlog, validator_study
 from routewise.benchmark import candidate_metrics, run_benchmark
 from routewise.client import MissingCredentials, TokenFactoryClient
 from routewise.config import REPO_ROOT, Candidate, Config, load_config, load_dotenv
@@ -77,6 +79,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     vs.add_argument("--concurrency", type=int, default=6)
     vs.add_argument("--rpm", type=float, default=90)
 
+    lp = sub.add_parser("latency-profile", help="M1: TTFT vs decode across models, input sizes and output shapes")
+    lp.add_argument("--models", default="nano,super,ultra")
+    lp.add_argument("--reps", type=int, default=8)
+    lp.add_argument("--seed", type=int, default=7)
+    lp.add_argument("--concurrency", type=int, default=2)
+    lp.add_argument("--rpm", type=float, default=60)
+
+    ls = sub.add_parser("load-sweep", help="M2-lite: closed-loop concurrency sweep with streaming timing")
+    ls.add_argument("--models", default="nano,super")
+    ls.add_argument("--levels", default="1,4,8,16")
+    ls.add_argument("--requests", type=int, default=48, help="requests per concurrency level")
+    ls.add_argument("--cooldown", type=float, default=65, help="seconds between levels")
+    ls.add_argument("--seed", type=int, default=7)
+
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
@@ -93,6 +109,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "evaluate": cmd_evaluate,
         "report": cmd_report,
         "validator-study": cmd_validator_study,
+        "latency-profile": cmd_latency_profile,
+        "load-sweep": cmd_load_sweep,
     }
     try:
         return commands[args.command](config, args)
@@ -397,6 +415,76 @@ def cmd_validator_study(config: Config, args: argparse.Namespace) -> int:
                   "judge_p50", "meets"], rows)
     print(f"\nRecommended (cheapest meeting the quality thresholds): {summary['recommended']}")
     print(f"Results: {_display(run.path)}/summary.json, judge_calls.jsonl")
+    return 0
+
+
+def cmd_latency_profile(config: Config, args: argparse.Namespace) -> int:
+    models = [config.candidate(m) for m in args.models.split(",")]
+    heldout = [e for e in dataset.load_split("heldout") if e.task == "extraction"]
+    example = Random(args.seed).choice(heldout)
+    prompt = _prompts(config)["extraction"]
+    client = TokenFactoryClient(base_url=config.base_url)
+    snapshot = _snapshot(client, config)
+    run = RunDir.create("latency")
+    run.write_manifest(
+        kind="latency_profile", example_id=example.id, input_sizes=latency.INPUT_SIZES, output_shapes=latency.OUTPUT_SHAPES,
+        reps=args.reps, seed=args.seed, prompt=_prompt_meta(prompt), load={"concurrency": args.concurrency, "rpm": args.rpm},
+        **_common_manifest(config, snapshot, [(m, price_for(snapshot, m.model_id)) for m in models]),
+    )
+    n = len(models) * len(latency.INPUT_SIZES) * len(latency.OUTPUT_SHAPES) * args.reps
+    print(f"Latency profile {run.experiment_id}: {n} streamed calls on {example.id}")
+    records = latency.run_profile(client, config, models, _label_prices(config, snapshot), prompt, example,
+                                  reps=args.reps, seed=args.seed, concurrency=args.concurrency, rpm=args.rpm,
+                                  sink=lambda r: run.append("calls.jsonl", r))
+    rows = latency.summarize_profile(records)
+    (run.path / "summary.json").write_text(json.dumps(rows, indent=2) + "\n")
+    _print_table(
+        ["model", "input", "output", "in_tok", "out_tok", "cached", "ttft_p50", "ttft_p95", "tpot_p50", "e2e_p50", "e2e_p95", "ttft_share"],
+        [[r["model"], r["input_size"], r["output_shape"], f"{r['prompt_tokens'] or 0:.0f}", f"{r['completion_tokens'] or 0:.0f}",
+          f"{r['cached_tokens'] or 0:.0f}", _fmt_ms(r["ttft_ms"]["p50"]), _fmt_ms(r["ttft_ms"]["p95"]),
+          f"{r['tpot_ms']['p50']:.1f}" if r["tpot_ms"]["p50"] is not None else "-", _fmt_ms(r["e2e_ms"]["p50"]),
+          _fmt_ms(r["e2e_ms"]["p95"]), _pct(r["ttft_share_median"])] for r in rows],
+    )
+    print(f"\nResults: {_display(run.path)}/summary.json, calls.jsonl")
+    return 0
+
+
+def cmd_load_sweep(config: Config, args: argparse.Namespace) -> int:
+    models = [config.candidate(m) for m in args.models.split(",")]
+    levels = [int(x) for x in args.levels.split(",")]
+    workload = [e for e in dataset.load_split("heldout") if e.task == "extraction"]
+    prompt = _prompts(config)["extraction"]
+    client = TokenFactoryClient(base_url=config.base_url)
+    snapshot = _snapshot(client, config)
+    prices = _label_prices(config, snapshot)
+    run = RunDir.create("load")
+    run.write_manifest(
+        kind="load_sweep", levels=levels, requests_per_level=args.requests, cooldown_s=args.cooldown, seed=args.seed,
+        workload=[e.id for e in workload], prompt=_prompt_meta(prompt),
+        **_common_manifest(config, snapshot, [(m, price_for(snapshot, m.model_id)) for m in models]),
+    )
+    print(f"Load sweep {run.experiment_id}: models {[m.label for m in models]}, levels {levels}, {args.requests} requests each")
+    records = []
+    first = True
+    for model in models:
+        for level in levels:
+            if not first:
+                time.sleep(args.cooldown)
+            first = False
+            print(f"  {model.label} c={level} ...", flush=True)
+            records += latency.run_load_level(client, config, model, prices[model.label], prompt, workload,
+                                              concurrency=level, n_requests=args.requests, seed=args.seed,
+                                              sink=lambda r: run.append("calls.jsonl", r))
+    rows = latency.summarize_load(records)
+    (run.path / "summary.json").write_text(json.dumps(rows, indent=2) + "\n")
+    _print_table(
+        ["model", "c", "n", "err", "req/s", "out_tok/s", "ttft_p50", "ttft_p95", "e2e_p50", "e2e_p95", "e2e_p99", "retried", "over_limit"],
+        [[r["model"], str(r["concurrency"]), str(r["n"]), str(r["errors"]), f"{r['throughput_rps']:.2f}",
+          f"{r['output_tokens_per_s']:.0f}", _fmt_ms(r["ttft_ms"]["p50"]), _fmt_ms(r["ttft_ms"]["p95"]),
+          _fmt_ms(r["e2e_ms"]["p50"]), _fmt_ms(r["e2e_ms"]["p95"]), _fmt_ms(r["e2e_ms"]["p99"]),
+          str(r["retried_requests"]), str(r["over_limit_responses"])] for r in rows],
+    )
+    print(f"\nResults: {_display(run.path)}/summary.json, calls.jsonl")
     return 0
 
 
