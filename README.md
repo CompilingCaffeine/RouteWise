@@ -8,6 +8,10 @@ RouteWise benchmarks several NVIDIA open models on *your* labelled workload. It 
 
 Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track). All inference runs on **Nebius Token Factory** with **NVIDIA Nemotron 3 Nano, Super and Ultra**.
 
+**Live demo:** https://nebius-routewise.streamlit.app/
+
+The demo has four pages: the benchmark, the routing policy, a live router that calls Token Factory, and the held-out evaluation with every recorded trace.
+
 ## Results
 
 All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
