@@ -1,0 +1,22 @@
+# The evaluation runs the write-up cites, in the order they were run, and the role each plays.
+# The headline is the pre-registered primary run, whatever later runs show.
+headline: eval-20261025T170223Z-7e4682
+
+evaluations:
+  - run: eval-20261025T170223Z-7e4682
+    role: Primary (pre-registered)
+    note: >-
+      Policy and thresholds frozen in git before the run. Quality targets met at ~91% lower cost than
+      always-Ultra; extraction p95 (5.0 s) missed the 4 s ceiling because of two provider-side latency
+      bursts on Nemotron 3 Nano.
+  - run: eval-20261025T171615Z-4ca4e4
+    role: Follow-up (post-hoc)
+    note: >-
+      Hedged escalation added after the primary run. No latency bursts occurred, so hedging never fired;
+      the two RouteWise variants behaved identically, which shows run-to-run variance.
+  - run: eval-20261025T174144Z-d1e7da
+    role: Controlled fault injection
+    note: >-
+      A seeded 10% of extraction requests had a synthetic 3-6 s stall on every Nano call, identically for
+      every strategy. Unhedged RouteWise missed the p95 ceiling (4.3 s); hedged RouteWise met it (2.7 s)
+      at ~20% more cost, still ~89% below always-Ultra.

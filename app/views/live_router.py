@@ -21,12 +21,9 @@ if not policies:
     st.info("No routing policy yet. Run `routewise benchmark` then `routewise policy`.", icon=":material/hourglass_empty:")
     st.stop()
 evals = artifacts.list_runs("eval")
-latest_eval = artifacts.preferred(evals)
-policy_path = policies[0]
-if latest_eval:
-    used = [p for p in policies if p.stem == latest_eval.manifest["policy"]["id"]]
-    policy_path = used[0] if used else policy_path
-policy = artifacts.load_json(policy_path)
+latest_eval = artifacts.headline_eval(evals)
+policy = artifacts.load_json(policies[0])  # the current (newest) policy is what routes live requests
+st.caption(f"Live requests use policy `{policy['policy_id']}`.")
 
 key = api_key()
 live_tab, replay_tab = st.tabs(["Route a request live", "Replay a recorded request"])
@@ -80,17 +77,27 @@ with live_tab:
         render_trace(trace, policy_reason=reason)
 
 with replay_tab:
-    if not latest_eval:
+    registry = artifacts.run_registry()
+    cited_ids = [e["run"] for e in registry.get("evaluations", [])]
+    replayable = [r for r in evals if r.id in cited_ids] or evals
+    if not replayable:
         st.info("No recorded evaluation traces yet.", icon=":material/hourglass_empty:")
     else:
-        lead = artifacts.load_json(latest_eval.path / "summary.json").get("lead_strategy", "routewise")
-        recorded = [t for t in artifacts.load_records(latest_eval, "traces.jsonl") if t["strategy"] == lead]
+        roles = {e["run"]: e["role"] for e in registry.get("evaluations", [])}
+        run = st.selectbox("Evaluation run", replayable, index=replayable.index(latest_eval) if latest_eval in replayable else 0,
+                           format_func=lambda r: f"{roles.get(r.id, r.id)} · {r.id}{r.tag}")
+        traces = artifacts.load_records(run, "traces.jsonl")
+        variants = [s for s in ("routewise_hedged", "routewise") if any(t["strategy"] == s for t in traces)]
+        strategy = st.segmented_control("Strategy", variants, default=variants[0], format_func=STRATEGY_LABELS.get,
+                                        key="replay_strategy")
+        recorded = [t for t in traces if t["strategy"] == strategy]
         recorded.sort(key=lambda t: (not (t["escalated"] or t.get("hedged")), t["example_id"]))
         pick = st.selectbox(
-            f"Recorded {STRATEGY_LABELS[lead]} request", recorded,
+            f"Recorded {STRATEGY_LABELS[strategy]} request", recorded,
             format_func=lambda t: f"{t['example_id']} · {t['route']}"
             + (" · escalated" if t["escalated"] else "") + (" · hedged" if t.get("hedged") else ""),
         )
         st.code(next(e.input for e in dataset.load_examples() if e.id == pick["example_id"]), language=None, wrap_lines=True)
-        render_trace(pick, policy_reason=policy["tasks"][pick["task"]]["reason"])
-        st.caption(f"From evaluation run `{latest_eval.id}`")
+        run_policy = next((artifacts.load_json(p) for p in policies if p.stem == pick["policy_id"]), policy)
+        render_trace(pick, policy_reason=run_policy["tasks"][pick["task"]]["reason"])
+        st.caption(f"From evaluation run `{run.id}`")

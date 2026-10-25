@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from routewise.config import REPO_ROOT
 from routewise.runlog import read_jsonl
 
@@ -53,6 +55,18 @@ def list_runs(kind: str, root: Path | None = None) -> list[RunInfo]:
 def preferred(runs: list[RunInfo]) -> RunInfo | None:
     """Newest full run without fault injection, else the newest run."""
     return next((r for r in runs if r.is_full and not r.is_fault_injection), runs[0] if runs else None)
+
+
+def run_registry(root: Path | None = None) -> dict[str, Any]:
+    """results/runs.yaml: which evaluation runs are cited, their roles, and the headline."""
+    path = (root or artifacts_root()) / "results" / "runs.yaml"
+    return yaml.safe_load(path.read_text()) if path.exists() else {}
+
+
+def headline_eval(runs: list[RunInfo], root: Path | None = None) -> RunInfo | None:
+    """The registry's headline run if present, else the preferred run."""
+    wanted = run_registry(root).get("headline")
+    return next((r for r in runs if r.id == wanted), None) or preferred(runs)
 
 
 def list_policies(root: Path | None = None) -> list[Path]:

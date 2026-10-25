@@ -8,7 +8,7 @@ from ui import money, pct, status_badge
 
 config = load_config()
 evals = artifacts.list_runs("eval")
-latest_eval = artifacts.preferred(evals)
+latest_eval = artifacts.headline_eval(evals)
 
 st.title("RouteWise")
 st.markdown(
@@ -32,7 +32,7 @@ if latest_eval and (latest_eval.path / "summary.json").exists():
     lead = summary.get("lead_strategy", "routewise")
     rw = summary["strategies"][lead]["overall"]
     strong = summary["strategies"]["always_strongest"]["overall"]
-    st.subheader("Latest held-out result")
+    st.subheader("Primary held-out result")
     status_badge(verdict["hypothesis_supported"], "Hypothesis supported", "Hypothesis not supported")
     cols = st.columns(4)
     cols[0].metric("Cost saved vs always-strongest", pct(comp.get("cost_savings_fraction")))
@@ -44,6 +44,32 @@ if latest_eval and (latest_eval.path / "summary.json").exists():
 else:
     st.info("No held-out evaluation has been run yet. Results appear here once `routewise evaluate` has run.",
             icon=":material/hourglass_empty:")
+
+registry = artifacts.run_registry()
+cited = [(e, next((r for r in evals if r.id == e["run"]), None)) for e in registry.get("evaluations", [])]
+cited = [(e, r) for e, r in cited if r and (r.path / "summary.json").exists()]
+if cited:
+    st.subheader("Evidence trail")
+    st.caption("Every held-out run, in the order it was run. None is hidden; the headline above is the pre-registered one.")
+    rows = []
+    for entry, r in cited:
+        s = artifacts.load_json(r.path / "summary.json")
+        rows_by = s["strategies"]
+        for strat in [k for k in ("routewise", "routewise_hedged") if k in rows_by]:
+            m = rows_by[strat]["extraction"]
+            rows.append({
+                "run": r.id,
+                "role": entry["role"],
+                "strategy": "RouteWise + hedging" if strat == "routewise_hedged" else "RouteWise",
+                "extraction acc": pct(m["task_accuracy"]),
+                "extraction p95": f"{m['p95_latency_ms']:,.0f} ms",
+                "cost vs always-strongest": f"−{s['comparisons'][strat]['cost_savings_fraction'] * 100:.1f}%"
+                if "comparisons" in s else f"−{s['routewise_vs_strongest']['cost_savings_fraction'] * 100:.1f}%",
+                "meets thresholds": "yes" if s.get("verdicts", {strat: s["verdict"]})[strat]["hypothesis_supported"] else "no",
+            })
+    st.dataframe(rows, hide_index=True, width="stretch")
+    for entry, r in cited:
+        st.markdown(f"- **{entry['role']}** `{r.id}`: {entry['note']}")
 
 st.subheader("How it works")
 st.graphviz_chart(
@@ -71,35 +97,37 @@ st.graphviz_chart(
 )
 
 st.subheader("Setup")
-left, right = st.columns(2)
-with left:
-    st.markdown("**Candidate models** (NVIDIA open models on Nebius Token Factory)")
-    prices = artifacts.load_prices()
-    rows = []
-    for c in config.candidates:
-        meta = (prices or {}).get("models", {}).get(c.model_id)
-        p = meta["pricing"] if meta else None
-        price = Price(c.model_id, float(p["prompt"]), float(p["completion"])) if p else None
-        rows.append({
-            "candidate": c.label,
-            "model id": c.model_id,
-            "input $/1M tok": money(price.prompt_per_million, 2) if price else "not in snapshot",
-            "output $/1M tok": money(price.completion_per_million, 2) if price else "–",
-        })
-    st.dataframe(rows, hide_index=True, width="stretch")
-    if prices:
-        st.caption(f"Prices from `/v1/models?verbose=true`, fetched {prices['fetched_at'][:16].replace('T', ' ')} UTC.")
-    else:
-        st.caption("Price snapshot not taken yet (`routewise prices`).")
-with right:
-    st.markdown("**Declared requirements** (fixed before tuning)")
-    st.dataframe(
-        [{"task": t, **{k: v for k, v in vars(th).items()}} for t, th in config.thresholds.items()],
-        hide_index=True, width="stretch",
-    )
-    manifest_path = DATA_DIR / VERSION / "MANIFEST.json"
-    if manifest_path.exists():
-        m = artifacts.load_json(manifest_path)
-        st.markdown(f"**Workload** — {m['n_examples']} labelled support conversations (dataset `{VERSION}`, seed {m['seed']}).")
-        st.dataframe([{"split / task / difficulty": k, "examples": v} for k, v in m["counts"].items()],
-                     hide_index=True, width="stretch")
+st.markdown("**Candidate models** (NVIDIA open models on Nebius Token Factory)")
+prices = artifacts.load_prices()
+rows = []
+for c in config.candidates:
+    meta = (prices or {}).get("models", {}).get(c.model_id)
+    p = meta["pricing"] if meta else None
+    price = Price(c.model_id, float(p["prompt"]), float(p["completion"])) if p else None
+    rows.append({
+        "candidate": c.label,
+        "model id": c.model_id,
+        "input $/1M tok": money(price.prompt_per_million, 2) if price else "not in snapshot",
+        "output $/1M tok": money(price.completion_per_million, 2) if price else "–",
+    })
+st.dataframe(rows, hide_index=True, width="stretch")
+if prices:
+    st.caption(f"Prices from `/v1/models?verbose=true`, fetched {prices['fetched_at'][:16].replace('T', ' ')} UTC.")
+else:
+    st.caption("Price snapshot not taken yet (`routewise prices`).")
+st.markdown("**Declared requirements** (fixed before tuning)")
+st.dataframe(
+    [{
+        "task": task,
+        "task accuracy ≥": f"{th.min_task_accuracy:.0%}",
+        "field accuracy ≥": f"{th.min_field_accuracy:.0%}" if th.min_field_accuracy is not None else "–",
+        "p95 latency ≤": f"{th.max_p95_latency_ms:,.0f} ms" if th.max_p95_latency_ms is not None else "–",
+    } for task, th in config.thresholds.items()],
+    hide_index=True, width="stretch",
+)
+manifest_path = DATA_DIR / VERSION / "MANIFEST.json"
+if manifest_path.exists():
+    m = artifacts.load_json(manifest_path)
+    st.markdown(f"**Workload** — {m['n_examples']} labelled support conversations (dataset `{VERSION}`, seed {m['seed']}).")
+    st.dataframe([{"split / task / difficulty": k, "examples": v} for k, v in m["counts"].items()],
+                 hide_index=True, width="stretch")

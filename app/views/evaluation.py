@@ -14,7 +14,7 @@ runs = artifacts.list_runs("eval")
 if not runs:
     st.info("No evaluation run yet. Run `routewise evaluate`.", icon=":material/hourglass_empty:")
     st.stop()
-default = artifacts.preferred(runs)
+default = artifacts.headline_eval(runs)
 run = st.selectbox("Evaluation run", runs, index=runs.index(default),
                    format_func=lambda r: f"{r.id}{r.tag}")
 summary = artifacts.load_json(run.path / "summary.json")
