@@ -15,6 +15,8 @@ config = load_config()
 st.title("Live router")
 st.markdown("Send one support conversation through RouteWise and follow it end to end: the policy's choice and the "
             "measurements behind it, the model answer, every deterministic check, and the escalation if one happens.")
+st.caption('This page reproduces the original policy. Workload optimizer includes the new source-grounded configurations '
+           'and their fixed-model comparisons.')
 
 policies = artifacts.list_policies()
 if not policies:
