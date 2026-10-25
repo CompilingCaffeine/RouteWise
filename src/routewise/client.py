@@ -47,6 +47,7 @@ class ChatResult:
     cached_tokens: int | None = None
     ratelimit: dict[str, str] = field(default_factory=dict)
     error: str | None = None
+    injected_delay_ms: float = 0.0  # synthetic stall added by routewise.faults (experiments only)
 
 
 class TokenFactoryClient:

@@ -29,6 +29,15 @@ class RunInfo:
     def is_full(self) -> bool:
         return not self.manifest.get("limit")
 
+    @property
+    def is_fault_injection(self) -> bool:
+        return bool(self.manifest.get("injection"))
+
+    @property
+    def tag(self) -> str:
+        tags = [t for t, on in (("smoke, --limit", not self.is_full), ("fault injection", self.is_fault_injection)) if on]
+        return f"  ({', '.join(tags)})" if tags else ""
+
 
 def list_runs(kind: str, root: Path | None = None) -> list[RunInfo]:
     """Runs of one kind ("benchmark", "eval", "probe"), newest first."""
@@ -42,8 +51,8 @@ def list_runs(kind: str, root: Path | None = None) -> list[RunInfo]:
 
 
 def preferred(runs: list[RunInfo]) -> RunInfo | None:
-    """Newest full (non --limit) run, else the newest run."""
-    return next((r for r in runs if r.is_full), runs[0] if runs else None)
+    """Newest full run without fault injection, else the newest run."""
+    return next((r for r in runs if r.is_full and not r.is_fault_injection), runs[0] if runs else None)
 
 
 def list_policies(root: Path | None = None) -> list[Path]:

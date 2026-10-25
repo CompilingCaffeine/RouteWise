@@ -104,6 +104,7 @@ class CallRecord(BaseModel):
     error: str | None
     ratelimit: dict[str, str] = {}
     score: dict[str, Any] | None = None
+    injected_delay_ms: float = 0.0  # synthetic stall included in latency_ms (fault-injection runs only)
 
     def parsed_output(self) -> ParsedOutput:
         if self.error is not None and self.parsed is None:

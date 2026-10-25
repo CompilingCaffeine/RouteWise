@@ -95,6 +95,7 @@ def trace_outcome(trace: Trace) -> Outcome:
         cost_usd=trace.cost_usd,
         latency_ms=trace.latency_ms,
         escalated=trace.escalated,
+        hedged=trace.hedged,
         cost_complete=trace.cost_complete,
     )
 

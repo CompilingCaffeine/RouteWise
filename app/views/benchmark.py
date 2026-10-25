@@ -17,7 +17,7 @@ if not runs:
 
 default = artifacts.preferred(runs)
 run = st.selectbox("Benchmark run", runs, index=runs.index(default),
-                   format_func=lambda r: f"{r.id}{'' if r.is_full else '  (smoke, --limit)'}")
+                   format_func=lambda r: f"{r.id}{r.tag}")
 metrics = artifacts.load_json(run.path / "metrics.json") if (run.path / "metrics.json").exists() else []
 df = pd.DataFrame(metrics)
 st.caption(f"{len(run.manifest['example_ids'])} {run.manifest['split']} examples · prompts "

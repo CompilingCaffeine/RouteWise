@@ -98,3 +98,11 @@ def test_simulation_matches_router_semantics():
     assert hedged.hedged and hedged.latency_ms == 150 and hedged.cost_usd == 6.0
     (plain,) = simulate(RouteOption("nano", "super"), [PROBE], index)
     assert not plain.hedged and plain.latency_ms == 600 and plain.cost_usd == 1.0
+
+
+def test_hedge_is_counted_in_evaluation_outcomes():
+    from routewise.evaluation import trace_outcome
+
+    trace = route(make_router({NANO: (0.3, PROBE.expected), SUPER: (0.0, PROBE.expected)},
+                              RouteOption("nano", "super", hedge_after_ms=50)))
+    assert trace.hedged and trace_outcome(trace).hedged

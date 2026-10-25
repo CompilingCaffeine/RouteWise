@@ -40,7 +40,7 @@ if latest_eval and (latest_eval.path / "summary.json").exists():
                    delta=f"{(rw['task_accuracy'] - strong['task_accuracy']) * 100:+.1f} pts vs strongest")
     cols[2].metric("Escalation rate", pct(rw["escalation_rate"]))
     cols[3].metric("Held-out tasks", summary["n_examples"])
-    st.caption(f"{verdict['summary']}  ·  run `{latest_eval.id}`" + ("" if latest_eval.is_full else " (smoke run, --limit)"))
+    st.caption(f"{verdict['summary']}  ·  run `{latest_eval.id}`{latest_eval.tag}")
 else:
     st.info("No held-out evaluation has been run yet. Results appear here once `routewise evaluate` has run.",
             icon=":material/hourglass_empty:")

@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from routewise import dataset, policy as policy_mod, runlog
+from routewise import dataset, faults, policy as policy_mod, runlog
 from routewise.benchmark import candidate_metrics, run_benchmark
 from routewise.client import MissingCredentials, TokenFactoryClient
 from routewise.config import REPO_ROOT, Candidate, Config, load_config, load_dotenv
@@ -61,6 +61,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     ev = sub.add_parser("evaluate", help="compare RouteWise with both baselines on held-out data")
     ev.add_argument("--policy", type=Path, help="policy file (default: latest)")
     ev.add_argument("--split", default="heldout", choices=["tune", "heldout"])
+    ev.add_argument("--inject-stalls", metavar="MODEL:FRACTION:MIN-MAX",
+                    help="fault injection: stall a fixed, seeded subset of MODEL's calls by MIN-MAX ms (e.g. nano:0.1:3000-6000)")
+    ev.add_argument("--inject-task", default="extraction", choices=TASKS, help="task whose examples may be stalled")
+    ev.add_argument("--inject-seed", type=int, default=7)
     _add_load_args(ev)
 
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
@@ -282,11 +286,19 @@ def cmd_evaluate(config: Config, args: argparse.Namespace) -> int:
     prompts = _prompts(config)
     client = TokenFactoryClient(base_url=config.base_url)
     snapshot = _snapshot(client, config)
+    stalls = None
+    if args.inject_stalls:
+        label, fraction, lo, hi = faults.parse_spec(args.inject_stalls)
+        stalls = faults.plan_stalls(examples, model_label=label, model_id=config.candidate(label).model_id,
+                                    fraction=fraction, min_ms=lo, max_ms=hi, seed=args.inject_seed, task=args.inject_task)
+        client = faults.StallingClient(client, stalls, examples)
+        print(f"Fault injection: stalling {label} on {len(stalls.delays_ms)} {args.inject_task} examples: {stalls.delays_ms}")
     routers = build_routers(client, config, policy, _label_prices(config, snapshot), prompts)
 
     run = RunDir.create("eval")
     run.write_manifest(
         kind="evaluation",
+        injection=stalls.to_manifest() if stalls else None,
         split=args.split,
         limit=args.limit,
         policy={"id": policy["policy_id"], "path": _display(policy_path), "sha256": sha256_file(policy_path)},

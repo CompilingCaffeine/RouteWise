@@ -68,6 +68,7 @@ def call_candidate(
         schema_error=parsed.schema_error,
         error=result.error,
         ratelimit=result.ratelimit,
+        injected_delay_ms=result.injected_delay_ms,
     )
 
 

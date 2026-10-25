@@ -152,7 +152,11 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None) -> Non
             title = f"**Hop {hop} · {call['candidate']}** · `{call['model_id']}`"
             st.markdown(title)
             c = st.columns(4)
-            c[0].metric("Latency", ms(call["latency_ms"]))
+            injected = call.get("injected_delay_ms") or 0
+            c[0].metric("Latency", ms(call["latency_ms"]),
+                        help=f"Includes a synthetic {injected:,.0f} ms stall (fault-injection run)" if injected else None)
+            if injected:
+                st.caption(f":material/science: synthetic stall of {injected:,.0f} ms injected on this call")
             c[1].metric("Tokens in / out", f"{call['prompt_tokens'] or '–'} / {call['completion_tokens'] or '–'}")
             c[2].metric("Cost", money(call["cost_usd"], 6))
             c[3].metric("Validator", "pass" if check["passed"] else "fail")

@@ -16,10 +16,20 @@ if not runs:
     st.stop()
 default = artifacts.preferred(runs)
 run = st.selectbox("Evaluation run", runs, index=runs.index(default),
-                   format_func=lambda r: f"{r.id}{'' if r.is_full else '  (smoke, --limit)'}")
+                   format_func=lambda r: f"{r.id}{r.tag}")
 summary = artifacts.load_json(run.path / "summary.json")
 traces = artifacts.load_records(run, "traces.jsonl")
 policy_id = summary["policy_id"]
+injection = run.manifest.get("injection")
+if injection:
+    st.warning(
+        f"**Fault-injection experiment.** A fixed, seeded {injection['fraction']:.0%} of {injection['task']} requests "
+        f"({len(injection['stalled_examples'])} examples) had a synthetic {injection['delay_range_ms'][0]:,.0f}–"
+        f"{injection['delay_range_ms'][1]:,.0f} ms stall added to every **{injection['model']}** call, identically "
+        "for every strategy. Stalls are included in latency and flagged on each call. This run tests tail-latency "
+        "handling; it is not the headline result.",
+        icon=":material/science:",
+    )
 
 verdict = summary["verdict"]
 status_badge(verdict["hypothesis_supported"], "Hypothesis supported", "Hypothesis not supported")
