@@ -74,7 +74,8 @@ with live_tab:
     if "live_trace" in st.session_state:
         trace = st.session_state["live_trace"]
         reason = policy["tasks"][trace["task"]]["reason"] if trace["strategy"].startswith("routewise") else "Fixed baseline."
-        render_trace(trace, policy_reason=reason)
+        truth = next((e.expected for e in heldout if e.id == trace.get("example_id")), None)
+        render_trace(trace, policy_reason=reason, expected=truth)
 
 with replay_tab:
     registry = artifacts.run_registry()
@@ -97,7 +98,8 @@ with replay_tab:
             format_func=lambda t: f"{t['example_id']} · {t['route']}"
             + (" · escalated" if t["escalated"] else "") + (" · hedged" if t.get("hedged") else ""),
         )
-        st.code(next(e.input for e in dataset.load_examples() if e.id == pick["example_id"]), language=None, wrap_lines=True)
+        picked = next(e for e in dataset.load_examples() if e.id == pick["example_id"])
+        st.code(picked.input, language=None, wrap_lines=True)
         run_policy = next((artifacts.load_json(p) for p in policies if p.stem == pick["policy_id"]), policy)
-        render_trace(pick, policy_reason=run_policy["tasks"][pick["task"]]["reason"])
+        render_trace(pick, policy_reason=run_policy["tasks"][pick["task"]]["reason"], expected=picked.expected)
         st.caption(f"From evaluation run `{run.id}`")

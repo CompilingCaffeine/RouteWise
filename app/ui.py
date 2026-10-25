@@ -134,8 +134,11 @@ def status_badge(ok: bool, yes: str, no: str) -> None:
         st.badge(no, icon=":material/error:", color="red")
 
 
-def render_trace(trace: dict[str, Any], policy_reason: str | None = None) -> None:
-    """One routed request: decision, every hop with validator checks, and the totals."""
+def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
+                 expected: dict[str, Any] | None = None) -> None:
+    """One routed request: decision, every hop with validator checks, and the totals.
+
+    With `expected` (dataset examples only), a ground-truth check follows; the router never sees it."""
     head = st.columns(4)
     head[0].metric("Answered by", trace.get("answered_by") or trace["calls"][-1]["candidate"])
     head[1].metric("Time to answer", ms(trace["latency_ms"]))
@@ -182,12 +185,32 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None) -> Non
             st.info(f"Escalated: {trace['escalation_reason']}", icon=":material/arrow_downward:")
 
     if trace.get("score"):
-        s = trace["score"]
-        wrong = [f for f, ok in s["fields"].items() if not ok]
-        if s["task_correct"]:
-            st.success("Final answer matches ground truth on every field.", icon=":material/check_circle:")
-        else:
-            st.error(f"Final answer differs from ground truth on: {', '.join(wrong)}", icon=":material/cancel:")
+        render_ground_truth(trace, expected)
+
+
+def render_ground_truth(trace: dict[str, Any], expected: dict[str, Any] | None) -> None:
+    """Evaluation-only check of the shipped answer, with the reason a wrong answer got through."""
+    s = trace["score"]
+    st.markdown("**Ground-truth check** · evaluation only; the router never sees the correct answer")
+    if s["task_correct"]:
+        st.success("The shipped answer is correct on every field.", icon=":material/check_circle:")
+        return
+    final = trace.get("final_output") or {}
+    wrong = [f for f, ok in s["fields"].items() if not ok]
+    rows = [{"field": f, "shipped answer": json.dumps(final.get(f)),
+             "correct value": json.dumps(expected.get(f)) if expected else "–"} for f in wrong]
+    st.dataframe(rows, hide_index=True)
+    last_check_passed = trace["validations"][-1]["passed"]
+    answered_by = trace.get("answered_by") or trace["calls"][-1]["candidate"]  # older traces lack answered_by
+    if not trace["strategy"].startswith("routewise"):
+        why = ("This fixed baseline never escalates, so its answer ships whether or not the validator flags it."
+               if not last_check_passed else "This fixed baseline never escalates, and the validator did not flag this answer.")
+    elif trace["escalated"] or answered_by != trace["calls"][0]["candidate"]:
+        why = "The stronger model answered, and its answer was also wrong on these fields."
+    else:
+        why = ("Every deterministic check passed, so RouteWise did not escalate: a known validator blind spot "
+               "(see the validator analysis on the Held-out evaluation page).")
+    st.error(f"Shipped a wrong answer. {why}", icon=":material/cancel:")
 
 
 def trace_json(trace: dict[str, Any]) -> str:
@@ -240,4 +263,33 @@ def stacked_bar(df: pd.DataFrame, *, category: str, segment: str, value: str, se
                         legend=alt.Legend(title=None, orient="bottom", labelColor=ink["secondary"])),
         order=alt.Order("_order:Q"),
         tooltip=[alt.Tooltip(f"{category}:N"), alt.Tooltip(f"{segment}:N"), alt.Tooltip(f"{value}:Q", format=",.0f")],
+    ).properties(height=alt.Step(step)).configure_view(stroke=None)
+
+
+def reliability_chart(df: pd.DataFrame, height: int = 280) -> alt.LayerChart:
+    """Mean predicted risk vs observed failure rate per bin, against the perfect-calibration diagonal."""
+    m = mode()
+    ink = INK[m]
+    surface = "#1a1a19" if m == "dark" else "#fcfcfb"
+    axis_x = alt.X("mean_predicted:Q", scale=alt.Scale(domain=[0, 1]), axis=_axis(ink, "predicted failure probability", ".0%"))
+    axis_y = alt.Y("observed_failure_rate:Q", scale=alt.Scale(domain=[0, 1]), axis=_axis(ink, "observed failure rate", ".0%"))
+    diag = alt.Chart(pd.DataFrame({"mean_predicted": [0, 1], "observed_failure_rate": [0, 1]})).mark_line(
+        color=ink["muted"], strokeWidth=1).encode(x=axis_x, y=axis_y)
+    tooltip = [alt.Tooltip("bin:N"), alt.Tooltip("n:Q", title="requests"),
+               alt.Tooltip("mean_predicted:Q", format=".1%"), alt.Tooltip("observed_failure_rate:Q", format=".1%")]
+    base = alt.Chart(df).encode(x=axis_x, y=axis_y, tooltip=tooltip)
+    line = base.mark_line(color=SERIES[m][0], strokeWidth=2)
+    pts = base.mark_circle(color=SERIES[m][0], opacity=1, stroke=surface, strokeWidth=2).encode(
+        size=alt.Size("n:Q", legend=None, scale=alt.Scale(range=[60, 400])))
+    return alt.layer(diag, line, pts).properties(height=height).configure_view(stroke=None)
+
+
+def signed_bars(df: pd.DataFrame, *, label: str, value: str, x_title: str, step: int = 22) -> alt.Chart:
+    """One series of horizontal bars extending left/right of zero (sign carried by direction)."""
+    m = mode()
+    ink = INK[m]
+    return alt.Chart(df).mark_bar(color=SERIES[m][0], cornerRadiusEnd=4).encode(
+        y=alt.Y(f"{label}:N", sort="-x", axis=_axis(ink, "", grid=False)),
+        x=alt.X(f"{value}:Q", axis=_axis(ink, x_title, ".2f")),
+        tooltip=[alt.Tooltip(f"{label}:N"), alt.Tooltip(f"{value}:Q", format="+.3f")],
     ).properties(height=alt.Step(step)).configure_view(stroke=None)

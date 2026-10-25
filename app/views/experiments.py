@@ -3,17 +3,18 @@ import streamlit as st
 
 from routewise import artifacts
 from routewise.config import load_config
-from ui import line_chart, money, ms, pct, stacked_bar, tradeoff_chart
+from ui import line_chart, money, ms, pct, reliability_chart, signed_bars, stacked_bar, tradeoff_chart
 
 config = load_config()
 st.title("Experiments")
 st.markdown(
-    "Three follow-up experiments from the project's roadmap. Each was pre-registered (question, design, hypotheses) "
+    "Four follow-up experiments from the project's roadmap. Each was pre-registered (question, design, hypotheses) "
     "in [`experiments/`](https://github.com/CompilingCaffeine/RouteWise/tree/main/experiments) before it ran, and "
     "each has raw per-call records in `runs/`. None of them changes the headline result."
 )
 
-tab4, tab1, tab2 = st.tabs(["M4 · Is validation worth it?", "M1 · Where does latency go?", "M2 · Latency under load"])
+tab4, tab3, tab1, tab2 = st.tabs(["M4 · Is validation worth it?", "M3 · Can we predict failures?",
+                                  "M1 · Where does latency go?", "M2 · Latency under load"])
 
 # ---------------------------------------------------------------- M4
 with tab4:
@@ -72,6 +73,62 @@ with tab4:
             "SLO; see the experiment note."
         )
         st.caption(f"Run `{run.id}` · escalation answers from `{run.manifest['escalation']}`")
+
+# ---------------------------------------------------------------- M3
+with tab3:
+    runs = artifacts.list_runs("risk")
+    v2_manifest = artifacts.artifacts_root() / "data" / "v2" / "MANIFEST.json"
+    if not runs or not v2_manifest.exists():
+        st.info("No failure-predictor study yet (`routewise risk-study`).", icon=":material/hourglass_empty:")
+    else:
+        run = runs[0]
+        s = artifacts.load_json(run.path / "summary.json")
+        m2 = artifacts.load_json(v2_manifest)
+        t = s["test"]
+        rv = t["risk_vs_validator"]
+        st.markdown(
+            f"A logistic-regression predictor estimates **P(Nemotron 3 Nano gets this extraction wrong)** from "
+            f"{len(run.manifest['features'])} features of the raw conversation (counts of amounts, dates, order IDs and "
+            "cue words), with no model call and no metadata. It is trained on a new workload of "
+            f"**{m2['n_examples']:,} conversations** in {len(m2['per_family'])} scenario families. Nemotron 3 Super or "
+            "Ultra wrote each conversation from a fact sheet; the labels come from the fact sheet, checked "
+            "deterministically and by two strong verifiers. It is evaluated on **four families it never saw**. "
+            "High-risk requests skip Nano and go straight to Super."
+        )
+        c = st.columns(4)
+        c[0].metric("AUC on unseen families", f"{t['auc']:.2f}" if t["auc"] is not None else "–")
+        c[1].metric("Random-split AUC (leaky)", f"{s['leakage']['random_cv_auc']:.2f}",
+                    help=f"Family-grouped CV AUC: {s['leakage']['grouped_cv_auc']:.2f}. The gap is how much a random split would overstate.")
+        c[2].metric("Accuracy vs. validator-only", f"{rv['accuracy_diff'] * 100:+.1f} pts",
+                    help=f"95% paired bootstrap CI {rv['accuracy_diff_ci95'][0] * 100:+.1f} to {rv['accuracy_diff_ci95'][1] * 100:+.1f} pts")
+        c[3].metric("Cost vs. validator-only", f"{rv['cost_ratio']:.2f}×")
+        if s["decision"]["adopt"]:
+            st.success("Decision (pre-registered rule): **adopt** — the accuracy gain's CI excludes zero within 2× cost.", icon=":material/check_circle:")
+        else:
+            st.warning("Decision (pre-registered rule): **do not adopt** — " + s["decision"]["rule"] + " is not met.", icon=":material/do_not_disturb_on:")
+
+        names = ["always_smallest", "validator", "risk+validator", "risk_only", "oracle", "always_strongest"]
+        df = pd.DataFrame([{"policy": n, **t["policies"][n]} for n in names])
+        st.markdown(f"**Unseen test families ({t['policies']['validator']['n']} requests × Nano samples): accuracy vs. cost**")
+        st.altair_chart(tradeoff_chart(df, series="policy", domain=names, threshold=0.85,
+                                       emphasize=["risk+validator", "validator"], y_floor=0.8), width="stretch")
+        st.dataframe([{
+            "policy": n, "task acc": pct(t["policies"][n]["task_accuracy"]), "field acc": pct(t["policies"][n]["field_accuracy"]),
+            "$ / 1k tasks": money(t["policies"][n]["cost_per_1k_tasks"]), "p95": ms(t["policies"][n]["p95_latency_ms"]),
+            "Super calls": pct(t["policies"][n]["super_call_rate"]), "Nano errors shipped": t["policies"][n]["missed_errors"],
+        } for n in names], hide_index=True, width="stretch")
+        left, right = st.columns(2)
+        with left:
+            st.markdown("**Calibration on unseen families**")
+            st.altair_chart(reliability_chart(pd.DataFrame(t["reliability"])), width="stretch")
+            st.caption(f"Brier {t['brier']:.4f} vs {t['brier_base_rate']:.4f} for a constant base-rate guess.")
+        with right:
+            st.markdown("**What the predictor learned** (standardized coefficients)")
+            coef = pd.DataFrame([{"feature": k, "coefficient": v} for k, v in s["coefficients"].items()])
+            st.altair_chart(signed_bars(coef, label="feature", value="coefficient", x_title="← lowers risk · raises risk →"),
+                            width="stretch")
+        st.caption(f"Run `{run.id}` · threshold τ = {s['threshold']['tau']} chosen on calibration families · "
+                   f"dataset v2: {m2['queued_for_adjudication']} conversations adjudicated, {m2['dropped_by_adjudication']} dropped")
 
 # ---------------------------------------------------------------- M1
 with tab1:

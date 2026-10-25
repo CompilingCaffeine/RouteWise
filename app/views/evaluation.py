@@ -3,6 +3,7 @@ import streamlit as st
 
 from routewise import artifacts
 from routewise.config import load_config
+from routewise.dataset import load_examples
 from ui import STRATEGY_LABELS, money, ms, pct, render_trace, status_badge, tradeoff_chart
 
 config = load_config()
@@ -18,6 +19,7 @@ default = artifacts.headline_eval(runs)
 run = st.selectbox("Evaluation run", runs, index=runs.index(default),
                    format_func=lambda r: f"{r.id}{r.tag}")
 summary = artifacts.load_json(run.path / "summary.json")
+examples_by_id = {e.id: e for e in load_examples()}
 traces = artifacts.load_records(run, "traces.jsonl")
 policy_id = summary["policy_id"]
 injection = run.manifest.get("injection")
@@ -107,5 +109,5 @@ for tab, s in zip(tabs, strategies):
     with tab:
         match = [t for t in traces if t["example_id"] == choice and t["strategy"] == s]
         if match:
-            render_trace(match[0])
+            render_trace(match[0], expected=examples_by_id[choice].expected)
 st.caption(f"Run `{run.id}` · policy `{policy_id}` · raw traces in `runs/{run.id}/traces.jsonl`")
