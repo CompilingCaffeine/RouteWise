@@ -228,7 +228,7 @@ def write_summary(summary: dict[str, Any], run: RunDir) -> None:
     fields = ["strategy", "scope", "n", "task_accuracy", "field_accuracy", "cost_per_1k_tasks", "cost_usd_total",
               "p50_latency_ms", "p95_latency_ms", "escalation_rate", "meets_thresholds"]
     with Path(run.path / "summary.csv").open("w", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
+        writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore", lineterminator="\n")
         writer.writeheader()
         for strategy, entry in summary["strategies"].items():
             for scope, m in entry.items():
