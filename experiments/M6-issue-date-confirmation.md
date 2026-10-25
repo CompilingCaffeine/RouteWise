@@ -14,6 +14,8 @@ For every non-null refund_date, the fact sheet now requires an **exact issue-dat
 
 Every accepted conversation is checked by reasoning Super and Ultra using v2. **All** conversations where either verifier disagrees receive a blinded keep/drop review before Nano production inference. Drop unsupported or genuinely ambiguous labels; never relabel. Publish every decision. The coding agent is the reviewer, not a human expert. No old v1/v2/v3 source text may be duplicated. Rejected items stay rejected. Sample size is the accepted count; no outcome-driven replenishment.
 
+Pre-production transport recovery amendment: Super returned HTTP 529 overload failures during verification. Retain these original records and retry only transport-failed verifier calls, sequentially at 30 RPM, for at most two additional rounds. Successful replacements establish label verification; original failures remain in cost/availability records. If either required verifier remains unavailable, do not build or benchmark the dataset. This recovery applies only to label verification, never to replacing production evaluation outcomes.
+
 ## Intervention and controls
 
 The same source-grounding code, numeric source candidates, first-customer-date calculation and frozen 1,337 ms hedge delay as M5. Prompt v4 restores explicit ISO date/year instructions, preserves extraction of an order ID for replacement/repair requests, and explicitly distinguishes refund issue from arrival. Original v2 baselines remain unchanged.

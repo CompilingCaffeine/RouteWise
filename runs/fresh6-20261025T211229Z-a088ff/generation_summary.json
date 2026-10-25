@@ -1,0 +1,144 @@
+{
+  "accepted": 422,
+  "planned": 440,
+  "accepted_by_family": {
+    "full_refund_absolute": 20,
+    "refund_no_date": 20,
+    "replacement_only": 20,
+    "partial_refund_distractor": 19,
+    "multi_date": 16,
+    "relative_refund_date": 19,
+    "system_message_first": 11,
+    "counteroffer": 20,
+    "shipping_fee_only": 19,
+    "currency_symbol": 20,
+    "no_amount_stated": 20,
+    "large_amount": 20,
+    "refund_in_past": 20,
+    "negated_refund": 20,
+    "multi_item_sum": 20,
+    "two_orders": 20,
+    "tracking_distractor": 19,
+    "superseded_order": 20,
+    "numeric_order": 20,
+    "product_and_date_not_id": 20,
+    "arrival_without_issue": 20,
+    "arrival_versus_issue": 19
+  },
+  "rejected": [
+    {
+      "id": "v4-03014",
+      "problems": [
+        "message 4 is missing 'USD 131.50'"
+      ]
+    },
+    {
+      "id": "v4-04000",
+      "problems": [
+        "message 2 is missing '$84.99'",
+        "message 2 is missing 'The refund will be issued on Aug 19'"
+      ]
+    },
+    {
+      "id": "v4-04016",
+      "problems": [
+        "message 3 is missing 'The refund will be issued on 22 June 2026'"
+      ]
+    },
+    {
+      "id": "v4-04012",
+      "problems": [
+        "message 1 is missing 'USD 46.99'"
+      ]
+    },
+    {
+      "id": "v4-04014",
+      "problems": [
+        "message 3 is missing 'The refund will be issued on May 6, 2026'"
+      ]
+    },
+    {
+      "id": "v4-05012",
+      "problems": [
+        "message 2 is missing 'The refund will be issued tomorrow'"
+      ]
+    },
+    {
+      "id": "v4-06009",
+      "problems": [
+        "message 3 is missing 'The refund will be issued on 2026-06-21'"
+      ]
+    },
+    {
+      "id": "v4-06002",
+      "problems": [
+        "message 1 is missing 'AB/1140366/UK'"
+      ]
+    },
+    {
+      "id": "v4-06003",
+      "problems": [
+        "message 4 is missing 'The refund will be issued on February 13, 2026'"
+      ]
+    },
+    {
+      "id": "v4-06008",
+      "problems": [
+        "message 1 is missing 'AB/1140384/UK'",
+        "message 3 is missing 'The refund will be issued on May 20, 2026'"
+      ]
+    },
+    {
+      "id": "v4-06010",
+      "problems": [
+        "message 3 is missing 'The refund will be issued on September 9'"
+      ]
+    },
+    {
+      "id": "v4-06014",
+      "problems": [
+        "message 3 is missing 'The refund will be issued on Jul 4'"
+      ]
+    },
+    {
+      "id": "v4-06004",
+      "problems": [
+        "message 1 is missing 'q1140372z'"
+      ]
+    },
+    {
+      "id": "v4-06012",
+      "problems": [
+        "message 1 is missing 'ORD-1140396'",
+        "message 4 is missing 'The refund will be issued on Jul 15'"
+      ]
+    },
+    {
+      "id": "v4-06016",
+      "problems": [
+        "message 1 is missing 'q1140408z'",
+        "message 3 is missing 'The refund will be issued on 15 July 2026'"
+      ]
+    },
+    {
+      "id": "v4-08000",
+      "problems": [
+        "message 2 is missing '$12.50'"
+      ]
+    },
+    {
+      "id": "v4-new-0-009",
+      "problems": [
+        "message 1 is missing 'tracking number TRK-600009'"
+      ]
+    },
+    {
+      "id": "v4-arrival-1-000",
+      "problems": [
+        "message 2 is missing 'The money should arrive by 2026-04-06'",
+        "message 2 is missing 'The refund will be issued on 2026-04-02'"
+      ]
+    }
+  ],
+  "writer_cost_usd": 0.23964243999999993
+}

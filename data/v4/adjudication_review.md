@@ -1,0 +1,3 @@
+# Blinded M6 label review
+
+All 24 conversations where either successful reasoning verifier disagreed were reviewed before any v4 Nano production call. One unsupported amount label was dropped; 23 were kept. No labels were changed. Nineteen kept cases explicitly distinguish an arrival date from an unknown issue date; those labels were retained despite strong-verifier disagreement. Other kept cases follow the declared prior-request and explicitly referenced refund-amount rules. Seven original Super HTTP 529 verification failures were preserved and succeeded in sequential retries. The reviewer is a coding agent, not a human domain expert.

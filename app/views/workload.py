@@ -23,21 +23,27 @@ st.title('Workload optimizer')
 st.markdown('Choose requirements, compare fixed models with routing, and inspect the evidence. '
             'RouteWise recommends **no configuration** when the measurements cannot establish that your requirements are met.')
 explore, upload = st.tabs(['Explore measured configurations', 'Use your labelled workload'])
+LABELS = {'fixed_nano':'Nano', 'fixed_super':'Super', 'fixed_ultra':'Ultra',
+          'fixed_grounded_nano':'Grounded Nano', 'fixed_grounded_super':'Grounded Super',
+          'current':'Current router', 'grounding_only':'Grounding only',
+          'hedging_only':'Hedging only', 'grounded_hedged':'Grounding + hedging'}
 
 
 def show_metrics(metrics, selected):
     rows = []
     for name, m in sorted(metrics.items(), key=lambda x: x[1]['cost_per_1k_tasks']):
-        rows.append({'choice': '✓' if name == selected else '', 'configuration': name,
+        rows.append({'choice': '✓' if name == selected else '', 'configuration': LABELS.get(name,name),
                      'accuracy': pct(m['task_accuracy']), 'accuracy lower 95%': pct(m['accuracy_lower95']),
                      'field accuracy': pct(m['field_accuracy']), 'p95': ms(m['p95_latency_ms']),
                      'deadline misses': pct(m['deadline_miss_rate']), 'miss upper 95%': pct(m['deadline_miss_upper95']),
                      '$ / 1k': money(m['cost_per_1k_tasks'])})
     if selected:
-        st.success(f'Lowest-cost qualifying configuration: {selected}')
+        st.success(f'Lowest-cost qualifying configuration: {LABELS.get(selected,selected)}')
     else:
         st.warning('No configuration clears every requirement with the declared confidence bounds.')
     st.dataframe(rows, hide_index=True, width='stretch')
+    st.caption('Eligibility uses a one-sided 95% accuracy lower bound and a one-sided 95% upper bound of 5% '
+               'on the deadline-miss rate. Field accuracy uses its point estimate.')
 
 
 with explore:
@@ -52,8 +58,8 @@ with explore:
         st.caption(f"{result['n_unique']} unique fresh conversations · synthetic data · three time windows. "
                    'Edits below explore this recorded test set; they do not constitute a new confirmation experiment.')
         cols = st.columns(3)
-        accuracy = cols[0].slider('Required task accuracy', .80, 1.0, .95, .005, format='%.3f')
-        field = cols[1].slider('Required field accuracy', .90, 1.0, .95, .005, format='%.3f')
+        accuracy = cols[0].slider('Required task accuracy (%)', 80.0, 100.0, 95.0, .5, format='%.1f')/100
+        field = cols[1].slider('Required field accuracy (%)', 90.0, 100.0, 95.0, .5, format='%.1f')/100
         deadline = cols[2].slider('p95 deadline (ms)', 1000, 8000, 4000, 250)
         records = artifacts.load_records(run, 'observations.jsonl')
         first = {}
@@ -68,9 +74,25 @@ with explore:
                      deadline_miss_upper95=wilson(misses, len(traces), one_sided=True)[1], deadline_ms=deadline)
         selected = cheapest_qualifying(metrics, accuracy=accuracy, field_accuracy=field, deadline_ms=deadline)
         show_metrics(metrics, selected)
+        fixed = cheapest_qualifying({k:v for k,v in metrics.items() if k.startswith('fixed_')},
+                                   accuracy=accuracy, field_accuracy=field, deadline_ms=deadline)
+        if selected and fixed:
+            volume = st.number_input('Monthly extraction volume', 1000, 100_000_000, 1_000_000, 100_000)
+            monthly = metrics[selected]['cost_per_1k_tasks']*volume/1000
+            baseline = metrics[fixed]['cost_per_1k_tasks']*volume/1000
+            cols = st.columns(3)
+            cols[0].metric('Selected configuration / month', money(monthly,2))
+            cols[1].metric('Cheapest qualifying fixed model / month', money(baseline,2))
+            cols[2].metric('Measured cost saving / month', money(baseline-monthly,2))
+            st.caption('Projection uses the observed workload token lengths and recorded prices; infrastructure and development costs are excluded.')
+            if selected == fixed:
+                st.info('A fixed model is the cheapest qualifying choice here. Routing adds no demonstrated value at these requirements.')
         frame = pd.DataFrame([{'configuration': k, **v} for k, v in metrics.items()])
+        labels = {selected, 'fixed_super', 'fixed_ultra'}
+        frame['label'] = frame['configuration'].map(lambda n: LABELS[n] if n in labels else '')
         st.altair_chart(tradeoff_chart(frame, series='configuration', domain=list(metrics), threshold=accuracy,
-                                      emphasize=[selected] if selected else ['grounded_hedged'], y_floor=.8), width='stretch')
+                                      emphasize=[selected] if selected else ['grounded_hedged'], y_floor=.8,
+                                      label_field='label'), width='stretch')
         st.markdown('Confidence bounds describe the measured synthetic workload. Real customer data and measurements '
                     'on additional days are needed before making a production reliability claim.')
         st.download_button('Download full study results', json.dumps(result, indent=2), 'routewise-m5-results.json', 'application/json')
@@ -80,7 +102,8 @@ with explore:
             st.json(result['sentinels'])
         st.subheader('Inspect an answer and its evidence')
         names = list(metrics)
-        arm = st.selectbox('Configuration', names, index=names.index(selected) if selected else names.index('grounded_hedged'))
+        arm = st.selectbox('Configuration', names, index=names.index(selected) if selected else names.index('grounded_hedged'),
+                           format_func=lambda n: LABELS.get(n,n))
         choices = [t for (_, name), t in first.items() if name == arm]
         chosen = st.selectbox('Recorded request', choices, format_func=lambda t: f"{t['example_id']} · {'correct' if t['score']['task_correct'] else 'incorrect'}")
         data_path = artifacts.artifacts_root()/'data'/run.manifest.get('dataset','v3')/'examples.jsonl'
@@ -138,8 +161,8 @@ with upload:
             st.caption(f'{len(tune_examples)} tuning conversations · {len(heldout)} held-out conversations. '
                        'Ground truth is used only for scoring after inference.')
             cols = st.columns(3)
-            acc = cols[0].number_input('Task accuracy target', .5, 1., .95, .005)
-            fld = cols[1].number_input('Field accuracy target', .5, 1., .95, .005)
+            acc = cols[0].number_input('Task accuracy target (%)', 50., 100., 95., .5)/100
+            fld = cols[1].number_input('Field accuracy target (%)', 50., 100., 95., .5)/100
             deadline = cols[2].number_input('Latency deadline (ms)', 500, 15000, 4000, 250)
             identity = hashlib.sha256(raw+json.dumps([acc, fld, deadline]).encode()).hexdigest()
             state_key = 'workload-'+identity

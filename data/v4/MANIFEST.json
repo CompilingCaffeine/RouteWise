@@ -1,0 +1,11 @@
+{
+  "study": "m6",
+  "run": "fresh6-20261025T211229Z-a088ff",
+  "verifier_run": "freshverify6-20261025T211414Z-8080aa",
+  "n_examples": 421,
+  "dropped_by_adjudication": 1,
+  "protocol_sha256": "7287c1d249f52efee0ff00c702932d6c95dfa647929eefba65b3fe812bfce23f",
+  "dataset_sha256": "2c079c1a7ac11fcc503a2fa5511f5ea81ce19a7460a6b566a877c37581eb107e",
+  "split_sha256": "c181510a2676cb47a9f3a4b69c49419a4179e3306c1c47b40ba002796461deee",
+  "source": "synthetic fact sheets; model-written prose"
+}

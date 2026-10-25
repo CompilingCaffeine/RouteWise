@@ -148,6 +148,7 @@ def prepare() -> None:
          'label': by_id[eid].expected, 'disagreements': answers} for eid, answers in any_wrong.items()])
     dump(run.path/'verification.json', {'run': verifier_run.experiment_id, 'queued': len(queue),
          'any_disagreement': sum(not r.score['task_correct'] for r in verification),
+         'unresolved_transport_failures': sum(bool(r.error) for r in verification),
          'total_cost_usd': client.spent})
     dump(DATA/'source.json', {'study': ACTIVE_STUDY, 'run': run.experiment_id, 'verifier_run': verifier_run.experiment_id})
     print(f'Queue: {len(queue)}. Review {run.path}/adjudication_queue.json, then build.', flush=True)
@@ -158,7 +159,17 @@ def build() -> None:
         raise ValueError('Cannot replace a sealed dataset')
     source = json.loads((DATA/'source.json').read_text())
     run_path = REPO_ROOT/'runs'/source['run']
+    verification = json.loads((run_path/'verification.json').read_text())
+    verifier_path = REPO_ROOT/'runs'/source['verifier_run']
+    checks = read_jsonl(verifier_path/'calls.jsonl')
+    if (verifier_path/'retry_calls.jsonl').exists():
+        checks += read_jsonl(verifier_path/'retry_calls.jsonl')
+    latest_checks = {(r['example_id'],r['candidate']):r for r in checks}
+    if verification.get('unresolved_transport_failures', 0) or any(r['error'] for r in latest_checks.values()):
+        raise ValueError('Independent label verification is incomplete; retry the failed verifier calls first')
     queue = json.loads((run_path/'adjudication_queue.json').read_text())
+    if ACTIVE_STUDY == 'm6':
+        queue = json.loads((run_path/'all_disagreements.json').read_text())
     decisions_path = DATA/'adjudication.jsonl'
     decisions = {d['id']: d for d in read_jsonl(decisions_path)} if decisions_path.exists() else {}
     missing = [q['id'] for q in queue if q['id'] not in decisions]
@@ -179,6 +190,58 @@ def build() -> None:
     if not decisions_path.exists():
         decisions_path.write_text('')
     print(f'Built {len(recs)} examples: {DATA}', flush=True)
+
+
+def retry_verification() -> None:
+    """Repair only failed label-verifier transport calls, retaining every original call."""
+    if (DATA/'seal.json').exists():
+        raise ValueError('Label verification cannot be revised after sealing')
+    source = json.loads((DATA/'source.json').read_text())
+    parent = REPO_ROOT/'runs'/source['run']
+    verifiers = RunDir.existing(REPO_ROOT/'runs'/source['verifier_run'])
+    config, snapshot, client, prices, prompts = context(parent/'prices.json')
+    examples = {r['id']: Example(**r['example']) for r in read_jsonl(parent/'writers.jsonl') if r['accepted']}
+    from routewise.execution import call_and_score
+    from routewise.synth import adjudication_queue
+    original = [CallRecord(**r) for r in read_jsonl(verifiers.path/'calls.jsonl')]
+    retry_path = verifiers.path/'retry_calls.jsonl'
+    retries = [CallRecord(**r) for r in read_jsonl(retry_path)] if retry_path.exists() else []
+    for attempt in range(2):
+        latest = {(r.example_id, r.candidate): r for r in original+retries}
+        failed = [r for r in latest.values() if r.error]
+        if not failed:
+            break
+        print(f'Verifier retry round {attempt+1}: {len(failed)} transport failures, sequential 30 RPM', flush=True)
+        pacer = Pacer(30)
+        for failed_record in failed:
+            pacer.wait()
+            name = failed_record.candidate.split('+')[0]
+            cand = config.with_reasoning(config.candidate(name), 'on')
+            record = call_and_score(client, config, cand, prompts['v2'], prices[name], examples[failed_record.example_id])
+            retries.append(record)
+            verifiers.append('retry_calls.jsonl', record)
+        if attempt == 0 and any(r.error for r in retries[-len(failed):]):
+            time.sleep(30)
+    latest = list({(r.example_id, r.candidate): r for r in original+retries}.values())
+    unresolved = sum(bool(r.error) for r in latest)
+    dump(parent/'adjudication_queue.json', adjudication_queue(list(examples.values()), latest))
+    wrong = defaultdict(dict)
+    for r in latest:
+        if not r.score['task_correct']:
+            wrong[r.example_id][r.candidate] = {f:(r.parsed or {}).get(f) for f,ok in r.score['fields'].items() if not ok}
+    dump(parent/'all_disagreements.json', [{'id':eid,'input':examples[eid].input,'label':examples[eid].expected,
+         'disagreements':answers} for eid,answers in wrong.items()])
+    meta = json.loads((parent/'verification.json').read_text())
+    meta.update(unresolved_transport_failures=unresolved, retry_calls=len(retries),
+                original_transport_failures=sum(bool(r.error) for r in original),
+                queued=len(json.loads((parent/'adjudication_queue.json').read_text())),
+                n_disagreeing_conversations=len(wrong),
+                total_cost_usd=json.loads((parent/'generation_summary.json').read_text())['writer_cost_usd']+
+                    sum(r.cost_usd or 0 for r in original+retries))
+    dump(parent/'verification.json', meta)
+    print(f'Unresolved verifier transport failures: {unresolved}; semantic disagreements: {len(wrong)}', flush=True)
+    if unresolved:
+        raise RuntimeError('Label verification remains incomplete; do not build or benchmark this dataset')
 
 
 def examples_for(split: str) -> list[Example]:
@@ -391,12 +454,13 @@ def report(run_path: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('stage', choices=('prepare', 'build', 'tune', 'evaluate', 'report'))
+    parser.add_argument('stage', choices=('prepare', 'verify-retry', 'build', 'tune', 'evaluate', 'report'))
     parser.add_argument('--run', type=Path)
     parser.add_argument('--study', choices=('m5','m6'), default='m5')
     args = parser.parse_args()
     configure(args.study)
     if args.stage == 'prepare': prepare()
+    elif args.stage == 'verify-retry': retry_verification()
     elif args.stage == 'build': build()
     elif args.stage == 'tune': tune()
     elif args.stage == 'evaluate': evaluate(args.run)

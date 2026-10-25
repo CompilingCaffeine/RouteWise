@@ -1,0 +1,10 @@
+{
+  "run": "freshverify6-20261025T211414Z-8080aa",
+  "queued": 19,
+  "any_disagreement": 50,
+  "total_cost_usd": 1.38229794,
+  "unresolved_transport_failures": 0,
+  "retry_calls": 7,
+  "original_transport_failures": 7,
+  "n_disagreeing_conversations": 24
+}

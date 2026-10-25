@@ -122,7 +122,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
     confirm = sub.add_parser('confirmation', help='M5: fresh workload, source grounding and live confirmation')
-    confirm.add_argument('stage', choices=('prepare', 'build', 'tune', 'evaluate', 'report'))
+    confirm.add_argument('stage', choices=('prepare', 'verify-retry', 'build', 'tune', 'evaluate', 'report'))
     confirm.add_argument('--run', type=Path, help='confirmation run to resume or report')
     confirm.add_argument('--study', choices=('m5','m6'), default='m5')
 
@@ -164,7 +164,9 @@ def _add_load_args(p: argparse.ArgumentParser) -> None:
 def cmd_confirmation(config: Config, args: argparse.Namespace) -> int:
     from routewise import confirmation
     confirmation.configure(args.study)
-    if args.stage == 'evaluate':
+    if args.stage == 'verify-retry':
+        confirmation.retry_verification()
+    elif args.stage == 'evaluate':
         confirmation.evaluate(args.run)
     elif args.stage == 'report':
         if not args.run:
