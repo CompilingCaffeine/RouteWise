@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
+from collections import Counter
 from random import Random
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from routewise import dataset, faults, judge as judge_mod, latency, policy as policy_mod, runlog, validator_study
+from routewise import dataset, factsheets, faults, judge as judge_mod, latency, policy as policy_mod, runlog, synth, validator_study
 from routewise.benchmark import candidate_metrics, run_benchmark
 from routewise.client import MissingCredentials, TokenFactoryClient
 from routewise.config import REPO_ROOT, Candidate, Config, load_config, load_dotenv
@@ -93,6 +95,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     ls.add_argument("--cooldown", type=float, default=65, help="seconds between levels")
     ls.add_argument("--seed", type=int, default=7)
 
+    sy = sub.add_parser("synth", help="M3: write the v2 workload from fact sheets (writer models + verification)")
+    sy.add_argument("--per-family", type=int, default=75)
+    sy.add_argument("--limit-per-family", type=int, help="pilot: only the first N sheets of each family")
+    sy.add_argument("--concurrency", type=int, default=8)
+    sy.add_argument("--rpm", type=float, default=240)
+
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
@@ -111,6 +119,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "validator-study": cmd_validator_study,
         "latency-profile": cmd_latency_profile,
         "load-sweep": cmd_load_sweep,
+        "synth": cmd_synth,
     }
     try:
         return commands[args.command](config, args)
@@ -485,6 +494,38 @@ def cmd_load_sweep(config: Config, args: argparse.Namespace) -> int:
           str(r["retried_requests"]), str(r["over_limit_responses"])] for r in rows],
     )
     print(f"\nResults: {_display(run.path)}/summary.json, calls.jsonl")
+    return 0
+
+
+def cmd_synth(config: Config, args: argparse.Namespace) -> int:
+    sheets = factsheets.sample_factsheets(per_family=args.per_family)
+    if args.limit_per_family:
+        sheets = [s for s in sheets if int(s.id[-3:]) < args.limit_per_family]
+    client = TokenFactoryClient(base_url=config.base_url)
+    snapshot = _snapshot(client, config)
+    writers = sorted({s.writer for s in sheets})
+    run = RunDir.create("synth")
+    run.write_manifest(
+        kind="synth", per_family=args.per_family, limit=args.limit_per_family, n_sheets=len(sheets),
+        writer_prompt_sha256=hashlib.sha256(synth.WRITER_SYSTEM.encode()).hexdigest(),
+        factsheets_sha256=sha256_file(Path(factsheets.__file__)),
+        load={"concurrency": args.concurrency, "rpm": args.rpm},
+        **_common_manifest(config, snapshot, [(config.candidate(w), price_for(snapshot, config.candidate(w).model_id)) for w in writers]),
+    )
+    print(f"Synthesis {run.experiment_id}: {len(sheets)} fact sheets, writers {writers}")
+    records = synth.write_all(client, config, sheets, _label_prices(config, snapshot), concurrency=args.concurrency,
+                              rpm=args.rpm, sink=lambda r: run.append("records.jsonl", r))
+    by_family: dict[str, list[dict[str, Any]]] = {}
+    for r in records:
+        by_family.setdefault(r["factsheet"]["family"], []).append(r)
+    rows = [[fam, str(len(rs)), str(sum(r["accepted"] for r in rs)),
+             f"{sum(len(r['attempts']) for r in rs) / len(rs):.2f}"] for fam, rs in sorted(by_family.items())]
+    _print_table(["family", "sheets", "accepted", "mean attempts"], rows)
+    problems = Counter(p.split(" ", 2)[-1].split("'")[0].split(" [")[0] for r in records for a in r["attempts"] for p in a["problems"])
+    cost = sum(a["cost_usd"] or 0 for r in records for a in r["attempts"])
+    print(f"\naccepted {sum(r['accepted'] for r in records)}/{len(records)}, writer cost ${cost:.3f}")
+    print("most common problems:", problems.most_common(8))
+    print(f"Records: {_display(run.path)}/records.jsonl")
     return 0
 
 
