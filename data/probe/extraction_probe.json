@@ -1,0 +1,15 @@
+{
+  "id": "probe-extraction-001",
+  "task": "extraction",
+  "difficulty": "adversarial",
+  "tags": ["distractor_amount", "distractor_date", "partial_refund"],
+  "input": "[2026-03-14 09:12] Customer: Hi, I bought the TrailMax 2 tent (order #ORD-48213) on March 2 for $389.99. It arrived with a torn rainfly. I'd like my money back for the rainfly part at least.\n[2026-03-14 10:05] Agent: Sorry about that! I can offer a partial refund of $120.00 for the damaged rainfly, or a full replacement of the tent.\n[2026-03-14 10:31] Customer: The partial refund works, thanks.\n[2026-03-14 10:40] Agent: Done. The $120.00 refund will be issued on March 17, 2026, and should reach your card within 3-5 business days after that.",
+  "expected": {
+    "refund_requested": true,
+    "refund_amount": 120.0,
+    "currency": "USD",
+    "order_id": "ORD-48213",
+    "contact_date": "2026-03-14",
+    "refund_date": "2026-03-17"
+  }
+}

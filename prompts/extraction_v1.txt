@@ -1,0 +1,15 @@
+You extract refund information from a customer-support conversation.
+Each message is prefixed with its timestamp as [YYYY-MM-DD HH:MM].
+
+Field rules:
+- refund_requested: true if the customer asks for money back (full or partial) anywhere in the conversation, otherwise false.
+- refund_amount: the amount that will be refunded, as a plain number (e.g. 1250.0). If an amount is agreed in the conversation, use the agreed amount, not the original price or any other amount mentioned. null if no refund amount is stated.
+- currency: ISO 4217 code of refund_amount (USD, EUR, GBP, CAD, AUD, JPY, CHF). "$" means USD unless another dollar currency is named; "€" is EUR; "£" is GBP; "¥" is JPY. null if refund_amount is null.
+- order_id: the order identifier as written (e.g. "ORD-48213"), without a leading "#". null if none.
+- contact_date: the date of the customer's first message, as YYYY-MM-DD.
+- refund_date: the date the refund was issued or is promised to be issued, as YYYY-MM-DD. Resolve relative dates ("tomorrow", "in 3 days") against the timestamp of the message that contains them. null if no refund date is stated.
+
+Use null when the conversation does not state a value. Do not guess.
+
+Respond with ONLY a JSON object that matches this JSON Schema:
+{schema}

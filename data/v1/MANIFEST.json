@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "seed": 20261025,
+  "n_examples": 120,
+  "counts": {
+    "heldout/classification/adversarial": 11,
+    "heldout/classification/easy": 10,
+    "heldout/extraction/adversarial": 28,
+    "heldout/extraction/easy": 13,
+    "tune/classification/adversarial": 10,
+    "tune/classification/easy": 9,
+    "tune/extraction/adversarial": 27,
+    "tune/extraction/easy": 12
+  },
+  "examples_sha256": "2bb6732e28b6d9679e7a35b35b0d59127cf24218b34d3dc81a21bf39452ca61c",
+  "splits_sha256": "5dbfa8231df9b201ae7c8e0537217bf1220dfcd50daf8e768724d312d9e218ce",
+  "generator_sha256": "ea73a60483b45e5381aa46549d3a4238847fe141e6325c7c6adfa891abdfb7e7",
+  "handwritten_sha256": "6f780da16d98f80297152af0f7374636f3b29d58f6ef01181c5cb2f984d79e0f"
+}

@@ -1,0 +1,2 @@
+# Installed by Streamlit Community Cloud: the routewise package plus dashboard extras.
+-e .[app]

@@ -1,0 +1,62 @@
+# RouteWise experiment configuration.
+#
+# Thresholds are declared BEFORE any tuning benchmark is run and must not be
+# edited after looking at accuracy results. Latency ceilings are set from the
+# Day-1 probe (latency only, no accuracy) and then frozen.
+
+base_url: https://api.tokenfactory.nebius.com/v1/
+prices_snapshot: config/prices.snapshot.json
+
+# Generation settings shared by every candidate so the comparison is fair.
+generation:
+  temperature: 0.0
+  seed: 7
+  response_format: json_schema   # json_schema | json_object
+
+# Reasoning modes are request options, not separate models. Nemotron 3 models
+# are hybrid reasoners; reasoning tokens are billed as output tokens.
+# ASSUMPTION (verify with `routewise probe --reasoning both`): the vLLM
+# chat-template kwarg `enable_thinking` toggles reasoning on Token Factory.
+reasoning_modes:
+  "off":
+    max_tokens: 512
+    extra_body:
+      chat_template_kwargs: {enable_thinking: false}
+  "on":
+    max_tokens: 4096
+    extra_body:
+      chat_template_kwargs: {enable_thinking: true}
+
+# Candidate ladder, cheapest first. Model IDs are checked against the live
+# /v1/models?verbose=true list by `routewise prices`.
+candidates:
+  - name: nano
+    model_id: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B   # confirmed via /v1/models 2026-10-25
+    reasoning: "off"
+  - name: super
+    model_id: nvidia/nemotron-3-super-120b-a12b       # confirmed via /v1/models 2026-10-25
+    reasoning: "off"
+  - name: ultra
+    model_id: nvidia/Nemotron-3-Ultra-550b-a55b       # confirmed via /v1/models 2026-10-25
+    reasoning: "off"
+
+baselines:
+  smallest: nano
+  strongest: ultra
+
+# Declared quality/latency requirements per task category.
+# Frozen 2026-10-25 before any benchmark on the workload. Latency ceilings come from the
+# probe (probe-20261025T165213Z-e6956c: ~1.0-1.3 s per reasoning-off call): an interactive
+# agent-assist budget that leaves room for one sequential escalation plus tail variance.
+thresholds:
+  extraction:
+    min_field_accuracy: 0.95
+    min_task_accuracy: 0.85
+    max_p95_latency_ms: 4000
+  classification:
+    min_task_accuracy: 0.95
+    max_p95_latency_ms: 3000
+
+prompts:
+  extraction: prompts/extraction_v1.txt
+  classification: prompts/classification_v1.txt
