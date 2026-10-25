@@ -56,13 +56,16 @@ What we did next is all in the repo's evidence trail:
 
 Every number above links to raw traces in `runs/`, and the whole experiment cost **$0.36** in API calls.
 
-### Three pre-registered follow-up experiments (dashboard → Experiments)
+### Four pre-registered follow-up experiments (dashboard → Experiments)
 
 - **Is validation worth it?** On 186 held-out answers:
   - **The deterministic validator** never escalated a correct answer, at +28% cost over no validation.
   - **A Nemotron 3 Super judge** catches more errors, mostly classification ones, but costs 3.5× more per task. It adds ~0.8 s to every request, enough to break the latency SLO by itself.
   - **A Nano judge** flags a third of correct answers.
 - **Where does latency go?** In 144 streamed calls, a fixed ~0.74–1.1 s time-to-first-token floor makes up 68–92% of an extraction call. Ultra decodes fastest per token. Provider tail events showed up both as slow first tokens and as mid-stream decode stalls, which is why RouteWise hedges on total elapsed time.
+- **Can we predict failures before calling Nano?** We generated a new 1,198-conversation workload in 16 scenario families, written by Nemotron 3 Super and Ultra from fact sheets with verified labels. Then we trained a calibrated predictor and tested it on four families it never saw.
+  - **It failed honestly.** Test AUC is 0.48, and the pre-registered decision is not to adopt it.
+  - **The reason is family leakage.** On a random split the same model looks good (AUC 0.80). The deterministic validator, meanwhile, already catches 87% of Nano's errors on those unseen families.
 - **Latency under load.** Throughput scales sub-linearly to 10 req/s at 16 concurrent requests for Nano, with p95 under 1.8 s. The escalation target, Super, had the noisier tail.
 
 ## How we built it
@@ -116,7 +119,7 @@ Every number above links to raw traces in `runs/`, and the whole experiment cost
 - **`/v1/models?verbose=true`.** It returns machine-readable per-token prices, including cached-input prices, plus context length and features. We used it as the *only* price source, so all costs are computed from live published prices rather than typed by hand.
 - **JSON-schema constrained output.** Every Nemotron call in our probe and benchmarks returned schema-valid JSON.
 - **Detailed usage blocks.** They include cached-token counts, and informative `x-ratelimit-*` headers came back on every response.
-- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept all 2,311 calls behind every committed experiment at $0.68.
+- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept all 10,843 calls behind every committed experiment, including generating and double-verifying a 1,198-conversation dataset, at $6.00.
 
 **Friction we hit**
 

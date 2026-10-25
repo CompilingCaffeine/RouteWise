@@ -68,7 +68,7 @@ Every held-out run is listed here. Nothing is omitted. The roles are recorded in
 
 ### Follow-up experiments
 
-Each experiment was pre-registered in [`experiments/`](experiments/), with its question, design, hypotheses and decision rule committed before it ran. Each has raw records in `runs/`, and all three appear on the dashboard's **Experiments** page. None of them changes the headline result.
+Each experiment was pre-registered in [`experiments/`](experiments/), with its question, design, hypotheses and decision rule committed before it ran. Each has raw records in `runs/`, and all four appear on the dashboard's **Experiments** page. None of them changes the headline result.
 
 - **M4 · Is validation worth it?** (`validators-20261025T182255Z-812767`). We compared validators on 186 held-out Nano answers, simulating each one end to end with Super escalations and billing every judge call.
   - **The deterministic validator** is precise and nearly free: 100% escalation precision, 0 false alarms, and +28% cost over no validation.
@@ -79,6 +79,10 @@ Each experiment was pre-registered in [`experiments/`](experiments/), with its q
   - **Time to first token has a fixed floor** of about 0.74 s for Nano and 1.1 s for Super and Ultra. It is flat up to ~1,800 prompt tokens and makes up 68–92% of an extraction call.
   - **Decode speed per token doesn't follow model size:** Ultra is fastest at ≈1.9 ms/token.
   - **Super's tail events appeared in both phases:** a slow first token in one case, a mid-stream decode stall in another. That supports hedging on total elapsed time.
+- **M3 · Can a cheap model predict Nano's failures before calling it?** (`risk-20261025T200624Z-c74ab3`). We built a new workload, `data/v2`: 1,198 conversations in 16 scenario families. Nemotron 3 Super and Ultra wrote them from programmatic fact sheets, so the labels come from the facts. Every conversation passed a deterministic verifier, and a semantic check by two reasoning verifiers left an empty adjudication queue. We then trained a calibrated logistic regression on 20 pre-route text features and tested it on **four families it never saw**.
+  - **It does not transfer.** Test AUC is 0.48, at chance; the Brier score is worse than a constant guess; and it adds +0.2 points of accuracy (CI 0.0 to +0.5). **The pre-registered decision is not to adopt it.**
+  - **The cause is family leakage.** With random folds the same model scores AUC 0.80; grouped by family, 0.49. It learns shortcuts that flip on new families. For example, relative-date phrases mark easy training cases but are the core difficulty of an unseen test family.
+  - **The validator already does the job.** On those unseen families it catches 87% of Nano's errors with 1.3% false alarms. The validator policy reaches 95.7% accuracy against an oracle ceiling of 99.0%, at 87% below always-Ultra's cost.
 - **M2-lite · Latency under load** (`load-20261025T183316Z-43e65f`). We ran a closed-loop sweep at 1/4/8/16 concurrent requests for Nano and Super.
   - **Throughput scales sub-linearly:** Nano reaches 10.4 req/s at c = 16, with p95 ≤ 1.8 s.
   - **Super's tail was noisier than Nano's** in this run, so hedging is only as good as the backup model's own tail.
@@ -90,7 +94,7 @@ Each experiment was pre-registered in [`experiments/`](experiments/), with its q
 - **Classification is too easy:** every model scored 100% on the classification tuning items, so they don't separate the models.
 - **Synthetic labels:** most extraction items come from templates, with labels correct by construction. 10 items are hand-written.
 - **Single-day measurements:** latency was measured on one day against shared serverless endpoints.
-- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). Every committed run, including the follow-up experiments, comes to **$0.68** for 2,311 model calls.
+- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). Every committed run, including the follow-up experiments and the 1,198-conversation v2 workload, comes to **$6.00** for 10,843 model calls.
 
 ## Why not just use a generic router?
 
