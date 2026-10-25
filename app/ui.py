@@ -141,6 +141,8 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
     """One routed request: decision, every hop with validator checks, and the totals.
 
     With `expected` (dataset examples only), a ground-truth check follows; the router never sees it."""
+    if not trace.get('final_valid', True):
+        st.error('The final answer failed validation. This request needs review before the output is used.')
     head = st.columns(4)
     head[0].metric("Answered by", trace.get("answered_by") or trace["calls"][-1]["candidate"])
     head[1].metric("Time to answer", ms(trace["latency_ms"]))

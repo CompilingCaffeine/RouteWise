@@ -20,3 +20,21 @@ evaluations:
       A seeded 10% of extraction requests had a synthetic 3-6 s stall on every Nano call, identically for
       every strategy. Unhedged RouteWise missed the p95 ceiling (4.3 s); hedged RouteWise met it (2.7 s)
       at ~20% more cost, still ~89% below always-Ultra.
+
+# Separate fresh-data studies; the original v1 headline above is unchanged.
+confirmation_studies:
+  - run: confirmation-20261025T210209Z-a62cb8
+    role: M5 measurement abort (post-registration)
+    note: >-
+      Stopped after a tuning-only audit found arrival dates labelled as issue dates.
+      All 565 completed requests and their priced usage remain; no M5 success is claimed.
+      A new seed and dataset were used for M6 instead of relabelling this frozen set.
+  - run: confirmation-20261025T212745Z-ac61b1
+    role: M6 preregistered replacement confirmation
+    note: >-
+      330 unique held-out conversations, nine live configurations and three time windows,
+      plus 24 repeated sentinel conversations. The source-grounded Nano-to-Super route
+      reaches 98.2% task accuracy (96.5% lower confidence bound), 2.44 s p95 and
+      $0.103 per 1k tasks, about 70% below the qualifying matched grounded-Super control.
+      The predeclared hedged intervention also passes; the optimizer chooses unhedged
+      routing because both meet the deadline and hedging costs about 29% more.

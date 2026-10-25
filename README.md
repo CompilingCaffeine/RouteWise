@@ -10,9 +10,11 @@ Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track).
 
 **Live demo:** https://nebius-routewise.streamlit.app/
 
-The demo has four pages: the benchmark, the routing policy, a live router that calls Token Factory, and the held-out evaluation with every recorded trace.
+The dashboard includes the original benchmark and held-out evidence, live routing, experiments, and a **Workload optimizer**. Import labelled extraction data, freeze a tuning choice, test it on held-out conversations, or explore recorded configurations with confidence bounds and monthly-cost projections. The optimizer can choose a fixed model or report that none qualifies.
 
 ## Results
+
+**Latest confirmation:** source-grounded Nano → Super achieved **98.2% task accuracy** (lower 95% bound **96.5%**), **2.44 s p95**, and **$0.103 / 1k tasks**—about **70% below the qualifying grounded-Super control**. The original v1 result remains below; see [M6 details](results/M6-report.md).
 
 All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
 
@@ -37,7 +39,7 @@ All numbers below are measured on held-out data and committed with raw per-reque
 
 ### Evidence trail
 
-Every held-out run is listed here. Nothing is omitted. The roles are recorded in `results/runs.yaml`.
+Every v1 held-out run is listed here. M5/M6 are recorded separately below and in the registry. The roles are recorded in `results/runs.yaml`.
 
 | Run | Role | Strategy | Extraction acc. | Extraction p95 | Cost vs always-Ultra | Meets thresholds |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -88,13 +90,32 @@ Each experiment was pre-registered in [`experiments/`](experiments/), with its q
   - **Super's tail was noisier than Nano's** in this run, so hedging is only as good as the backup model's own tail.
   - **No rate-limit pressure was reached** at 48 requests per level.
 
-### Limitations
+### Original-study limitations
 
 - **Sample size:** 62 held-out tasks (41 extraction). The accuracy CIs are wide, and the p95 is roughly the third-slowest request.
 - **Classification is too easy:** every model scored 100% on the classification tuning items, so they don't separate the models.
 - **Synthetic labels:** most extraction items come from templates, with labels correct by construction. 10 items are hand-written.
 - **Single-day measurements:** latency was measured on one day against shared serverless endpoints.
-- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). Every committed run, including the follow-up experiments and the 1,198-conversation v2 workload, comes to **$6.00** for 10,843 model calls.
+- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). Before M5/M6, the committed experiments and v2 workload used approximately **$6.00** for 10,843 model calls. M5/M6 generation, verification, aborted calls and confirmation are accounted separately in the [M6 report](results/M6-report.md).
+
+### Fresh-data confirmation: M6 (`confirmation-20261025T212745Z-ac61b1`)
+
+On **330 fresh held-out conversations**, with nine live arms across three time windows, the confidence-aware optimizer selects **source-grounded Nano → Super, without hedging**. Requirements: task accuracy ≥95% using a one-sided confidence bound, field accuracy ≥95%, and p95 ≤4 seconds using a bound on deadline misses. The predeclared grounding-plus-hedging hypothesis is **supported**.
+
+| Configuration | Task acc. | Lower 95% | p95 | $ / 1k |
+|---|---:|---:|---:|---:|
+| Nano (original prompt) | 83.3% | 79.7% | 2.06 s | $0.065 |
+| Super (original prompt) | 92.7% | 90.0% | 1.56 s | $0.291 |
+| Ultra (original prompt) | 93.9% | 91.4% | 1.20 s | $1.002 |
+| Grounded Nano | 90.3% | 87.3% | 2.08 s | $0.076 |
+| Grounded Super | 98.8% | 97.3% | 1.74 s | $0.339 |
+| Original Nano → Super | 92.1% | 89.3% | 2.20 s | $0.084 |
+| Grounded Nano → Super | 98.2% | 96.5% | 2.44 s | $0.103 |
+| Grounded Nano → Super + hedge | 98.2% | 96.5% | 2.23 s | $0.133 |
+
+M5 was stopped for invalid measurement: a tuning-only audit found arrival dates labelled as issue dates. Its calls are preserved. M6 uses new conversations, explicit issue-date statements and arrival-only negatives. The data is synthetic and agent-reviewed, not human/customer validation. M6 added $2.37 of known priced API usage. All six selected-route errors were flagged relative-date failures; the family-cluster sensitivity interval is **94.2–100%**, so the result depends on this workload mix.
+
+See the [full M6 report](results/M6-report.md), [protocol](experiments/M6-issue-date-confirmation.md), and **Workload optimizer** in the dashboard for all nine arms, qualification gates, paired intervals, per-family/window results and source evidence.
 
 ## Why not just use a generic router?
 
@@ -170,6 +191,17 @@ python3 -m venv .venv
 echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
 ```
 
+## Use the measured extraction route
+
+The original default config/policies preserve v1. The M6 extraction profile uses prompt v4, source grounding, a 95% task target and Nano → Super escalation without hedging:
+
+```bash
+routewise --config config/grounded.yaml route --policy policies/deployment/m6-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345.
+[2026-04-01 10:00] Agent: A refund of USD 25 will be issued on 2026-04-03.' --json
+```
+
+Check `final_valid`; a failed final answer needs review. This profile is workload-specific, with the family-mix limits documented in the [M6 report](results/M6-report.md). The dashboard's Workload optimizer offers the same measured configuration and supports importing a new labelled workload.
+
 ## Reproduce
 
 ```bash
@@ -179,6 +211,7 @@ routewise benchmark --split tune       # every candidate × every tuning example
 routewise policy                       # cheapest qualifying route per task → policies/policy-*.json (no API calls)
 routewise evaluate                     # baselines + RouteWise (+ hedged variant) × held-out split, live → runs/eval-*/
 routewise evaluate --inject-stalls nano:0.10:3000-6000   # controlled fault injection (seeded, identical per strategy)
+routewise confirmation report --study m6 --run runs/confirmation-20261025T212745Z-ac61b1
 routewise report --run runs/eval-…     # recompute a summary from recorded traces (no API calls)
 routewise route --example ext-025      # follow one request through validation/escalation/hedging
 streamlit run app/streamlit_app.py     # dashboard

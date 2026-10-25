@@ -1,0 +1,241 @@
+{
+  "run": "confirmation-20261025T212745Z-ac61b1",
+  "choice": "grounding_only",
+  "fixed": "fixed_grounded_super",
+  "hypothesis_supported": true,
+  "known_priced_api_usage": 2.3718204399999996,
+  "n_unique": 330,
+  "metrics": {
+    "current": {
+      "n": 330,
+      "task_accuracy": 0.9212121212121213,
+      "field_accuracy": 0.9868686868686869,
+      "cost_usd_total": 0.027852659999999998,
+      "cost_per_1k_tasks": 0.08440199999999999,
+      "p50_latency_ms": 986.3417909946293,
+      "p95_latency_ms": 2201.9377146963966,
+      "escalation_rate": 0.09090909090909091,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.893252137601242,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.804416403785489,
+        0.9907120743034056
+      ],
+      "wall_p95_ms": 2202.1596770529873,
+      "wrong_fields": {
+        "refund_date": 19,
+        "order_id": 7
+      }
+    },
+    "fixed_grounded_nano": {
+      "n": 330,
+      "task_accuracy": 0.9030303030303031,
+      "field_accuracy": 0.9838383838383838,
+      "cost_usd_total": 0.024926459999999998,
+      "cost_per_1k_tasks": 0.07553472727272727,
+      "p50_latency_ms": 948.8219374907203,
+      "p95_latency_ms": 2081.8377748364587,
+      "escalation_rate": 0.0,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.8728674193034568,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.7904191616766467,
+        0.9779179810725552
+      ],
+      "wall_p95_ms": 2082.009164366173,
+      "wrong_fields": {
+        "refund_date": 32
+      }
+    },
+    "fixed_grounded_super": {
+      "n": 330,
+      "task_accuracy": 0.9878787878787879,
+      "field_accuracy": 0.997979797979798,
+      "cost_usd_total": 0.1120263,
+      "cost_per_1k_tasks": 0.33947363636363637,
+      "p50_latency_ms": 1085.318104509497,
+      "p95_latency_ms": 1744.626693613828,
+      "escalation_rate": 0.0,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.9732758512288152,
+      "deadline_misses": 1,
+      "deadline_miss_rate": 0.0030303030303030303,
+      "deadline_miss_upper95": 0.013466939771127945,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.9615384615384616,
+        1.0
+      ],
+      "wall_p95_ms": 1744.841560066562,
+      "wrong_fields": {
+        "refund_date": 4
+      }
+    },
+    "fixed_nano": {
+      "n": 330,
+      "task_accuracy": 0.8333333333333334,
+      "field_accuracy": 0.9646464646464646,
+      "cost_usd_total": 0.021494459999999996,
+      "cost_per_1k_tasks": 0.06513472727272726,
+      "p50_latency_ms": 924.9026460165624,
+      "p95_latency_ms": 2060.3080399625483,
+      "escalation_rate": 0.0,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.7969064492359869,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.6948640483383686,
+        0.9369627507163324
+      ],
+      "wall_p95_ms": 2060.505060767174,
+      "wrong_fields": {
+        "order_id": 19,
+        "refund_amount": 12,
+        "currency": 12,
+        "refund_date": 26,
+        "contact_date": 1
+      }
+    },
+    "fixed_super": {
+      "n": 330,
+      "task_accuracy": 0.9272727272727272,
+      "field_accuracy": 0.9878787878787879,
+      "cost_usd_total": 0.09617064,
+      "cost_per_1k_tasks": 0.2914261818181818,
+      "p50_latency_ms": 1039.7685829957481,
+      "p95_latency_ms": 1564.7547350701648,
+      "escalation_rate": 0.0,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.9001238184598398,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.8016997167138811,
+        1.0
+      ],
+      "wall_p95_ms": 1565.0612222496425,
+      "wrong_fields": {
+        "refund_date": 24
+      }
+    },
+    "fixed_ultra": {
+      "n": 330,
+      "task_accuracy": 0.9393939393939394,
+      "field_accuracy": 0.98989898989899,
+      "cost_usd_total": 0.330756,
+      "cost_per_1k_tasks": 1.002290909090909,
+      "p50_latency_ms": 878.3651879930403,
+      "p95_latency_ms": 1199.8052398179425,
+      "escalation_rate": 0.0,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.9140092771937136,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.8170731707317073,
+        1.0
+      ],
+      "wall_p95_ms": 1200.0106772902654,
+      "wrong_fields": {
+        "refund_date": 20
+      }
+    },
+    "grounded_hedged": {
+      "n": 330,
+      "task_accuracy": 0.9818181818181818,
+      "field_accuracy": 0.996969696969697,
+      "cost_usd_total": 0.043748819999999994,
+      "cost_per_1k_tasks": 0.1325721818181818,
+      "p50_latency_ms": 1080.3387500054669,
+      "p95_latency_ms": 2228.728237643373,
+      "escalation_rate": 0.1,
+      "hedge_rate": 0.12424242424242424,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.9652305331512392,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.9423076923076923,
+        1.0
+      ],
+      "wall_p95_ms": 2621.5373622224433,
+      "wrong_fields": {
+        "refund_date": 6
+      }
+    },
+    "grounding_only": {
+      "n": 330,
+      "task_accuracy": 0.9818181818181818,
+      "field_accuracy": 0.996969696969697,
+      "cost_usd_total": 0.033961019999999995,
+      "cost_per_1k_tasks": 0.1029121818181818,
+      "p50_latency_ms": 1034.411728993291,
+      "p95_latency_ms": 2444.7379501711116,
+      "escalation_rate": 0.10303030303030303,
+      "hedge_rate": 0.0,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.9652305331512392,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.9423076923076923,
+        1.0
+      ],
+      "wall_p95_ms": 2445.0547189277136,
+      "wrong_fields": {
+        "refund_date": 6
+      }
+    },
+    "hedging_only": {
+      "n": 330,
+      "task_accuracy": 0.9121212121212121,
+      "field_accuracy": 0.9853535353535354,
+      "cost_usd_total": 0.03437904,
+      "cost_per_1k_tasks": 0.1041789090909091,
+      "p50_latency_ms": 1024.7307289973833,
+      "p95_latency_ms": 2204.380751893041,
+      "escalation_rate": 0.08787878787878788,
+      "hedge_rate": 0.08484848484848485,
+      "incomplete_cost_count": 0,
+      "accuracy_lower95": 0.8830199784470747,
+      "deadline_misses": 0,
+      "deadline_miss_rate": 0.0,
+      "deadline_miss_upper95": 0.00813194582214319,
+      "deadline_ms": 4000,
+      "accuracy_family_cluster_ci95": [
+        0.7899159663865546,
+        0.9890909090909091
+      ],
+      "wall_p95_ms": 2432.1842087170808,
+      "wrong_fields": {
+        "order_id": 7,
+        "refund_date": 22
+      }
+    }
+  }
+}

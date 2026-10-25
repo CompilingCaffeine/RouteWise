@@ -1,0 +1,42 @@
+# M6 extraction profile. Original config/routewise.yaml preserves the v1 experiment.
+# Validated on a synthetic workload; relative-date failures still require review.
+base_url: https://api.tokenfactory.nebius.com/v1/
+prices_snapshot: config/grounded-prices.snapshot.json
+generation:
+  temperature: 0.0
+  seed: 7
+  response_format: json_schema
+reasoning_modes:
+  'off':
+    max_tokens: 512
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: false
+  'on':
+    max_tokens: 4096
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: true
+candidates:
+- name: nano
+  model_id: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+  reasoning: 'off'
+- name: super
+  model_id: nvidia/nemotron-3-super-120b-a12b
+  reasoning: 'off'
+- name: ultra
+  model_id: nvidia/Nemotron-3-Ultra-550b-a55b
+  reasoning: 'off'
+baselines:
+  smallest: nano
+  strongest: ultra
+thresholds:
+  extraction:
+    min_task_accuracy: 0.95
+    min_field_accuracy: 0.95
+    max_p95_latency_ms: 4000
+hedging:
+  enabled: false
+  after_primary_percentile: 95
+prompts:
+  extraction: prompts/extraction_v4.txt

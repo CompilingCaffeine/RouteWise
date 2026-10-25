@@ -25,18 +25,18 @@ st.markdown('Choose requirements, compare fixed models with routing, and inspect
 explore, upload = st.tabs(['Explore measured configurations', 'Use your labelled workload'])
 LABELS = {'fixed_nano':'Nano', 'fixed_super':'Super', 'fixed_ultra':'Ultra',
           'fixed_grounded_nano':'Grounded Nano', 'fixed_grounded_super':'Grounded Super',
-          'current':'Current router', 'grounding_only':'Grounding only',
-          'hedging_only':'Hedging only', 'grounded_hedged':'Grounding + hedging'}
+          'current':'Nano → Super (original)', 'grounding_only':'Grounded Nano → Super',
+          'hedging_only':'Nano → Super + hedge (original)', 'grounded_hedged':'Grounded Nano → Super + hedge'}
 
 
 def show_metrics(metrics, selected):
     rows = []
     for name, m in sorted(metrics.items(), key=lambda x: x[1]['cost_per_1k_tasks']):
         rows.append({'choice': '✓' if name == selected else '', 'configuration': LABELS.get(name,name),
-                     'accuracy': pct(m['task_accuracy']), 'accuracy lower 95%': pct(m['accuracy_lower95']),
-                     'field accuracy': pct(m['field_accuracy']), 'p95': ms(m['p95_latency_ms']),
-                     'deadline misses': pct(m['deadline_miss_rate']), 'miss upper 95%': pct(m['deadline_miss_upper95']),
-                     '$ / 1k': money(m['cost_per_1k_tasks'])})
+                     '$ / 1k': money(m['cost_per_1k_tasks']), 'accuracy': pct(m['task_accuracy']),
+                     'lower 95%': pct(m['accuracy_lower95']), 'p95': ms(m['p95_latency_ms']),
+                     'field accuracy': pct(m['field_accuracy']), 'miss upper 95%': pct(m['deadline_miss_upper95']),
+                     'deadline misses': pct(m['deadline_miss_rate'])})
     if selected:
         st.success(f'Lowest-cost qualifying configuration: {LABELS.get(selected,selected)}')
     else:
@@ -53,7 +53,8 @@ with explore:
         st.info('Fresh-data confirmation has not finished yet. The original evidence remains on Held-out evaluation; '
                 'Experiments records the M5 measurement abort and its replacement protocol.')
     else:
-        run = st.selectbox('Confirmation run', runs, format_func=lambda r: r.id)
+        run = st.selectbox('Confirmation run', runs, format_func=lambda r: r.id) if len(runs)>1 else runs[0]
+        st.caption(f"Run `{run.id}`")
         result = artifacts.load_json(run.path/'summary.json')
         st.caption(f"{result['n_unique']} unique fresh conversations · synthetic data · three time windows. "
                    'Edits below explore this recorded test set; they do not constitute a new confirmation experiment.')
@@ -74,6 +75,15 @@ with explore:
                      deadline_miss_upper95=wilson(misses, len(traces), one_sided=True)[1], deadline_ms=deadline)
         selected = cheapest_qualifying(metrics, accuracy=accuracy, field_accuracy=field, deadline_ms=deadline)
         show_metrics(metrics, selected)
+        if selected:
+            low, high = metrics[selected]['accuracy_family_cluster_ci95']
+            if low < accuracy:
+                st.warning(f'Family-mix sensitivity interval: {pct(low)}–{pct(high)}. Its lower end is below your '
+                           'target. The result depends on the observed family mix; validate your own workload before deployment.')
+            weak = [r for r in result['families'] if r['strategy'] == selected and r['task_accuracy'] < accuracy]
+            for family in sorted(weak, key=lambda r:r['task_accuracy'])[:2]:
+                st.caption(f"Observed weak family: {family['family'].replace('_',' ')} — "
+                           f"{pct(family['task_accuracy'])} task accuracy on {family['n']} conversations.")
         fixed = cheapest_qualifying({k:v for k,v in metrics.items() if k.startswith('fixed_')},
                                    accuracy=accuracy, field_accuracy=field, deadline_ms=deadline)
         if selected and fixed:
@@ -88,7 +98,7 @@ with explore:
             if selected == fixed:
                 st.info('A fixed model is the cheapest qualifying choice here. Routing adds no demonstrated value at these requirements.')
         frame = pd.DataFrame([{'configuration': k, **v} for k, v in metrics.items()])
-        labels = {selected, 'fixed_super', 'fixed_ultra'}
+        labels = {selected, 'fixed_super', 'fixed_ultra', 'fixed_grounded_super'}
         frame['label'] = frame['configuration'].map(lambda n: LABELS[n] if n in labels else '')
         st.altair_chart(tradeoff_chart(frame, series='configuration', domain=list(metrics), threshold=accuracy,
                                       emphasize=[selected] if selected else ['grounded_hedged'], y_floor=.8,
@@ -140,7 +150,8 @@ with explore:
 with upload:
     st.markdown('Upload **JSONL** with `id`, `input`, `expected` (all six extraction fields), and optionally '
                 '`split` (`tune` or `heldout`). Without split labels, a stable text hash assigns the halves. '
-                'Duplicate conversations are rejected. Files and results stay in this session.')
+                'Exact duplicate conversations are rejected. Uploads and results are not saved to the repository. '
+                'Benchmarking sends conversation text to Nebius Token Factory; labels stay in local scoring.')
     sample = {'id': 'your-ticket-001', 'split': 'tune',
               'input': '[2026-04-01 09:00] Customer: Refund order web_12345.\n[2026-04-01 10:00] Agent: USD 25 will be refunded on 2026-04-03.',
               'expected': {'refund_requested': True, 'refund_amount': 25, 'currency': 'USD', 'order_id': 'web_12345',

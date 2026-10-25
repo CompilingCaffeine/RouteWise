@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections import Counter
 from typing import Any
 
 from routewise.confirmation import deployment_metrics
@@ -15,7 +14,9 @@ from routewise.statistics import cheapest_qualifying
 
 def parse_workload(text: str) -> tuple[list[Example], dict[str, list[str]]]:
     examples, splits, seen_text = [], {'tune': [], 'heldout': []}, set()
-    raw = [json.loads(line) for line in text.splitlines() if line.strip()]
+    def reject_nonfinite(value):
+        raise ValueError(f'Non-finite JSON number {value} is not a valid label')
+    raw = [json.loads(line, parse_constant=reject_nonfinite) for line in text.splitlines() if line.strip()]
     if len(raw) < 2 or len(raw) > 1000:
         raise ValueError('Provide 2–1,000 JSONL records.')
     ids = set()
@@ -25,7 +26,9 @@ def parse_workload(text: str) -> tuple[list[Example], dict[str, list[str]]]:
         ex = Example.model_validate({'id': record.get('id', f'item-{i:04d}'), 'task': 'extraction',
                                     'difficulty': record.get('difficulty', 'adversarial'),
                                     'input': record['input'], 'expected': record['expected']})
-        ExtractionOutput.model_validate(ex.expected)
+        ExtractionOutput.model_validate(ex.expected, strict=True)
+        if not ex.id.strip():
+            raise ValueError('Record IDs must not be empty')
         if ex.id in ids:
             raise ValueError(f'Duplicate ID: {ex.id}')
         digest = hashlib.sha256(ex.input.strip().encode()).hexdigest()

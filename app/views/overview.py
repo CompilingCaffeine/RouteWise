@@ -22,8 +22,34 @@ with st.container(border=True):
     st.markdown(
         "**Hypothesis under test** — for a structured information-extraction workload, RouteWise reduces total "
     "inference cost while meeting a stated quality target. The original experiment used smallest/strongest "
-    "baselines; M5 adds Super and grounded fixed-model controls on fresh data."
+    "baselines; M5/M6 add Super and grounded fixed-model controls on fresh data."
     )
+
+confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
+                 and artifacts.load_json(r.path/'summary.json').get('complete')]
+if confirmations:
+    fresh = artifacts.load_json(confirmations[0].path/'summary.json')
+    st.subheader(f"Fresh-data confirmation · {fresh.get('study', 'm5').upper()}")
+    selected = fresh['cheapest_qualifying']
+    names = {'grounding_only': 'Grounded Nano → Super (without hedging)',
+             'grounded_hedged': 'Grounded Nano → Super + hedge'}
+    st.markdown(f"Lowest-cost qualifying configuration: **{names.get(selected, selected) or 'none'}**.")
+    if selected:
+        measured = fresh['metrics'][selected]
+        cols = st.columns(4)
+        cols[0].metric('Task accuracy', pct(measured['task_accuracy']))
+        cols[1].metric('Accuracy lower 95%', pct(measured['accuracy_lower95']))
+        cols[2].metric('p95 response', f"{measured['p95_latency_ms']:,.0f} ms")
+        cols[3].metric('Cost / 1,000 tasks', money(measured['cost_per_1k_tasks']))
+    result = 'supported' if fresh['hypothesis_supported'] else 'not supported'
+    st.caption(f"{fresh['n_unique']} fresh synthetic conversations; 95% task target and 4 s p95 deadline. "
+               f"The predeclared grounding + hedging hypothesis is {result}. The selected configuration is a "
+               'descriptive comparison of the measured options. Open Workload optimizer for all baselines, '
+               'bounds, traces and limitations. The original experiment below is unchanged.')
+    if selected and fresh['metrics'][selected]['accuracy_family_cluster_ci95'][0] < .95:
+        low, high = fresh['metrics'][selected]['accuracy_family_cluster_ci95']
+        st.caption(f'Family-mix sensitivity interval: {pct(low)}–{pct(high)}. The result is conditional on '
+                   'this synthetic workload; validate real customer data and additional serving days.')
 
 if latest_eval and (latest_eval.path / "summary.json").exists():
     summary = artifacts.load_json(latest_eval.path / "summary.json")
@@ -32,7 +58,7 @@ if latest_eval and (latest_eval.path / "summary.json").exists():
     lead = summary.get("lead_strategy", "routewise")
     rw = summary["strategies"][lead]["overall"]
     strong = summary["strategies"]["always_strongest"]["overall"]
-    st.subheader("Primary held-out result")
+    st.subheader("Original pre-registered result · v1")
     status_badge(verdict["hypothesis_supported"], "Hypothesis supported", "Hypothesis not supported")
     cols = st.columns(4)
     cols[0].metric("Cost saved vs always-strongest", pct(comp.get("cost_savings_fraction")))
@@ -46,19 +72,11 @@ else:
             icon=":material/hourglass_empty:")
 
 registry = artifacts.run_registry()
-confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
-                 and artifacts.load_json(r.path/'summary.json').get('complete')]
-if confirmations:
-    fresh = artifacts.load_json(confirmations[0].path/'summary.json')
-    st.subheader(f"Fresh-data confirmation · {fresh.get('study', 'm5').upper()}")
-    st.markdown(f"Lowest-cost qualifying configuration: **{fresh['cheapest_qualifying'] or 'none'}**. "
-                f"Tested on {fresh['n_unique']} fresh synthetic conversations with a 95% task target and a 4 s p95 deadline. "
-                'Open **Workload optimizer** for every fixed-model comparison, confidence bound and trace.')
 cited = [(e, next((r for r in evals if r.id == e["run"]), None)) for e in registry.get("evaluations", [])]
 cited = [(e, r) for e, r in cited if r and (r.path / "summary.json").exists()]
 if cited:
     st.subheader("Evidence trail")
-    st.caption("Every held-out run, in the order it was run. None is hidden; the headline above is the pre-registered one.")
+    st.caption("Every held-out run, in the order it was run. None is hidden; the original pre-registered result remains unchanged.")
     rows = []
     for entry, r in cited:
         s = artifacts.load_json(r.path / "summary.json")

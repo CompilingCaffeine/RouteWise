@@ -8,6 +8,8 @@ The primary cost comparison is paired by conversation against the fixed model se
 
 The primary sample contains one outcome per unique conversation and configuration. Repeated sentinel outcomes are secondary; resampling keeps all outcomes for a conversation together. Family-clustered intervals show sensitivity to common scenario structure. Three time blocks help reveal transient serving events but do not establish multi-day availability or generalization to arbitrary families.
 
+Wilson bounds use a binomial model with independent outcomes. Shared templates and correlated provider stalls can violate that model. The per-family and per-window analyses expose some of this sensitivity; they do not turn three same-day windows into a production SLO certificate. Treat the numerical bounds as declared engineering gates on this experiment, with their assumptions, rather than an unconditional reliability guarantee.
+
 The full table also allows descriptive exploration of the cheapest configuration qualifying on the measured test set. Individual option intervals are not a simultaneous 95% selection guarantee across all configurations. Editing requirements after viewing test outcomes is exploratory. For a new uploaded workload, freeze requirements and the chosen configuration on tuning data, then assess it on untouched held-out data. Further tuning requires a new test set.
 
 Every delivered answer is scored against the field contract, not merely against schema validity. Source evidence can prevent unsupported values, but presence in the source is not proof of semantic correctness. A candidate identifier can still be a product code, and an arrival date is not an issue date.

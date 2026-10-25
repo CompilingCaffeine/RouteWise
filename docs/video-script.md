@@ -1,20 +1,22 @@
-# Demo video: script and shot list (target 2:45, hard limit 3:00)
+# Demo video: updated script and shot list
 
-Record the screen at https://nebius-routewise.streamlit.app/ in a 1400 px-wide window. Each spoken line is roughly as long as its time slot.
+Target 2:55, maximum 3:00. Record the deployed reviewed branch; the public site may still show the previous version until deployment. Confirm the Workload optimizer shows `confirmation-20261025T212745Z-ac61b1` before recording.
 
 | Time | Screen | Voice-over |
-| --- | --- | --- |
-| 0:00–0:20 | **Overview**, top of page | "Most teams pick one LLM and live with the trade-off: the strongest model overpays on easy requests, the cheapest ships wrong answers. RouteWise asks a narrow question with evidence: on *your* labelled workload, can a cheap NVIDIA Nemotron model do most of the work, with bad answers caught and fixed, inside declared quality and latency targets?" |
-| 0:20–0:45 | **Benchmark** page: extraction chart, then the policy table | "We benchmarked Nemotron 3 Nano, Super and Ultra on Nebius Token Factory, priced from Token Factory's live pricing API. On refund extraction, Ultra is perfect but costs about fifteen times as much as Nano per task. The optimizer simulates every route from the recorded calls and picks the cheapest one meeting our pre-declared targets: Nano first, Super only when the validator rejects the answer." |
-| 0:45–1:10 | **Live router** → pick an extraction example → **Route it** | "Here's a live request. Nano answers in about a second for a fraction of a cent. Every deterministic check passes, so we're done: one call." |
-| 1:10–1:35 | **Replay** tab → Controlled fault injection run → RouteWise + hedging → pick `ext-014` (escalated: `order_id_in_source`) | "When Nano gets it wrong, the validator says why. Here Nano put the product name, 'Lumen desk lamp', in the order-ID field. That value isn't an order ID anywhere in the conversation, so RouteWise escalated once to Super, which got every field right. Both calls are billed." |
-| 1:35–1:55 | Same tab → a **hedged** request (`ext-018`) | "And here the cheap model stalled. After 1.3 seconds, its own p95, RouteWise started Super in parallel and used the first valid answer: 2.5 seconds instead of 5." |
-| 1:55–2:30 | **Held-out evaluation** (primary run), then **Overview → Evidence trail** | "On held-out data RouteWise met every accuracy target at 91% lower cost than always using Ultra. It missed our 4-second latency target, though, because Nano's endpoint had two short slow periods, and we report that as a failed hypothesis. We then added hedged escalation and tested it under controlled, identical stalls: without hedging p95 was 4.3 seconds; with it, 2.7 seconds, still 89% cheaper than Ultra." |
-| 2:30–2:45 | GitHub README → `runs/` folder | "Everything runs on Nebius Token Factory with NVIDIA Nemotron 3, with JSON-schema outputs and live pricing. Thresholds and policy were frozen in git before testing, and every request has a raw trace in the repo. The main experiment cost thirty-six cents; everything, including four follow-up experiments, about six dollars." |
+|---|---|---|
+| 0:00–0:20 | Workload optimizer | "If you're extracting refund information, the hard question is which model meets your application's quality and latency limits at the lowest cost. RouteWise measures that on your own labelled workload. The answer can be a fixed model, a route with escalation, or none." |
+| 0:20–0:45 | Requirements at 95% task, 95% field, four-second deadline; complete table | "We compare every fixed model alongside grounded controls and routing. Here are the accuracy confidence bounds, deadline misses, latency and cost. The measured lowest-cost qualifying choice is source-grounded Nano followed by Super when validation fails, without hedging." |
+| 0:45–1:05 | Monthly-volume calculator; change deadline to show another choice or abstention | "Cost is shown at a volume you choose, so the saving is concrete. Tightening a requirement can change the choice or make every option fail. Editing these recorded results is exploration; a new deployment needs a fresh held-out test." |
+| 1:05–1:30 | Grounded configuration → source-evidence trace | "Nano used to drop order-ID prefixes or treat a product name containing a digit as an identifier. Now it selects complete source candidates, keeps null when no amount is stated, and derives the first customer date from message metadata. The raw model output and normalization are visible." |
+| 1:30–1:55 | Live inference with an order reference, explicit issue date and separate arrival date | "This is a live call to NVIDIA Nemotron on Nebius Token Factory. The issue date and arrival date are separate facts. The answer is displayed as soon as it's ready; if a hedge runs, final cost accounting includes both calls." |
+| 1:55–2:20 | Experiments → M5/M6, then M6 report | "We kept the failures. The original experiment missed its latency requirement. We then aborted a run after finding mislabeled date semantics in synthetic data. This replacement uses 330 fresh held-out conversations, nine live arms and three time windows. Its predeclared hypothesis is supported." |
+| 2:20–2:45 | Use your labelled workload tab; JSONL format, frozen tuning choice and held-out workflow | "Import labelled conversations, declare requirements, benchmark the tuning split and freeze the choice before testing held-out data. Labels never reach the model. Every call and result can be downloaded for review." |
+| 2:45–2:55 | GitHub: MIT license, README, protocol and runs | "The code, protocols and traces are public. Everything runs on Nebius Token Factory with NVIDIA Nemotron. Relative-date failures remain; real customer data and multi-day reliability checks are the next validation step." |
 
-## Recording checklist
+Before recording:
 
-- [ ] Use the deployed app. The Live router allows 15 calls per session, so do a practice take first.
-- [ ] Before recording, open **Replay** → *Controlled fault injection* → *RouteWise + hedging*, and check that `ext-014` (escalated) and `ext-018` (hedged) are there.
-- [ ] Keep browser zoom at 100% and hide bookmarks. Light mode reads best on YouTube.
-- [ ] Upload to YouTube as **Public** (or Unlisted if the rules allow), under 3:00, and paste the link into Devpost.
+- Deploy the reviewed branch and check the complete M6 results are visible.
+- Use a 1400-pixel-wide window and readable zoom; hide credentials and unrelated tabs.
+- Practice the live call once; use a harmless synthetic conversation with distinct issue and arrival dates.
+- Show the actual selected configuration and result; do not claim routing is necessary if a fixed model wins.
+- Keep the clip under three minutes and upload it as a public YouTube video, as required by the hackathon.

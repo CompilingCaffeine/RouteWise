@@ -1,0 +1,28 @@
+{
+  "policy_id": "m6-grounded-extraction-unhedged",
+  "source_run": "confirmtune-20261025T212438Z-7e696a",
+  "dataset_sha256": "2c079c1a7ac11fcc503a2fa5511f5ea81ce19a7460a6b566a877c37581eb107e",
+  "validation_run": "confirmation-20261025T212745Z-ac61b1",
+  "prompts": {
+    "extraction": "extraction_v4"
+  },
+  "selection": "Frozen on tuning data; confirmed on heldout",
+  "scope": "Synthetic refund extraction; family-mix sensitivity lower bound 94.2%; validate real workload",
+  "tasks": {
+    "extraction": {
+      "status": "ok",
+      "choice": {
+        "primary": "nano",
+        "escalate_to": "super",
+        "hedge_after_ms": null
+      },
+      "choice_label": "nano -> super on fail",
+      "reason": "Lowest-cost qualifying tuning route, confirmed at 98.2% task accuracy (96.5% one-sided lower bound), 2.44 s p95 and $0.103/1k on 330 fresh held-out tasks. Final validation failures require review.",
+      "thresholds": {
+        "min_task_accuracy": 0.95,
+        "min_field_accuracy": 0.95,
+        "max_p95_latency_ms": 4000
+      }
+    }
+  }
+}

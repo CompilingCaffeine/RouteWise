@@ -23,7 +23,7 @@ with tab5:
     for old in aborted:
         status = artifacts.load_json(old.path/'status.json')
         st.warning(f"M5 measurement abort: {status['reason']}")
-        st.caption(f"{status['completed_observations']} completed calls preserved; accounted cost "
+        st.caption(f"{status['completed_observations']} completed requests preserved; accounted cost "
                    f"{money(status['accounted_api_cost_usd'])}. New M6 data explicitly binds issue dates and includes arrival-only negatives.")
     st.markdown('**Can source-grounded extraction and live hedging satisfy a stricter quality target at lower cost '
                 'than the cheapest qualifying fixed model?** Nine live arms include fixed Nano/Super/Ultra, grounded '

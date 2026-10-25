@@ -6,6 +6,7 @@ import csv
 import json
 import math
 import threading
+import time
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
@@ -73,7 +74,11 @@ def run_evaluation(
 
     def job(router: Router, ex: Example) -> Callable[[], Trace]:
         def run_one() -> Trace:
-            trace = router.route(ex.task, ex.input, example_id=ex.id, expected=ex.expected)
+            started = time.perf_counter()
+            delivered = []
+            trace = router.route(ex.task, ex.input, example_id=ex.id, expected=ex.expected,
+                                 on_answer=lambda _: delivered.append((time.perf_counter()-started)*1000))
+            trace.latency_ms = delivered[0]
             with lock:
                 run.append("traces.jsonl", trace)
                 done[0] += 1

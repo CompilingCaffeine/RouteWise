@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-10-25T21:44:38.101266+00:00",
+  "python": "3.14.8",
+  "implementation": "cpython",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "packages": {
+    "openai": "3.37.0",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "PyYAML": "6.0.3",
+    "streamlit": "1.66.1",
+    "pandas": "3.1.0",
+    "altair": "6.3.0",
+    "pytest": "9.1.1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "analysis": "Post-hoc descriptive comparisons for the deployment choice; no non-inferiority claim",
+  "comparisons": {
+    "current": {
+      "accuracy_diff": 0.06060606060606061,
+      "accuracy_diff_ci95": [
+        0.030303030303030304,
+        0.09090909090909091
+      ],
+      "cost_diff_per_1k": 0.018510181818181818,
+      "cost_diff_per_1k_ci95": [
+        0.008853999999999999,
+        0.02849490909090909
+      ]
+    },
+    "fixed_grounded_super": {
+      "accuracy_diff": -0.006060606060606061,
+      "accuracy_diff_ci95": [
+        -0.015151515151515152,
+        0.0
+      ],
+      "cost_diff_per_1k": -0.23656145454545455,
+      "cost_diff_per_1k_ci95": [
+        -0.24748254545454546,
+        -0.22471272727272726
+      ]
+    },
+    "grounded_hedged": {
+      "accuracy_diff": 0.0,
+      "accuracy_diff_ci95": [
+        -0.00909090909090909,
+        0.00909090909090909
+      ],
+      "cost_diff_per_1k": -0.029659999999999995,
+      "cost_diff_per_1k_ci95": [
+        -0.042506,
+        -0.017410909090909088
+      ]
+    }
+  }
+}

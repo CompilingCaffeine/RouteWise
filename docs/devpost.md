@@ -1,115 +1,84 @@
-# RouteWise: Devpost submission text
+# RouteWise: Devpost submission draft
 
 **Track:** Best Apps and Agents
+
 **Demo:** https://nebius-routewise.streamlit.app/
+
 **Code:** https://github.com/CompilingCaffeine/RouteWise (MIT)
 
----
+This draft describes the completed local M6 implementation. Deploy the reviewed branch and record the updated demo before submitting.
 
 ## Inspiration
 
-Teams that put an LLM into a production workflow usually pick **one** model and live with the trade-off:
+A developer building refund extraction faces a concrete decision: which model can return the correct amount, order identifier and issue date within the application's latency and cost limits? Choosing a large model can overpay; choosing a small one can quietly return the wrong identifier or invent an amount.
 
-- the strongest model, which overpays on easy requests;
-- the cheapest model, which quietly ships wrong answers.
-
-Generic routers pick models by popularity or guess the task type. None of them knows whether a cheap model is good enough for *your* data, or what to do when it isn't.
-
-We wanted to answer a narrow question with evidence: **for a real structured-extraction workload, can a cheap NVIDIA Nemotron model handle most requests, while bad answers are caught and fixed, at a fraction of the cost and within declared quality and latency targets?**
+We built RouteWise to make that decision measurable on an application's own labelled workload. The answer can be a fixed model, a validated route with escalation, or no qualifying configuration.
 
 ## What it does
 
-RouteWise is a workload-aware inference router for Nebius Token Factory:
+1. **Bring a workload.** Import labelled refund-extraction conversations with separate tuning and held-out splits. Labels never reach the inference prompt.
+2. **Declare requirements.** Set task/field accuracy and a p95 latency deadline before benchmarking.
+3. **Measure alternatives.** Compare NVIDIA Nemotron Nano, Super and Ultra on Nebius Token Factory, including source-grounded controls and routing options. Every call records tokens, latency, usage-based cost and an answer trace.
+4. **Ground fields in evidence.** Select complete order identifiers and numeric amounts from source candidates; derive the first customer date from message metadata. Preserve raw model answers and any normalization. An arrival date is not a refund issue date.
+5. **Escalate and hedge selectively.** Deterministic failures escalate once. If the cheap model stalls, the backup can start after a fixed delay. An actual answer callback delivers the winner before final billing finishes; both calls are priced.
+6. **Validate separately.** Freeze a configuration on tuning data, then test it on untouched held-out conversations against fixed models. Confidence bounds can reject an option whose point estimate looks good.
 
-1. **Benchmark.** It runs Nemotron 3 Nano, Super and Ultra on your labelled tuning data. For every call it records accuracy, latency, tokens and cost, priced from Token Factory's live `/v1/models?verbose=true` pricing.
-2. **Optimize.** It picks, per task, the cheapest route that meets the requirements you declare up front, for example "≥ 85% task accuracy, ≥ 95% field accuracy, p95 ≤ 4 s". The optimizer simulates every route option from the recorded calls, with no extra API spend. It never relaxes a threshold silently.
-3. **Validate.** Every answer goes through deterministic checks that never see ground truth:
-   - the amount must appear in a sentence about a refund;
-   - the order ID must occur in the conversation;
-   - the refund date must be one the conversation states, with relative dates resolved from the right message.
-4. **Escalate, or hedge.** An answer that fails validation is retried **once** on a stronger model. If the cheap model is slower than its own p95, the stronger model is started in parallel and the first valid answer wins. A request never makes more than 2 calls, and every call is billed.
-5. **Prove it.** RouteWise compares itself against always-cheapest and always-strongest on **held-out** data. It reports accuracy, p50/p95 latency, cost per 1,000 tasks, escalation rate, validator precision/recall and a plain verdict, and keeps one trace per request.
+The Workload optimizer shows the lowest-cost qualifying configuration, every fixed-model comparison, monthly cost at a chosen volume, source evidence, downloadable results and live inference. It explicitly abstains when no configuration meets the requirements.
 
-The dashboard shows the benchmark, the policy and the reasoning behind it, and a live router that calls Token Factory. You can follow one request through validation, escalation and hedging, and see the full evidence trail of every held-out run.
+## Results
 
-## Results (measured, held-out)
+The original preregistered v1 experiment remains unchanged: on 62 held-out tasks, RouteWise achieved 95.2% overall accuracy at 91% lower cost than Ultra but missed its four-second extraction p95 deadline. We report that hypothesis as not supported.
 
-The thresholds were committed before any benchmark. The policy was committed before any held-out example was seen.
+M6 used **330 entirely fresh held-out conversations**, nine independent live arms and three randomized time windows, plus repeated sentinel conversations. Requirements were frozen at task accuracy ≥95%, field accuracy ≥95% and p95 ≤4 seconds. Task accuracy and deadline misses have one-sided 95% confidence gates. The fixed comparator was selected on tuning data before any held-out answer.
 
-| Primary run, 62 held-out tasks | Task acc. | Extraction p95 | $ / 1k tasks |
-| --- | --- | --- | --- |
-| Always Nemotron 3 Nano | 88.7% | 4.4 s | $0.050 |
-| Always Nemotron 3 Ultra | 100% | 1.3 s | $0.769 |
-| **RouteWise** | **95.2%** | **5.0 s** | **$0.068** |
+| Configuration | Task acc. | Lower 95% | p95 | $ / 1k |
+|---|---:|---:|---:|---:|
+| Nano (original prompt) | 83.3% | 79.7% | 2.06 s | $0.065 |
+| Super (original prompt) | 92.7% | 90.0% | 1.56 s | $0.291 |
+| Ultra (original prompt) | 93.9% | 91.4% | 1.20 s | $1.002 |
+| Grounded Nano | 90.3% | 87.3% | 2.08 s | $0.076 |
+| Grounded Super | 98.8% | 97.3% | 1.74 s | $0.339 |
+| Original Nano → Super | 92.1% | 89.3% | 2.20 s | $0.084 |
+| Grounded Nano → Super | 98.2% | 96.5% | 2.44 s | $0.103 |
+| Grounded Nano → Super + hedge | 98.2% | 96.5% | 2.23 s | $0.133 |
 
-- **Quality:** RouteWise met every accuracy target, escalating 6.5% of requests.
-- **Cost:** **91% less** than always using Ultra.
-- **Latency:** **missed** the declared 4 s extraction p95. The cause was two short windows where Nano's serverless endpoint took 4–7 s per call. **The pre-registered hypothesis is therefore reported as not supported.**
+**Measured deployment choice: source-grounded Nano → Super, without hedging.** The predeclared grounding-plus-hedging hypothesis is **supported**. The complete nine-arm table, paired intervals, per-family/window results and raw traces are in `results/M6-report.md` and `runs/confirmation-20261025T212745Z-ac61b1/`.
 
-What we did next is all in the repo's evidence trail:
+Known priced API usage for M6 was **$2.37**, including generation, verification, tuning and every confirmation arm. These are usage-priced estimates, not a reconciled provider invoice.
 
-- **Hedged escalation.** We added it after that run.
-- **Follow-up run.** The provider was fast, so hedging never fired. It still showed how much accuracy varies run to run: 92.7% vs 97.6% for identical behaviour.
-- **Controlled fault-injection run.** We added a seeded 3–6 s stall to 10% of Nano calls, identical for every strategy:
-  - unhedged RouteWise missed the ceiling (p95 4.3 s);
-  - **hedged RouteWise held it (p95 2.7 s)** at about 20% extra cost, still **89% cheaper than always-Ultra**.
-
-Every number above links to raw traces in `runs/`, and the whole experiment cost **$0.36** in API calls.
-
-### Four pre-registered follow-up experiments (dashboard → Experiments)
-
-- **Is validation worth it?** On 186 held-out answers:
-  - **The deterministic validator** never escalated a correct answer, at +28% cost over no validation.
-  - **A Nemotron 3 Super judge** catches more errors, mostly classification ones, but costs 3.5× more per task. It adds ~0.8 s to every request, enough to break the latency SLO by itself.
-  - **A Nano judge** flags a third of correct answers.
-- **Where does latency go?** In 144 streamed calls, a fixed ~0.74–1.1 s time-to-first-token floor makes up 68–92% of an extraction call. Ultra decodes fastest per token. Provider tail events showed up both as slow first tokens and as mid-stream decode stalls, which is why RouteWise hedges on total elapsed time.
-- **Can we predict failures before calling Nano?** We generated a new 1,198-conversation workload in 16 scenario families, written by Nemotron 3 Super and Ultra from fact sheets with verified labels. Then we trained a calibrated predictor and tested it on four families it never saw.
-  - **It failed honestly.** Test AUC is 0.48, and the pre-registered decision is not to adopt it.
-  - **The reason is family leakage.** On a random split the same model looks good (AUC 0.80). The deterministic validator, meanwhile, already catches 87% of Nano's errors on those unseen families.
-- **Latency under load.** Throughput scales sub-linearly to 10 req/s at 16 concurrent requests for Nano, with p95 under 1.8 s. The escalation target, Super, had the noisier tail.
+The selected route used $0.103 per 1,000 tasks versus $0.339 for the qualifying matched grounded-Super control: about 70% less, with observed accuracy of 98.2% versus 98.8%. This does not establish one-point non-inferiority. Hedging added about 29% cost while both routes met the deadline.
 
 ## How we built it
 
-- **Inference:** everything runs on **Nebius Token Factory** through its OpenAI-compatible API, using the standard `openai` Python SDK.
-- **Models:** **NVIDIA Nemotron 3 Nano 30B-A3B**, **Super 120B-A12B** and **Ultra 550B-A55B**, all with reasoning off (`chat_template_kwargs.enable_thinking=false`, verified by a probe) and **JSON-schema constrained output** (`response_format: json_schema`).
-- **Workload:** 120 labelled support conversations (refund extraction and ticket classification).
-  - Most are seeded templates whose labels are correct by construction, plus 10 hand-written edge cases.
-  - Adversarial cases include quoted price vs. agreed partial refund, counter-offers, multiple dates, relative dates across days, and currency symbols.
-  - They are split into tuning and held-out halves.
-- **Code:** Python, Pydantic, Streamlit and Altair. 68 tests run against a fake Token Factory endpoint, including a full benchmark → policy → evaluate → dashboard run, with no network calls.
-- **Reproducibility:** every run writes a manifest with:
-  - the git SHA
-  - the dataset hash
-  - prompt hashes
-  - the price-snapshot hash
-  - the thresholds
+All model inference, synthetic writing and reasoning verification run on Nebius Token Factory with NVIDIA Nemotron 3 Nano, Super and Ultra. The OpenAI-compatible Python SDK handles requests; no OpenAI model inference is used. Structured JSON output, model-specific reasoning controls, cached-token usage and live published prices are recorded.
 
-  It also writes one JSON line per call or request. The reported total cost is asserted to equal the sum of per-trace costs.
+Python/Pydantic implement source analysis, scoring, billing and the bounded router. Streamlit/Altair provide the benchmark, live traces, evidence trail and workload import. The implementation includes offline fake-endpoint tests for grounding, confidence gates, clustered uncertainty, answer delivery, billing and the complete pipeline.
 
-## Challenges we ran into
+## The hardest problem was valid measurement
 
-- **The cheap model invents values.** Error analysis on the tuning split showed Nemotron 3 Nano copying example values out of our prompt (`ORD-48213`, `1250.0`) into fields that had no value, and returning product names as order IDs. A prompt fix (v2) and two new validator rules caught all of these on the tuning set. On held-out data the validator caught 43–71% of Nano's errors with **zero false alarms**.
-- **Tail latency, not quality, broke the SLO.** We didn't expect the cheapest model's serving tail to be the binding constraint. Measuring it honestly, and then testing a fix under controlled conditions, became the most interesting part of the project.
-- **Staying honest under time pressure.** We kept the failed pre-registered result as the headline and labelled every later run for what it is. Validator blind spots found on held-out data were documented, not patched.
+A field-level audit found that all 18 missed Nano errors on the earlier M3 test split were order-ID errors. Our write-up had incorrectly inferred amount-selection errors from a scenario-family name. We corrected the diagnosis and made the source evidence explicit.
 
-## Accomplishments we're proud of
+Then a tuning-only audit found a deeper problem: synthetic writers sometimes turned a planned issue date into when funds would arrive. Both reasoning verifiers could agree with the wrong interpretation. We aborted M5, retained its completed calls and costs, and did not relabel its frozen test set.
 
-- **A reproducible experiment:** thresholds frozen in git before benchmarking, a policy frozen before held-out data, and raw traces for every request.
-- **A router that knows when cheap is safe:** 91% cost reduction at 95% task accuracy, on a workload where always-cheap drops to about 85–90%.
-- **A controlled demonstration** that hedged escalation contains provider stalls while keeping almost all of the savings.
+M6 uses new conversations with explicitly bound issue-date statements, plus arrival-only and distinct issue/arrival cases. All verifier disagreements were reviewed before Nano production inference. We retained cases where strong verifiers were demonstrably wrong instead of filtering the benchmark to their answers.
 
 ## What we learned
 
-- **A latency SLO needs its own evidence.** Measure the tail separately from quality, because a small tuning set will not reveal a provider's tail.
-- **Deterministic validation is cheap and precise but not complete.** Report recall against ground truth instead of assuming it.
-- **Run-to-run variance at temperature 0 is real.** On 41 examples it moved accuracy by about 5 points, so confidence intervals matter more than single numbers.
+- Model agreement is not ground truth. Define the field contract and inspect the source.
+- Benchmark the cheapest qualifying fixed model, including the same evidence/prompt treatment, alongside the strongest-model baseline.
+- Tail latency and quality need separate evidence. A low point-estimate p95 is not sufficient to establish a deadline requirement.
+- A learned pre-route predictor can learn scenario shortcuts: M3 scored AUC 0.80 on random folds and 0.48 on unseen families, so we did not adopt it.
+- The best configuration may be a fixed model. The product should recommend the measured choice and expose uncertainty.
 
-## What's next
+## Limits and next steps
 
-- **Load-aware routing:** switch to Super directly when the cheap model's recent p95 rises, instead of waiting per request.
-- **A learned failure predictor** that decides whether to start with the cheap model.
-- **Larger and real-world held-out sets**, run repeatedly to measure the latency tail.
-- **Model-judge validators**, compared against the deterministic validator on cost and recall.
+The benchmark prose is synthetic and model-written. Labels come from fact sheets and source checks; adjudication was done by a coding agent, not a human domain expert. Explicit fact statements improve label defensibility but narrow language diversity. All six errors from the selected route were relative-date failures flagged by validation. That family scored 12/18 correct, and the family-cluster sensitivity interval is 94.2–100%, crossing the target. The result therefore depends on the observed workload mix. Three same-day time windows are not multi-day availability evidence.
+
+The next validation step is independently labelled, de-identified customer conversations, followed by multi-day measurements at realistic arrival rates. The import workflow is built so a team can perform that evaluation on its own workload.
+
+## What changed during this build
+
+We implemented workload import and separate validation, source-grounded extraction, actual early answer delivery with complete hedge billing, a confidence-aware optimizer, matched fixed-model controls, fresh semantic verification and auditable experiment seals. The original failed result and the later measurement abort remain visible.
 
 ## Feedback on Nebius Token Factory, AI Cloud and NVIDIA models
 
@@ -117,9 +86,9 @@ Every number above links to raw traces in `runs/`, and the whole experiment cost
 
 - **Drop-in OpenAI compatibility.** The `openai` SDK worked unchanged, including `with_raw_response` for rate-limit headers.
 - **`/v1/models?verbose=true`.** It returns machine-readable per-token prices, including cached-input prices, plus context length and features. We used it as the *only* price source, so all costs are computed from live published prices rather than typed by hand.
-- **JSON-schema constrained output.** Every Nemotron call in our probe and benchmarks returned schema-valid JSON.
+- **JSON-schema constrained output.** Successful extraction completions in our probes and production benchmarks were schema-valid JSON.
 - **Detailed usage blocks.** They include cached-token counts, and informative `x-ratelimit-*` headers came back on every response.
-- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept all 10,843 calls behind every committed experiment, including generating and double-verifying a 1,198-conversation dataset, at $6.00.
+- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5/M6 costs are separately reported with all traces.
 
 **Friction we hit**
 
@@ -128,13 +97,14 @@ Every number above links to raw traces in `runs/`, and the whole experiment cost
 - **Reasoning tokens are reported inconsistently.** Nemotron 3 Super and Ultra report `completion_tokens_details.reasoning_tokens`; Nano did not, so reasoning cost has to be inferred from completion tokens.
 - **Nano's serverless endpoint had latency bursts.** Over two ~3-second windows, calls producing about 80 output tokens took 4–7 s. No rate limiting was involved. A server-timing or queue-time header would make tail latency diagnosable.
 - **Cached-input pricing differs by model.** Nano has no cached-input price, while Super and Ultra do. That's fine, but worth surfacing next to the model in the catalogue.
-- **Docs:** the structured-output Python example has a syntax error (missing commas around `response_format`). It also nests the schema directly under `json_schema` rather than the `{name, schema}` shape the OpenAI SDK sends.
+
+- **Temporary overload.** Seven Super reasoning-verification requests exhausted two attempts with HTTP 529 "System is overloaded". Sequential retries at 30 RPM completed all seven. Original failures remain in the artifacts; the final 3,402-request production comparison had no API errors.
 
 **NVIDIA Nemotron 3**
 
-- **The thinking switch is reliable.** The `enable_thinking` toggle via `chat_template_kwargs` worked on all three models. Thinking added 300–550 output tokens (roughly 2–3× cost and latency) with no accuracy gain on our extraction probe, so we ran reasoning-off throughout.
+- **The thinking switch is reliable.** The `enable_thinking` toggle via `chat_template_kwargs` worked on all three models. Thinking added 300–550 output tokens (roughly 2–3× cost and latency) with no accuracy gain on our extraction probe, so production extraction runs use reasoning-off. Dedicated semantic-verification calls use reasoning-on.
 - **Nano** is strong on clear cases and very cheap. Its main weakness on this workload was filling absent fields with plausible-looking values, which deterministic validation can catch.
-- **Super** was near-perfect after a prompt revision, making it an ideal escalation target. **Ultra** was perfect on this workload.
+- **Super** was near-perfect after a prompt revision, making it an ideal escalation target. **Ultra** was perfect on the original v1 workload. Later date-semantics tests show that strong-model agreement alone does not establish label correctness.
 
 **Nebius AI Cloud:** not used. All inference ran on Token Factory serverless endpoints.
 

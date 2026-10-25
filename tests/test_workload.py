@@ -28,6 +28,14 @@ def test_import_rejects_missing_ground_truth_fields():
         parse_workload('\n'.join(map(json.dumps, [a,b])))
 
 
+@pytest.mark.parametrize('field,value', [('refund_requested', 'false'), ('refund_amount', True), ('refund_amount', float('nan'))])
+def test_import_rejects_coerced_or_nonfinite_ground_truth(field, value):
+    a, b = row(1, 'tune'), row(2, 'heldout')
+    a['expected'][field] = value
+    with pytest.raises(ValueError):
+        parse_workload('\n'.join(map(json.dumps, [a,b])))
+
+
 def test_fresh_plan_is_disjoint_and_all_new_families_are_test_only():
     sheets = fresh_sheets()
     assert len(sheets) == 600 and len({s.id for s in sheets}) == 600
