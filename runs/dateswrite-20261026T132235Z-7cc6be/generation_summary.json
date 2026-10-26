@@ -1,0 +1,258 @@
+{
+  "accepted": 687,
+  "planned": 720,
+  "writer_cost_usd": 0.3548372000000001,
+  "accepted_by_family": {
+    "boundary_relative": 30,
+    "week_offset": 30,
+    "this_weekday": 30,
+    "day_after_tomorrow": 30,
+    "past_relative": 30,
+    "customer_restatement": 30,
+    "corrected_promise": 30,
+    "issue_and_arrival": 30,
+    "paraphrased_offset": 14,
+    "arrival_only_relative": 30,
+    "business_days": 30,
+    "range_or_bound": 30,
+    "next_or_vague": 30,
+    "full_refund_absolute": 15,
+    "refund_no_date": 15,
+    "replacement_only": 15,
+    "partial_refund_distractor": 14,
+    "multi_date": 12,
+    "relative_refund_date": 12,
+    "system_message_first": 8,
+    "counteroffer": 15,
+    "shipping_fee_only": 15,
+    "currency_symbol": 14,
+    "no_amount_stated": 15,
+    "large_amount": 15,
+    "refund_in_past": 15,
+    "negated_refund": 15,
+    "multi_item_sum": 15,
+    "two_orders": 15,
+    "tracking_distractor": 15,
+    "superseded_order": 13,
+    "numeric_order": 15,
+    "product_and_date_not_id": 15,
+    "arrival_without_issue": 15,
+    "arrival_versus_issue": 15
+  },
+  "rejected": [
+    {
+      "id": "v5c-08000",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'"
+      ]
+    },
+    {
+      "id": "v5c-08002",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08004",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08010",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08006",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08014",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08008",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'business'",
+        "paraphrase copies the literal day count"
+      ]
+    },
+    {
+      "id": "v5c-08012",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'"
+      ]
+    },
+    {
+      "id": "v5c-08016",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08018",
+      "problems": [
+        "message 1 is missing 'order reference ORD-38400'",
+        "paraphrase uses a forbidden or ambiguous form 'soon'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08020",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5c-08025",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'couple'"
+      ]
+    },
+    {
+      "id": "v5c-08022",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'"
+      ]
+    },
+    {
+      "id": "v5c-08024",
+      "problems": [
+        "message 3 is missing 'will be issued'"
+      ]
+    },
+    {
+      "id": "v5c-08026",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'"
+      ]
+    },
+    {
+      "id": "v5c-08028",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5r-03014",
+      "problems": [
+        "message 4 is missing '16.50 EUR'"
+      ]
+    },
+    {
+      "id": "v5r-04006",
+      "problems": [
+        "message 2 is missing '$142.99'"
+      ]
+    },
+    {
+      "id": "v5r-04010",
+      "problems": [
+        "message 3 is missing 'The refund will be issued on 2026-07-15'"
+      ]
+    },
+    {
+      "id": "v5r-04012",
+      "problems": [
+        "message 2 is missing 'The refund will be issued on Jul 10'"
+      ]
+    },
+    {
+      "id": "v5r-05000",
+      "problems": [
+        "message 2 is missing 'The refund will be issued in five days'"
+      ]
+    },
+    {
+      "id": "v5r-05002",
+      "problems": [
+        "message 1 is missing '$209.99'"
+      ]
+    },
+    {
+      "id": "v5r-05004",
+      "problems": [
+        "message 2 is missing 'The refund will be issued tomorrow'"
+      ]
+    },
+    {
+      "id": "v5r-06002",
+      "problems": [
+        "message 1 is missing 'AB/1540276/UK'",
+        "message 3 is missing '\u00a58,900'",
+        "message 3 is missing 'The refund will be issued on Sep 12'"
+      ]
+    },
+    {
+      "id": "v5r-06000",
+      "problems": [
+        "message 4 is missing 'The refund will be issued on September 14'"
+      ]
+    },
+    {
+      "id": "v5r-06004",
+      "problems": [
+        "message 1 is missing 'q1540282z'"
+      ]
+    },
+    {
+      "id": "v5r-06006",
+      "problems": [
+        "message 1 is missing 'ORD-1540288'",
+        "message 4 is missing 'The refund will be issued on February 9, 2026'"
+      ]
+    },
+    {
+      "id": "v5r-06008",
+      "problems": [
+        "message 1 is missing 'AB/1540294/UK'"
+      ]
+    },
+    {
+      "id": "v5r-06010",
+      "problems": [
+        "message 1 is missing 'q1540300z'",
+        "message 4 is missing 'The refund will be issued on April 5'"
+      ]
+    },
+    {
+      "id": "v5r-06014",
+      "problems": [
+        "message 3 is missing '$333.99'"
+      ]
+    },
+    {
+      "id": "v5r-09000",
+      "problems": [
+        "message 2 is missing 'The refund will be issued on Feb 11'"
+      ]
+    },
+    {
+      "id": "v5r-new-1-006",
+      "problems": [
+        "message 1 is missing 'old order OLD-540006'",
+        "message 1 is missing 'order reference ORD-1670006'"
+      ]
+    },
+    {
+      "id": "v5r-new-1-012",
+      "problems": [
+        "message 1 is missing 'current order ORD-1670012'"
+      ]
+    }
+  ]
+}

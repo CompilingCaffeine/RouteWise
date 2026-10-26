@@ -1,0 +1,10 @@
+{
+  "study": "m7",
+  "set": "confirm",
+  "seed": 2306332526,
+  "writer_run": "dateswrite-20261026T132235Z-7cc6be",
+  "verifier_run": "datesverify-20261026T132459Z-81949b",
+  "unresolved_verifier_failures": 0,
+  "queued": 63,
+  "api_cost_usd": 3.941123500000002
+}
