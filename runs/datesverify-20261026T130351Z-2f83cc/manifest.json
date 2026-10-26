@@ -1,0 +1,13 @@
+{
+  "experiment_id": "datesverify-20261026T130351Z-2f83cc",
+  "created_at": "2026-10-26T13:03:51.073687+00:00",
+  "git": {
+    "sha": "dedb563212d91de884641e9d0be37f3e30e9e513",
+    "dirty": true
+  },
+  "study": "m7",
+  "set": "dev",
+  "writer_run": "dateswrite-20261026T130330Z-5ddc24",
+  "n_examples": 100,
+  "verifier_prompt_sha256": "4fbec7ff25c764afb7ebddf9457c1bae43356dd403db59bdf94c3b832863512f"
+}

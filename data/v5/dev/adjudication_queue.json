@@ -1,0 +1,585 @@
+[
+  {
+    "id": "v5d-00001",
+    "family": "boundary_relative",
+    "requires_review": false,
+    "input": "[2026-12-30 14:28] Customer: I have sent back the Atlas hiking backpack with order reference ORD-99896 and would like to request a refund of 126.99 EUR.\n[2026-12-30 14:40] Agent: Thank you for your message. I am looking into this for you now.\n[2026-12-31 13:15] Agent: I can confirm we have received your return and the refund of 126.99 EUR has been approved. The refund will be issued in 3 days.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 126.99,
+      "currency": "EUR",
+      "order_id": "ORD-99896",
+      "contact_date": "2026-12-30",
+      "refund_date": "2027-01-03"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      },
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-00002",
+    "family": "boundary_relative",
+    "requires_review": false,
+    "input": "[2026-03-29 08:54] Customer: I sent back the TrailMax 2 tent and my order reference ORD-99980. Can I please get a refund of $418.99?\n[2026-03-29 09:13] Agent: Thanks for letting me know\u2014I\u2019m currently reviewing your return request.\n[2026-03-31 17:22] Agent: We\u2019ve confirmed receipt of your TrailMax 2 tent and will process a refund of $418.99. The refund will be issued in 2 days.\n[2026-03-31 17:37] Customer: Thank you so much for the update!",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 418.99,
+      "currency": "USD",
+      "order_id": "ORD-99980",
+      "contact_date": "2026-03-29",
+      "refund_date": "2026-04-02"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-00005",
+    "family": "boundary_relative",
+    "requires_review": false,
+    "input": "[2028-02-27 09:48] Customer: I sent back the Solace noise-cancelling headphones for order reference ORD-58884 and I want a refund of USD 62.99.\n[2028-02-27 10:05] Agent: Thanks for reaching out. I'm looking into this for you now.\n[2028-02-28 08:02] Agent: I've confirmed the return and the refund of USD 62.99. The refund will be issued in 4 days.\n[2028-02-28 08:24] Customer: Thanks for the quick update.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 62.99,
+      "currency": "USD",
+      "order_id": "ORD-58884",
+      "contact_date": "2028-02-27",
+      "refund_date": "2028-03-03"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-01000",
+    "family": "week_offset",
+    "requires_review": false,
+    "input": "[2026-03-16 08:24] Customer: I returned my Ember cast-iron skillet under order reference ORD-42441 and would like a full refund of 214.99 CAD.\n[2026-03-16 08:32] Agent: Thank you for your message\u2014I\u2019ve received your request regarding order reference ORD-42441 and am currently reviewing it.\n[2026-03-17 13:52] Agent: We confirm receipt of your return and will process a refund of 214.99 CAD. The refund will be issued in two weeks.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 214.99,
+      "currency": "CAD",
+      "order_id": "ORD-42441",
+      "contact_date": "2026-03-16",
+      "refund_date": "2026-03-31"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      },
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-01001",
+    "family": "week_offset",
+    "requires_review": false,
+    "input": "[2026-08-02 07:43] Customer: I sent back the Atlas hiking backpack for order reference ORD-67250 and I want my refund of \u20ac237.99 processed immediately.\n[2026-08-02 08:07] Agent: I've received your message and I'm looking into the return for your Atlas hiking backpack right now.\n[2026-08-02 08:22] Agent: I can confirm we've received your return for order reference ORD-67250 and the refund of \u20ac237.99 has been approved. The refund will be issued in 2 weeks.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 237.99,
+      "currency": "EUR",
+      "order_id": "ORD-67250",
+      "contact_date": "2026-08-02",
+      "refund_date": "2026-08-16"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      },
+      "super+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-01002",
+    "family": "week_offset",
+    "requires_review": false,
+    "input": "[2026-05-12 09:15] Customer: I sent back the Quill fountain pen set and I need a refund for my purchase. Please process this for order reference ORD-58004. Refund me CHF 234.99.\n[2026-05-12 09:30] Agent: We have received your return and confirm the refund of CHF 234.99. The refund will be issued in a week.\n[2026-05-12 09:34] Customer: Thank you for your help.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 234.99,
+      "currency": "CHF",
+      "order_id": "ORD-58004",
+      "contact_date": "2026-05-12",
+      "refund_date": "2026-05-19"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      },
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-02002",
+    "family": "this_weekday",
+    "requires_review": false,
+    "input": "[2026-03-15 07:12] Customer: I returned the Quill fountain pen set and I need a refund of $346.99.\n[2026-03-16 10:49] Agent: Your return has been confirmed and we will process a refund of $346.99. The refund will be issued this Friday.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 346.99,
+      "currency": "USD",
+      "order_id": null,
+      "contact_date": "2026-03-15",
+      "refund_date": "2026-03-20"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": "2026-03-17",
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-02005",
+    "family": "this_weekday",
+    "requires_review": false,
+    "input": "[2026-03-29 14:44] Customer: I sent back the Orbit wireless earbuds with order reference ORD-33361 and would like a refund of $79.99.\n[2026-03-30 16:24] Agent: We confirm the return and the refund of $79.99. The refund will be issued this Thursday.\n[2026-03-30 16:29] Customer: Thank you for your help.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 79.99,
+      "currency": "USD",
+      "order_id": "ORD-33361",
+      "contact_date": "2026-03-29",
+      "refund_date": "2026-04-02"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_date": "2026-04-01",
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-02007",
+    "family": "this_weekday",
+    "requires_review": false,
+    "input": "[2026-05-24 08:41] Customer: I sent back the Orbit wireless earbuds and would like a refund of GBP 164.99.\n[2026-05-26 15:48] Agent: We have received your return and confirm the refund of GBP 164.99. The refund will be issued this Friday.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 164.99,
+      "currency": "GBP",
+      "order_id": null,
+      "contact_date": "2026-05-24",
+      "refund_date": "2026-05-29"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": "2026-05-26",
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04000",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-09-01 14:33] Customer: I returned the Orbit wireless earbuds that I purchased for CAD 385.99 and would like to know if the refund has been issued yet.\n[2026-09-02 16:23] Agent: We have verified your return and confirm that the refund for CAD 385.99 has been processed. The refund was issued 2 days ago.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 385.99,
+      "currency": "CAD",
+      "order_id": null,
+      "contact_date": "2026-09-01",
+      "refund_date": "2026-08-31"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04001",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-04-12 16:17] Customer: I returned the Drift stand-up paddleboard with order reference ORD-66393 and paid \u00a3325.99. Has the refund been issued yet?\n[2026-04-13 12:18] Agent: The refund was issued three days ago for \u00a3325.99.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 325.99,
+      "currency": "GBP",
+      "order_id": "ORD-66393",
+      "contact_date": "2026-04-12",
+      "refund_date": "2026-04-10"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04002",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-02-25 09:00] Customer: I recently returned the Pixel smart thermostat under order reference ORD-85176 for which I paid 387.99 CAD. Could you please let me know if the refund has been processed?\n[2026-02-25 09:05] Agent: Yes, I can confirm that your refund of 387.99 CAD has been completed. The refund was issued yesterday.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 387.99,
+      "currency": "CAD",
+      "order_id": "ORD-85176",
+      "contact_date": "2026-02-25",
+      "refund_date": "2026-02-24"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      },
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04003",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-02-17 17:58] Customer: I returned the AeroPress coffee maker, order reference ORD-64695, and paid \u00a3173.99. Has the refund been issued yet?\n[2026-02-17 18:07] Agent: Thanks for reaching out. I'm looking into this for you right now.\n[2026-02-18 15:26] Agent: I've checked and can confirm the refund of \u00a3173.99 has already been issued. The refund was issued three days ago.\n[2026-02-18 15:44] Customer: Thanks for the update, I appreciate it.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 173.99,
+      "currency": "GBP",
+      "order_id": "ORD-64695",
+      "contact_date": "2026-02-17",
+      "refund_date": "2026-02-15"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04004",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-01-27 16:33] Customer: I returned the AeroPress coffee maker under order reference ORD-79462. I paid CA$611.99\u2014has the refund been issued yet?\n[2026-01-28 16:06] Agent: Yes, we\u2019ve processed it! The refund was issued three days ago for CA$611.99.\n[2026-01-28 16:26] Customer: Thanks so much for checking on that\u2014I really appreciate it.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 611.99,
+      "currency": "CAD",
+      "order_id": "ORD-79462",
+      "contact_date": "2026-01-27",
+      "refund_date": "2026-01-25"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04006",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-05-06 12:31] Customer: I returned the Harbor wool blanket I purchased for USD 368.99 and would like to know if my refund has been issued.\n[2026-05-06 12:39] Agent: We have processed your request and can confirm that the refund for USD 368.99 has been completed. The refund was issued earlier today.\n[2026-05-06 12:51] Customer: Thank you for your assistance.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 368.99,
+      "currency": "USD",
+      "order_id": null,
+      "contact_date": "2026-05-06",
+      "refund_date": "2026-05-06"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-04007",
+    "family": "past_relative",
+    "requires_review": false,
+    "input": "[2026-08-26 17:14] Customer: I returned the Nimbus running shoes and paid 285.99 USD, has the refund been issued yet?\n[2026-08-26 17:35] Agent: Thanks for reaching out \u2014 I'm looking into that for you right now.\n[2026-08-26 17:51] Agent: I've checked and the refund of 285.99 USD has already been processed. The refund was issued three days ago.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 285.99,
+      "currency": "USD",
+      "order_id": null,
+      "contact_date": "2026-08-26",
+      "refund_date": "2026-08-23"
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_requested": false,
+        "refund_date_status": "issue_date"
+      }
+    }
+  },
+  {
+    "id": "v5d-05001",
+    "family": "customer_restatement",
+    "requires_review": false,
+    "input": "[2026-07-15 17:56] Customer: I sent back the TrailMax 2 tent, order reference ORD-55527, and would like a refund of $278.99.\n[2026-07-15 18:17] Agent: Thank you for reaching out, I'm looking into this for you.\n[2026-07-16 09:21] Agent: Your return has been confirmed and the refund of $278.99 is being processed. The refund will be issued in 5 days.\n[2026-07-17 12:04] Customer: You mentioned the refund would be issued in 5 days, is that still the plan?\n[2026-07-17 12:25] Agent: Yes, the refund remains on schedule as previously promised.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 278.99,
+      "currency": "USD",
+      "order_id": "ORD-55527",
+      "contact_date": "2026-07-15",
+      "refund_date": "2026-07-21"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-05002",
+    "family": "customer_restatement",
+    "requires_review": false,
+    "input": "[2026-05-28 17:16] Customer: I returned the Harbor wool blanket and I want my money back\u2014please process a refund of USD 328.99.\n[2026-05-28 17:40] Agent: We\u2019ve confirmed your return and will proceed with the refund of USD 328.99. The refund will be issued in 4 days.\n[2026-05-30 12:23] Customer: You told me the refund would be issued in 4 days\u2014is that still the case?\n[2026-05-30 12:42] Agent: Yes, the refund remains on schedule as originally communicated.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 328.99,
+      "currency": "USD",
+      "order_id": null,
+      "contact_date": "2026-05-28",
+      "refund_date": "2026-06-01"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-05003",
+    "family": "customer_restatement",
+    "requires_review": false,
+    "input": "[2026-07-19 15:30] Customer: I sent back the Pixel smart thermostat and would like a refund of AUD 110.99.\n[2026-07-19 15:39] Agent: Thank you for your message. I am looking into this for you.\n[2026-07-19 15:43] Agent: Your return has been confirmed and the refund of AUD 110.99 will be processed. The refund will be issued in 3 days.\n[2026-07-20 15:32] Customer: You mentioned the refund would be issued in 3 days. Is that still the plan?\n[2026-07-20 15:54] Agent: Yes, the refund is still on schedule as previously promised.\n[2026-07-20 16:17] Customer: Thank you for the update.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 110.99,
+      "currency": "AUD",
+      "order_id": null,
+      "contact_date": "2026-07-19",
+      "refund_date": "2026-07-22"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-05004",
+    "family": "customer_restatement",
+    "requires_review": false,
+    "input": "[2026-02-25 13:23] Customer: I have returned the Ember cast-iron skillet under order reference ORD-55607 and kindly request a refund of \u20ac49.99.\n[2026-02-25 13:34] Agent: We confirm receipt of your return and will process a refund of \u20ac49.99. The refund will be issued in 4 days.\n[2026-02-26 10:37] Customer: You mentioned that the refund would be issued in 4 days\u2014is this still the plan?\n[2026-02-26 10:57] Agent: Yes, the refund remains on schedule as previously communicated.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 49.99,
+      "currency": "EUR",
+      "order_id": "ORD-55607",
+      "contact_date": "2026-02-25",
+      "refund_date": "2026-03-01"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-05006",
+    "family": "customer_restatement",
+    "requires_review": false,
+    "input": "[2026-08-10 17:56] Customer: I returned the Lumen desk lamp and request a refund of \u20ac213.99.\n[2026-08-11 14:13] Agent: We have received your return and confirm the refund of \u20ac213.99. The refund will be issued in 2 days.\n[2026-08-12 09:51] Customer: You said the refund would be issued in 2 days\u2014is that still the plan?\n[2026-08-12 10:15] Agent: Yes, the refund remains on schedule as previously communicated.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 213.99,
+      "currency": "EUR",
+      "order_id": null,
+      "contact_date": "2026-08-10",
+      "refund_date": "2026-08-13"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-06000",
+    "family": "corrected_promise",
+    "requires_review": false,
+    "input": "[2026-07-22 16:00] Customer: I sent back the Solace noise-cancelling headphones. Please process a refund of $261.99 for order reference ORD-21358.\n[2026-07-23 13:26] Agent: Your return has been confirmed and a refund of $261.99 will be processed. The refund will be issued in 2 days.\n[2026-07-24 17:09] Agent: Correction: The refund will now be issued in 3 days.\n[2026-07-24 17:14] Customer: Thank you for your help.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 261.99,
+      "currency": "USD",
+      "order_id": "ORD-21358",
+      "contact_date": "2026-07-22",
+      "refund_date": "2026-07-27"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-06004",
+    "family": "corrected_promise",
+    "requires_review": false,
+    "input": "[2026-08-10 10:14] Customer: I sent back the Nimbus running shoes and I\u2019d like a refund of 333.99 USD please.\n[2026-08-10 10:27] Agent: We\u2019ve confirmed your return and will process a refund of 333.99 USD. The refund will be issued in 3 days.\n[2026-08-11 13:09] Agent: I made a mistake earlier. The refund will now be issued in five days",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 333.99,
+      "currency": "USD",
+      "order_id": null,
+      "contact_date": "2026-08-10",
+      "refund_date": "2026-08-16"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "unparsed": null,
+        "refund_date_status": null
+      }
+    }
+  },
+  {
+    "id": "v5d-07001",
+    "family": "issue_and_arrival",
+    "requires_review": false,
+    "input": "[2026-03-29 15:16] Customer: I sent back the Vertex mechanical keyboard, order reference ORD-97361. Please refund A$36.99.\n[2026-03-30 17:03] Agent: We've confirmed your return and the refund of A$36.99. The refund will be issued in 2 days. It should reach your account in four days.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 36.99,
+      "currency": "AUD",
+      "order_id": "ORD-97361",
+      "contact_date": "2026-03-29",
+      "refund_date": "2026-04-01"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-07002",
+    "family": "issue_and_arrival",
+    "requires_review": false,
+    "input": "[2026-06-13 12:00] Customer: I returned my Orbit wireless earbuds under order reference ORD-53464 and request a refund of JPY 37,100.\n[2026-06-14 17:10] Agent: We\u2019ve confirmed your return and will process a refund of JPY 37,100. The refund will be issued in two days. The money should arrive in 6 days.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 37100.0,
+      "currency": "JPY",
+      "order_id": "ORD-53464",
+      "contact_date": "2026-06-13",
+      "refund_date": "2026-06-16"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-08003",
+    "family": "paraphrased_offset",
+    "requires_review": false,
+    "input": "[2026-05-16 13:54] Customer: I sent back the Solace noise-cancelling headphones, order reference ORD-13123, and would like a refund of \u20ac186.99.\n[2026-05-17 08:11] Agent: We confirm the return and the refund of \u20ac186.99, which will be issued three days from now.\n[2026-05-17 08:24] Customer: Thank you for your help.",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 186.99,
+      "currency": "EUR",
+      "order_id": "ORD-13123",
+      "contact_date": "2026-05-16",
+      "refund_date": "2026-05-20"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-08005",
+    "family": "paraphrased_offset",
+    "requires_review": false,
+    "input": "[2026-06-30 15:40] Customer: Hi, I sent back the Cascade water filter for order reference ORD-69440 and would like a refund of $419.99.\n[2026-07-03 11:36] Agent: We've confirmed the return and the refund of $419.99 will be issued by this time in a fortnight.\n[2026-07-03 11:52] Customer: Thanks so much for your help!",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 419.99,
+      "currency": "USD",
+      "order_id": "ORD-69440",
+      "contact_date": "2026-06-30",
+      "refund_date": "2026-07-17"
+    },
+    "verifier_answers": {
+      "ultra+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      },
+      "super+think": {
+        "refund_date": null,
+        "refund_date_status": "needs_review"
+      }
+    }
+  },
+  {
+    "id": "v5d-09003",
+    "family": "arrival_only_relative",
+    "requires_review": false,
+    "input": "[2026-09-05 11:12] Customer: I sent back the Pixel smart thermostat order reference ORD-91777 and would like a refund of $430.99\n[2026-09-05 11:26] Agent: Thanks for letting me know \u2014 I'm looking into it now\n[2026-09-06 17:15] Agent: Your return has been confirmed and the refund of $430.99 is being processed. The money should show up in two days. The refund issue date is not confirmed yet\n[2026-09-06 17:40] Customer: Thank you for the update",
+    "label": {
+      "refund_requested": true,
+      "refund_amount": 430.99,
+      "currency": "USD",
+      "order_id": "ORD-91777",
+      "contact_date": "2026-09-05",
+      "refund_date": null
+    },
+    "verifier_answers": {
+      "super+think": {
+        "refund_date_status": "needs_review"
+      }
+    }
+  }
+]

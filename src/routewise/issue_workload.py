@@ -15,6 +15,12 @@ ARRIVAL_FAMILIES = ('arrival_without_issue', 'arrival_versus_issue')
 
 def fresh_sheets():
     sheets = base_sheets(seed=SEED, per_family=20, version='v4')
+    bind_issue_dates(sheets)
+    return sheets + arrival_sheets('v4', start=date(2026, 4, 1), id_base=1380000, amount_base=35, per_family=20)
+
+
+def bind_issue_dates(sheets):
+    """Make every non-null issue date an exact issue statement and every order ID an explicit order reference."""
     for sheet in sheets:
         oid = sheet.expected['order_id']
         if oid:
@@ -48,17 +54,22 @@ def fresh_sheets():
             break
         if not found:
             raise ValueError(f'No planned issue-date message: {sheet.id}')
+
+
+def arrival_sheets(version, *, start, id_base, amount_base, per_family):
+    """Arrival date with explicitly no issue date (null), and distinct issue and arrival dates."""
+    sheets = []
     for family in ARRIVAL_FAMILIES:
-        for i in range(20):
-            day = date(2026, 4, 1) + timedelta(days=i*3)
+        for i in range(per_family):
+            day = start + timedelta(days=i*3)
             issue, arrival = day+timedelta(days=1), day+timedelta(days=5)
-            oid, amount = f'CASE-{1380000+i}', float(35+i)
+            oid, amount = f'CASE-{id_base+i}', float(amount_base+i)
             plan = [PlanMessage('Customer', 0, 'asks for a full refund and names the order', [f'order {oid}']),
                     PlanMessage('Agent', 0, 'confirms the amount and states exactly the planned date facts; do not infer or invent a different issue date',
                                 [f'USD {amount:.2f}', f'The money should arrive by {arrival.isoformat()}',
                                  'No refund issue date has been provided' if family == 'arrival_without_issue'
                                  else f'The refund will be issued on {issue.isoformat()}'])]
-            sheets.append(FactSheet(id=f'v4-arrival-{ARRIVAL_FAMILIES.index(family)}-{i:03d}',family=family,
+            sheets.append(FactSheet(id=f'{version}-arrival-{ARRIVAL_FAMILIES.index(family)}-{i:03d}',family=family,
                 writer=('super','ultra')[i%2],tone=('terse','formal')[i%2],typos=False,contact=day.isoformat(),
                 start=f'{day.isoformat()}T09:00',messages=plan,
                 expected={'refund_requested':True,'refund_amount':amount,'currency':'USD','order_id':oid,

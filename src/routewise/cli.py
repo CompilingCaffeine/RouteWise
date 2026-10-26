@@ -126,6 +126,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     confirm.add_argument('--run', type=Path, help='confirmation run to resume or report')
     confirm.add_argument('--study', choices=('m5','m6'), default='m5')
 
+    recovery = sub.add_parser('recovery', help='M7 (displayed as M6): relative-date recovery study')
+    recovery.add_argument('stage', choices=('prepare', 'build', 'dev-run', 'dev-retry', 'select', 'plan', 'evaluate', 'report'))
+    recovery.add_argument('--set', dest='which', choices=('dev', 'confirm'), help='workload for prepare/build')
+    recovery.add_argument('--run', type=Path, help='confirmation run to resume or report')
+
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     load_dotenv(config.path.parent.parent / ".env")
@@ -147,6 +152,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "synth-build": cmd_synth_build,
         "risk-study": cmd_risk_study,
         "confirmation": cmd_confirmation,
+        "recovery": cmd_recovery,
     }
     try:
         return commands[args.command](config, args)
@@ -174,6 +180,12 @@ def cmd_confirmation(config: Config, args: argparse.Namespace) -> int:
         confirmation.report(args.run)
     else:
         getattr(confirmation, args.stage)()
+    return 0
+
+
+def cmd_recovery(config: Config, args: argparse.Namespace) -> int:
+    from routewise import recovery_study
+    recovery_study.main(args.stage, args.which, args.run)
     return 0
 
 

@@ -14,11 +14,13 @@ NEW_FAMILIES = ('tracking_distractor', 'superseded_order', 'numeric_order', 'pro
 ID_FORMATS = ('ORD-{n}', 'web_{n}', 'AB/{n}/UK', '{n}', 'q{n}z', 'SHOP-{n}-B')
 
 
-def fresh_sheets(*, seed: int = SEED, per_family: int = 30, version: str = 'v3') -> list[FactSheet]:
+def fresh_sheets(*, seed: int = SEED, per_family: int = 30, version: str = 'v3', id_base: int | None = None,
+                 new_id_base: int | None = None, fixed_id_offset: int = 0) -> list[FactSheet]:
     sheets = sample_factsheets(per_family, seed=seed)
     for i, sheet in enumerate(sheets):
         sheet.id = sheet.id.replace('v2-', version+'-')
-        replacements = {old: ID_FORMATS[(i + j) % len(ID_FORMATS)].format(n=(840000 if version == 'v3' else 1140000) + i * 3 + j)
+        base = id_base if id_base is not None else (840000 if version == 'v3' else 1140000)
+        replacements = {old: ID_FORMATS[(i + j) % len(ID_FORMATS)].format(n=base + i * 3 + j)
                         for j, old in enumerate(sheet.order_ids)}
         for old, new in replacements.items():
             for msg in sheet.messages:
@@ -32,27 +34,28 @@ def fresh_sheets(*, seed: int = SEED, per_family: int = 30, version: str = 'v3')
         for i in range(per_family):
             day = date(2026, 2, 1) + timedelta(days=rng.randrange(200))
             refund = day + timedelta(days=3)
-            oid = ID_FORMATS[i % len(ID_FORMATS)].format(n=(970000 if version == 'v3' else 1270000) + i)
+            new_base = new_id_base if new_id_base is not None else (970000 if version == 'v3' else 1270000)
+            oid = ID_FORMATS[i % len(ID_FORMATS)].format(n=new_base + i)
             amount = float(20 + i)
             money = f'USD {amount:.2f}'
             if family == 'tracking_distractor':
-                tracking = f'TRK-{600000 + i}'
+                tracking = f'TRK-{600000 + fixed_id_offset + i}'
                 plan = [PlanMessage('Customer', 0, 'asks for money back for the damaged item, distinguishing the order reference from the carrier tracking number', [f'order reference {oid}', f'tracking number {tracking}']),
                         PlanMessage('Agent', 0, 'confirms the refund amount and its issue date', [money, refund.isoformat()])]
             elif family == 'superseded_order':
-                old = f'OLD-{500000 + i}'
+                old = f'OLD-{500000 + fixed_id_offset + i}'
                 plan = [PlanMessage('Customer', 0, 'asks to refund the current order, explicitly saying the old cancelled order is unrelated', [f'old order {old}', f'current order {oid}']),
                         PlanMessage('Agent', 0, 'confirms the refund for the current order only and states its issue date', [f'order {oid}', money, refund.isoformat()])]
             elif family == 'numeric_order':
-                oid = str(78000000 + i)
+                oid = str(78000000 + fixed_id_offset + i)
                 plan = [PlanMessage('Customer', 0, 'asks for a refund and gives the numeric order identifier, which is not a price', [f'order number {oid}']),
                         PlanMessage('Agent', 0, 'confirms the numeric refund amount and issue date', [money, refund.isoformat()])]
             else:
                 oid = None
                 plan = [PlanMessage('Customer', 0, 'asks for money back for the product; explicitly has no order number available. The product name and purchase date are not order IDs', ['TrailMax 2 tent', (day - timedelta(days=5)).isoformat()]),
                         PlanMessage('Agent', 0, 'confirms the refund amount and issue date without assigning any order identifier', [money, refund.isoformat()])]
-            allowed_ids = [s for s in (oid, f'TRK-{600000 + i}' if family == 'tracking_distractor' else None,
-                                       f'OLD-{500000 + i}' if family == 'superseded_order' else None) if s]
+            allowed_ids = [s for s in (oid, f'TRK-{600000 + fixed_id_offset + i}' if family == 'tracking_distractor' else None,
+                                       f'OLD-{500000 + fixed_id_offset + i}' if family == 'superseded_order' else None) if s]
             expected = {'refund_requested': True, 'refund_amount': amount, 'currency': 'USD', 'order_id': oid,
                         'contact_date': day.isoformat(), 'refund_date': refund.isoformat()}
             sheets.append(FactSheet(id=f'{version}-new-{NEW_FAMILIES.index(family)}-{i:03d}', family=family,

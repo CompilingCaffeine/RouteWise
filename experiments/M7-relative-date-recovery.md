@@ -162,3 +162,88 @@ The report goes in `results/M7-report.md`, and the dashboard shows the study as 
 - All conversations are synthetic and written by models. Labels come from fact sheets, and a coding agent reviews disagreements; neither is human or domain validation.
 - The study author fixed the phrase inventory, except in the paraphrase family. So the confirmation tests fresh conversations over a known expression inventory, not arbitrary customer language.
 - Measurements come from one day of serving.
+
+## Part B — frozen candidate and sample size
+
+Appended on 2026-10-26, before any confirmation fact sheet or conversation existed. Part A's endpoints, gates, stopping rule and analysis are unchanged.
+
+### Development data
+
+| Step | Count | Notes |
+|---|---:|---|
+| Planned development fact sheets (`data/v5/dev`) | 104 | |
+| Accepted by deterministic verification | 100 | The 4 rejections were paraphrase sheets where the Super writer used "shortly" or "approximately". |
+| Disagreed with a reasoning verifier | 28 | All 28 were reviewed blind to production answers. |
+| Dropped in review | 8 | Never relabelled; see below. |
+| Kept | 92 | Every decision is in `data/v5/dev/adjudication.jsonl`. |
+
+The 8 drops:
+- **7 `past_relative`.** The customer only asked whether a refund had been issued, so `refund_requested` was genuinely ambiguous.
+- **1 paraphrase.** "Issued by this time in a fortnight" is a bound, which the contract sends to review.
+
+One unqueued `past_relative` conversation, v5d-04005, has the same wording. Both verifiers agreed with its label, so it was not reviewed and remains. This is development data only.
+
+### Development changes, as permitted by Part A
+
+- **Analyzer.** A resolvable expression introduced by "by", "before", "until" or "no later than" is treated as a bound and goes to review.
+- **Generator.** The `past_relative` customer now states the refund request explicitly. The paraphrase message is told that it is the one exception to the writer's no-time-expression rule.
+- **Measurement.** During a transient provider slowdown, 23 of 92 development Nano calls timed out twice. Each was retried once, sequentially, and all 23 retries succeeded. The originals remain in `calls.jsonl` and the retries are in `retry_calls.jsonl`. Successful slow calls were kept, so development latency is inflated (p95 near 70 s for every Nano-first route). No decision uses development latency: the selection rule's latency criterion uses the exposed v4 replay.
+
+### Development results
+
+Development challenge set, n = 92, 24 of which require review:
+
+| Strategy | CAC | Undetected errors | Review | Necessary review | $ / 1k | Fallback rate |
+|---|---:|---:|---:|---:|---:|---:|
+| Control: grounded Nano→Super | 25.0% | 38 | 33.7% | 0.0% | $0.251 | – |
+| Grounded Super | 23.9% | 34 | 39.1% | 0.0% | $0.352 | – |
+| **D: deterministic normalization** | **73.9%** | **0** | 26.1% | 26.1% | **$0.076** | – |
+| R, Nano reasoning | 72.8% | 0 | 27.2% | 26.1% | $0.168 | 63% |
+| R, Super reasoning | 73.9% | 0 | 26.1% | 26.1% | $0.435 | 63% |
+| R, Ultra reasoning | 72.8% | 0 | 27.2% | 26.1% | $2.031 | 63% |
+
+Exposed v4 replay, n = 421, with no review-required labels:
+
+| Strategy | CAC | Undetected errors | $ / 1k | p95 |
+|---|---:|---:|---:|---:|
+| Control | 97.1% | 0 | $0.108 | 2.35 s |
+| Grounded Super | 97.1% | 0 | $0.343 | 1.52 s |
+| D | 98.3% | 0 | $0.081 | 2.06 s |
+| R, Nano | 98.3% | 0 | $0.091 | 5.19 s |
+| R, Super | 98.3% | 0 | $0.125 | 3.85 s |
+| R, Ultra | 98.3% | 0 | $0.286 | 3.36 s |
+
+### Selection
+
+- **Eligible:** D, R with Super and R with Ultra. R with Nano fails the 4 s replay p95 criterion.
+- **Tie-break:** All eligible candidates are within 3 points of the best development CAC (73.9%), so the lowest replay cost decides.
+- **Selected:** **D, deterministic issue-date normalization.**
+
+The full record is in `data/v5/selection.json` (SHA-256 `8977d76e…`). On development data, D and the reasoning fallbacks reach the same accuracy, because the analyzer resolves every development statement. The reasoning call adds cost and, for Nano reasoning, latency. The confirmation does not test R.
+
+### Frozen for confirmation
+
+- The candidate `deterministic`.
+- 42 SHA-256 hashes, recorded in `data/v5/plan.json`. They cover every module under `src/routewise` except the orchestration module `recovery_study.py`, which git tracks. They also cover the three prompts (`extraction_v4`, `date_fallback_v1`, `date_contract_verifier_v1`) and `config/routewise.yaml`.
+- `build --set confirm` refuses to seal if any frozen file differs. `evaluate` refuses if the frozen files, this protocol, the data, the splits or the price snapshot differ from the seal.
+
+### Sample size, from the Part A formula
+
+- **Development inputs.** Δ_dev = 0.489: D minus the control in CAC, with 45 of 92 conversations discordant, all favouring D. So q_dev = 0.489.
+- **Planning values.** δ = max(0.5 × 0.489, 0.15) = 0.245, and q = 0.489.
+- **Required n.** 324.
+- **Allocation.** 25 accepted conversations per challenge family, a target of 325, from 30 planned fact sheets per family (390). Power at the target is 0.90.
+- **Representative set.** 22 families × 15 = 330 planned.
+- **Seed.** The confirmation seed is 2306332526, the first 8 hexadecimal digits of the SHA-256 of `selection.json`.
+
+If a family accepts fewer than 25 conversations, there is still no replenishment. The analysis uses the accepted count and the report states the achieved power.
+
+### Label quality control, unchanged except for this precedent
+
+Verifier transport failures are retried in at most two sequential rounds at 30 RPM, with the originals retained. This follows the M5 precedent and was not needed in development. Verifier retries affect label checking only, never production outcomes.
+
+### Expected spend and arms
+
+- **Spend.** Expected spend is about $5 for confirmation generation and verification, and about $0.5 for the three-arm run, within the $10 per-stage guard.
+- **Arms.** The control is the deployed `Router` with prompt v4 (M5's `grounding_only` configuration), without hedging. Grounded Super is the fixed v4 Super `Router`. The candidate is `RecoveryRouter(strategy="deterministic")`.
+- **Review cases.** For a review-required statement, the candidate still makes the Nano call so that a reviewer gets pre-filled fields; its cost counts.

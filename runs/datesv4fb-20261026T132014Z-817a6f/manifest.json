@@ -1,0 +1,11 @@
+{
+  "experiment_id": "datesv4fb-20261026T132014Z-817a6f",
+  "created_at": "2026-10-26T13:20:14.631213+00:00",
+  "git": {
+    "sha": "dedb563212d91de884641e9d0be37f3e30e9e513",
+    "dirty": true
+  },
+  "study": "m7",
+  "purpose": "reasoning fallbacks for the exposed v4 replay",
+  "n": 99
+}

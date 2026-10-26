@@ -44,6 +44,7 @@ class Trace(BaseModel):
     score: dict[str, Any] | None = None
     hedged: bool = False
     answered_by: str | None = None
+    recovery: dict[str, Any] | None = None  # M7 issue-date analysis and action; absent on earlier routes
 
 
 class Router:

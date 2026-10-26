@@ -145,7 +145,7 @@ def to_example(sheet: FactSheet, texts: Sequence[str]) -> Example:
 
 def write_one(
     client: TokenFactoryClient, config: Config, sheet: FactSheet, price: Price, *, max_attempts: int = 3,
-    seed: int = 20261026,
+    seed: int = 20261026, verify_fn: Callable[[FactSheet, Sequence[str]], list[str]] = verify,
 ) -> dict[str, Any]:
     """Generate one conversation, retrying until it verifies; returns a provenance record."""
     cand = config.candidate(sheet.writer)
@@ -162,7 +162,7 @@ def write_one(
         else:
             try:
                 texts = clean_texts(sheet, json.loads(result.content)["messages"])
-                problems = verify(sheet, texts)
+                problems = verify_fn(sheet, texts)
             except (ValueError, KeyError, TypeError) as exc:
                 problems = [f"unparseable writer output: {exc}"]
         attempts.append({"attempt": attempt, "cost_usd": cost, "latency_ms": result.latency_ms, "problems": problems})
@@ -175,6 +175,7 @@ def write_one(
 def write_all(
     client: TokenFactoryClient, config: Config, sheets: Sequence[FactSheet], prices: dict[str, Price], *,
     concurrency: int, rpm: float, sink: Callable[[dict[str, Any]], None], progress: Callable[[str], None] = print,
+    verify_fn: Callable[[FactSheet, Sequence[str]], list[str]] = verify,
 ) -> list[dict[str, Any]]:
     from routewise.benchmark import run_parallel
 
@@ -183,7 +184,7 @@ def write_all(
 
     def job(sheet: FactSheet) -> Callable[[], dict[str, Any]]:
         def run_one() -> dict[str, Any]:
-            rec = write_one(client, config, sheet, prices[sheet.writer])
+            rec = write_one(client, config, sheet, prices[sheet.writer], verify_fn=verify_fn)
             with lock:
                 sink(rec)
                 done[0] += 1

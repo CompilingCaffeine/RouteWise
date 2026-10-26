@@ -1,0 +1,48 @@
+{
+  "accepted": 100,
+  "planned": 104,
+  "writer_cost_usd": 0.04982334000000001,
+  "accepted_by_family": {
+    "boundary_relative": 8,
+    "week_offset": 8,
+    "this_weekday": 8,
+    "day_after_tomorrow": 8,
+    "past_relative": 8,
+    "customer_restatement": 8,
+    "corrected_promise": 8,
+    "issue_and_arrival": 8,
+    "paraphrased_offset": 4,
+    "arrival_only_relative": 8,
+    "business_days": 8,
+    "range_or_bound": 8,
+    "next_or_vague": 8
+  },
+  "rejected": [
+    {
+      "id": "v5d-08002",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'approximately'"
+      ]
+    },
+    {
+      "id": "v5d-08000",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    },
+    {
+      "id": "v5d-08006",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'"
+      ]
+    },
+    {
+      "id": "v5d-08004",
+      "problems": [
+        "paraphrase uses a forbidden or ambiguous form 'shortly'",
+        "paraphrase states no timing"
+      ]
+    }
+  ]
+}
