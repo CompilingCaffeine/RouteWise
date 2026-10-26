@@ -14,11 +14,13 @@ Rows whose `conversation_id` starts with `EXAMPLE-` are illustrations. Delete th
 
 | Role | Does | Never |
 |---|---|---|
-| Coordinator | Samples and de-identifies conversations, fills in `conversation_id`, `split` and `text`, and gives each labeler a copy. | Labels conversations they coordinate. |
+| Coordinator | Samples and de-identifies conversations, fills in `conversation_id`, `split` and `text`, and gives each labeler a copy. Puts the returned files in the private input directory: `<input>/<dataset>/labels/` for label files, `<input>/<dataset>/adjudication/` for the adjudicator's. | Labels conversations they coordinate. Saves conversations or labels inside a git repository, or uploads them to the public RouteWise dashboard. |
 | Labelers (two per conversation) | Label every column independently, using only this guide and the conversation. | See any model output, RouteWise trace or dashboard result for these conversations. Discuss a conversation with the other labeler before both have submitted. Use an AI system to suggest, fill in or check a label. |
 | Adjudicator (a third person) | Decides each conversation in the adjudication queue, still without model outputs. | Adjudicate a conversation they labeled. |
 
 Model-generated labels are not accepted in any role. The importer cannot verify this, so the people involved are responsible for it. The protocol records who they are.
+
+Exchange files only through channels your organization approves for customer data. Each labeler's copy of the conversations is as sensitive as the source system.
 
 ## Conversation text
 
@@ -42,7 +44,7 @@ Blank means null. Booleans are `true` or `false`. In CSV files, separate evidenc
 
 | Column | Filled by | Content |
 |---|---|---|
-| `conversation_id` | Coordinator | A stable, unique ID that is the same in both labelers' copies. It must not start with `EXAMPLE-`. |
+| `conversation_id` | Coordinator | A stable, unique ID that is the same in both labelers' copies. It must not start with `EXAMPLE-` or `SYNTH-`. Prefer an opaque code over a ticket number from your support system. Give it at least five characters, mixing letters and digits (such as `PV-3K7Q`), so that `leak-scan` can recognize it. |
 | `split` | Coordinator | `development` for the pilot, `heldout` for the confirmation. |
 | `text` | Coordinator | The conversation, formatted as above. |
 | `refund_requested` … `refund_date` | Labeler | The six fields, defined in the field contract below. |

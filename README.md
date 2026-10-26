@@ -248,12 +248,15 @@ routewise --config config/grounded.yaml route --policy policies/deployment/m7-ex
 
 Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
 
-To test the adopted profile on your own conversations, follow [docs/workload-validation.md](docs/workload-validation.md). Labelers fill in [`data/validation-template/labeling-template.csv`](data/validation-template/README.md), and then:
+To test the adopted profile on your own conversations, follow [docs/workload-validation.md](docs/workload-validation.md). Customer data stays in two directories outside every git repository. The console shows aggregates only, and results leave only as reviewed aggregate exports. Labelers fill in [`data/validation-template/labeling-template.csv`](data/validation-template/README.md), and then:
 
 ```bash
-routewise validation import --name pilot --labels labels-L1.csv labels-L2.csv [--adjudication adjudicated.csv]
+routewise validation drill --output ~/routewise-private/drill   # rehearse the protections on synthetic data first
+export ROUTEWISE_PRIVATE_INPUT=~/routewise-private/input ROUTEWISE_PRIVATE_OUTPUT=~/routewise-private/output
+routewise validation import --name pilot               # reads input/pilot/labels/ and input/pilot/adjudication/
 routewise validation run --name pilot                  # adopted (M6), previous (M5) and grounded Super, same conversations
-routewise validation propose --run private/validation/runs/valpilot-…   # confirmation design and sample size
+routewise validation export --run valpilot-…           # stage an aggregate for review; --approve <sha256> publishes it
+routewise validation propose --run valpilot-…          # confirmation design and sample size
 ```
 
 ## Reproduce
@@ -267,7 +270,7 @@ routewise evaluate                     # baselines + RouteWise (+ hedged variant
 routewise evaluate --inject-stalls nano:0.10:3000-6000   # controlled fault injection (seeded, identical per strategy)
 routewise confirmation report --study m6 --run runs/confirmation-20261025T212745Z-ac61b1
 routewise recovery report --run runs/datesconfirm-20261026T133902Z-ab36f4   # M6 (study key m7)
-routewise validation report --run private/validation/runs/…   # M7 (study key m8), once you have run it on your data
+routewise validation report --run valpilot-…   # M7 (study key m8): private mode, once you have run it on your data
 routewise report --run runs/eval-…     # recompute a summary from recorded traces (no API calls)
 routewise route --example ext-025      # follow one request through validation/escalation/hedging
 streamlit run app/streamlit_app.py     # dashboard

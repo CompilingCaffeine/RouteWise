@@ -35,6 +35,11 @@ ADJUDICATION_COLUMNS = ("conversation_id", "decision", "adjudicator_id", "reason
                         "review_required", "review_reason", "evidence", "scenario_tags")
 EXAMPLE_PREFIX = "EXAMPLE-"  # illustrative template rows; never evidence
 MAX_ERRORS_SHOWN = 40
+# The guide's shared scenario tags. Labelers may add others; only these appear in exported aggregates.
+TAG_VOCABULARY = ("relative_issue_date", "absolute_issue_date", "past_issue_date", "no_issue_date", "arrival_date_only",
+                  "business_days", "range_or_bound", "vague_timing", "corrected_date", "conflicting_statements",
+                  "multiple_orders", "partial_refund", "agreed_amount", "full_refund_no_amount", "no_refund_request",
+                  "replacement_or_repair", "cancellation", "damaged_item", "late_delivery", "return_received")
 
 _TAG = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 _LINE = re.compile(r"^\[(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})\] ([A-Za-z]+): \S")

@@ -159,6 +159,9 @@ with upload:
                 '`split` (`tune` or `heldout`). Without split labels, a stable text hash assigns the halves. '
                 'Exact duplicate conversations are rejected. Uploads and results are not saved to the repository. '
                 'Benchmarking sends conversation text to Nebius Token Factory; labels stay in local scoring.')
+    st.warning('This is a public demo. Do not upload customer conversations or labels here: validate them on '
+               'your own machine with private validation mode '
+               '([guide](https://github.com/CompilingCaffeine/RouteWise/blob/main/docs/workload-validation.md)).')
     sample = {'id': 'your-ticket-001', 'split': 'tune',
               'input': '[2026-04-01 09:00] Customer: Refund order web_12345.\n[2026-04-01 10:00] Agent: USD 25 will be refunded on 2026-04-03.',
               'expected': {'refund_requested': True, 'refund_amount': 25, 'currency': 'USD', 'order_id': 'web_12345',

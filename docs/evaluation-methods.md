@@ -52,3 +52,5 @@ The adopted profile, the M5 profile and grounded Super run on identical conversa
 
 A 50–100-conversation pilot is descriptive. Its 80% confidence limits on the unfavourable side set the planning values, and exact binomial power then sizes the confirmation. Because a pilot without wrong releases cannot rule out a rate near 1%, bounding wrong releases at 2% can require far more conversations than bounding them at 5%. The proposal shows that trade-off rather than choosing it.
 
+Customer data is handled in a private mode. Conversations, labels, model outputs and traces stay in two directories outside every git repository, and the console shows aggregates only. Results are published only as allowlisted aggregate exports that a person approves by hash. A drill on randomly generated, sensitive-looking synthetic data checks these protections before any company data is loaded.
+

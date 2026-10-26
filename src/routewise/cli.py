@@ -131,17 +131,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     recovery.add_argument('--set', dest='which', choices=('dev', 'confirm'), help='workload for prepare/build')
     recovery.add_argument('--run', type=Path, help='confirmation run to resume or report')
 
-    val = sub.add_parser('validation', help='M7 (study m8): validate the adopted profile on your human-labelled workload')
-    val.add_argument('stage', choices=('import', 'run', 'report', 'propose', 'preregister', 'seal'))
-    val.add_argument('--workspace', type=Path, help='private working directory (default: private/validation, git-ignored)')
-    val.add_argument('--name', help='dataset name inside the workspace')
-    val.add_argument('--labels', type=Path, nargs='+', help='labeling files (CSV or JSONL), two labels per conversation')
-    val.add_argument('--adjudication', type=Path, help='completed adjudication file (CSV or JSONL)')
+    val = sub.add_parser('validation', help='M7 (study m8): validate the adopted profile on your human-labelled workload',
+                         description='Private mode: labels are read from --input and every result is written to '
+                                     '--output, both outside every git repository. See docs/workload-validation.md.')
+    val.add_argument('stage', choices=('import', 'run', 'report', 'export', 'propose', 'preregister', 'seal',
+                                       'leak-scan', 'drill'))
+    val.add_argument('--input', type=Path, help='private input directory with <name>/labels/ and <name>/adjudication/ '
+                                                '(default: $ROUTEWISE_PRIVATE_INPUT)')
+    val.add_argument('--output', type=Path, help='private output directory (default: $ROUTEWISE_PRIVATE_OUTPUT); '
+                                                 'for drill, a new directory for synthetic data only')
+    val.add_argument('--name', help='dataset name: its files are in <input>/<name>/')
     val.add_argument('--split', choices=('development', 'heldout'), default='development')
     val.add_argument('--smoke', type=int, help='first N development conversations only: a plumbing check, never a pilot')
-    val.add_argument('--run', type=Path, help='run directory to resume, report or propose from')
-    val.add_argument('--proposal', type=Path, help='proposal directory to preregister')
+    val.add_argument('--run', help='run name or directory (inside the output directory) to resume, report, export or propose from')
+    val.add_argument('--proposal', help='proposal name or directory to preregister')
     val.add_argument('--budget', type=float, default=5.0, help='API spend guard for one run, USD')
+    val.add_argument('--approve', metavar='SHA256', help='export: publish the staged aggregate with this reviewed hash')
+    val.add_argument('--reviewer', help='export: role or pseudonym of the person who reviewed the aggregate')
+    val.add_argument('--export-dir', type=Path, help='export: where an approved aggregate goes (default: results/M8-validation)')
+    val.add_argument('--min-cell', type=int, help='export: smallest per-tag cell shown (default 10, at least 5)')
     val.add_argument('--max-wrong-release', type=float, help='primary limit on the wrong-release rate (default 0.02)')
     val.add_argument('--cac-margin', type=float, help='CAC non-inferiority margin vs the previous profile (default 0.02)')
     val.add_argument('--wrong-release-margin', type=float,
@@ -208,10 +216,14 @@ def cmd_recovery(config: Config, args: argparse.Namespace) -> int:
 
 def cmd_validation(config: Config, args: argparse.Namespace) -> int:
     from routewise import workload_validation
+    from routewise.private_mode import SafeError
     try:
         workload_validation.main(args)
-    except (ValueError, OSError) as exc:  # label-file problems are listed by file and row
+    except SafeError as exc:  # written to hold no customer data
         print(f"error: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # outside the private session (no output directory yet): never show the message
+        print(f"error: {type(exc).__name__} (message withheld: it may quote private data)", file=sys.stderr)
         return 1
     return 0
 

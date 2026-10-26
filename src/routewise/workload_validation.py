@@ -6,12 +6,16 @@ is ever used as, or compared against, a label before the labels are built.
 import       two independent human labels per conversation, plus adjudication -> a labelled dataset
 run          adopted M6 profile, previous M5 profile and grounded Super on identical conversations
 report       outcomes per request, paired comparisons and diagnostics (no API calls)
+export       stage a reviewable aggregate, or publish one a person approved by its SHA-256
 propose      the confirmation design and sample size a complete pilot implies (no API calls)
 preregister  copy an accepted proposal into the protocol as Part B, to commit before held-out data exists
 seal         freeze a held-out dataset with the design, code, prompts, profiles and prices
+leak-scan    look for private values in this repository's files and recent commits
+drill        rehearse all of this on synthetic, sensitive-looking conversations (privacy_drill.py)
 
-Conversation text and per-conversation results stay in the workspace (default `private/validation`,
-ignored by git). summary.json holds aggregates only; diagnostics.json names conversations.
+Private mode (private_mode.py): labels are read from an input directory and everything is written to an
+output directory, both outside every git repository. Only reviewed aggregate exports, the design and the
+hash-only seal are written into the repository, each after a check against the private data.
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ from pathlib import Path
 from typing import Any
 
 from routewise import labels as label_io
-from routewise import validation_design
+from routewise import private_mode, validation_design, validation_export
 from routewise.benchmark import Pacer
 from routewise.client import TokenFactoryClient
 from routewise.confirmation import StudyClient
@@ -33,6 +37,7 @@ from routewise.evaluate import score
 from routewise.evaluation import profile_routers, run_evaluation
 from routewise.issue_dates import analyze_issue_date
 from routewise.labels import LabeledConversation
+from routewise.private_mode import PrivateDirs, SafeError
 from routewise.prices import fetch_snapshot, load_snapshot, price_for
 from routewise.prompts import load_prompt
 from routewise.recovery_metrics import METRICS, RequestOutcome, paired, summarize
@@ -43,7 +48,6 @@ STUDY, DISPLAY = "m8", "M7"
 PROTOCOL = REPO_ROOT / "experiments/M8-workload-validation.md"
 DESIGN = REPO_ROOT / "experiments/M8-workload-validation.design.json"
 PUBLIC_SEAL = REPO_ROOT / "experiments/M8-workload-validation.seal.json"
-WORKSPACE = REPO_ROOT / "private/validation"
 CONFIG = REPO_ROOT / "config/grounded.yaml"
 PROFILES = {"adopted": REPO_ROOT / "policies/deployment/m7-extraction.json",
             "previous": REPO_ROOT / "policies/deployment/m6-extraction.json"}
@@ -53,6 +57,8 @@ PILOT_SIZE = (50, 100)
 RUN_KINDS = {"pilot": "valpilot", "smoke": "valsmoke", "confirmation": "valconfirm"}
 PLACEHOLDER = "[TO COMPLETE:"
 LOAD = {"concurrency": 4, "rpm": 90}  # admissions per minute, paced outside the request timer
+# Orchestration and privacy plumbing: tracked by git, not sealed, because they decide no outcome or analysis.
+UNSEALED = {"workload_validation.py", "private_mode.py", "validation_export.py", "privacy_drill.py"}
 
 
 def dump(path: Path, value: Any) -> None:
@@ -64,8 +70,8 @@ def _rel(path: Path) -> str:
 
 
 def frozen_sources() -> dict[str, str]:
-    """Everything that decides an outcome or its analysis; this orchestration module is tracked by git instead."""
-    files = [p for p in sorted((REPO_ROOT / "src/routewise").glob("*.py")) if p.name != "workload_validation.py"]
+    """Everything that decides an outcome or its analysis."""
+    files = [p for p in sorted((REPO_ROOT / "src/routewise").glob("*.py")) if p.name not in UNSEALED]
     files += [CONFIG, load_config(CONFIG).prompts["extraction"], *PROFILES.values()]
     return {_rel(p): sha256_file(p) for p in files}
 
@@ -86,25 +92,47 @@ def _require_committed(paths: list[Path]) -> None:
         if not path.exists() or subprocess.run(["git", "ls-files", "--error-unmatch", rel], cwd=REPO_ROOT,
                                                capture_output=True).returncode \
                 or subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=REPO_ROOT).returncode:
-            raise ValueError(f"{rel} must be committed unchanged first")
+            raise SafeError(f"{rel} must be committed unchanged first")
 
 
 # ---------------------------------------------------------------- import
 
 
-def import_labels(workspace: Path, name: str, label_files: list[Path], adjudication: Path | None) -> Path:
-    out = workspace / "data" / name
+def _label_files(folder: Path, *, required: bool) -> list[Path]:
+    files = sorted(p for p in folder.iterdir() if p.is_file() and not p.name.startswith(".")) if folder.is_dir() else []
+    if any(p.suffix.lower() not in (".csv", ".jsonl") for p in files):
+        raise SafeError(f"{folder} may hold only .csv and .jsonl label files")
+    if required and not files:
+        raise SafeError(f"Put each labeler's file (CSV or JSONL) in {folder}")
+    return files
+
+
+def import_labels(dirs: PrivateDirs, name: str) -> Path:
+    assert dirs.input is not None
+    source, out = dirs.input / name, dirs.output / "data" / name
     if (out / "seal.json").exists():
-        raise ValueError(f"{out} is sealed; sealed labels cannot change")
-    result = label_io.assemble([row for path in label_files for row in label_io.read_rows(path)],
-                               label_io.read_rows(adjudication) if adjudication else [])
+        raise SafeError(f"{out} is sealed; sealed labels cannot change")
+    label_files = _label_files(source / "labels", required=True)
+    adjudication = _label_files(source / "adjudication", required=False)
+    label_rows = [row for path in label_files for row in label_io.read_rows(path)]
+    synthetic = {str(row.get("conversation_id") or "").strip().upper().startswith(private_mode.SYNTHETIC_PREFIX)
+                 for _, row in label_rows}
+    if len(synthetic) > 1:
+        raise SafeError(f"{source} mixes synthetic drill conversations ({private_mode.SYNTHETIC_PREFIX}...) with real ones")
     out.mkdir(parents=True, exist_ok=True)
+    try:
+        result = label_io.assemble(label_rows, [row for path in adjudication for row in label_io.read_rows(path)])
+    except label_io.LabelError as exc:  # its messages quote label values, so they stay in the output directory
+        (out / "label-problems.txt").write_text("\n".join(exc.errors) + "\n")
+        raise SafeError(f"{len(exc.errors)} problem(s) in the label files, each listed by file and row in "
+                        f"{out / 'label-problems.txt'}. Nothing was built.") from None
+    (out / "label-problems.txt").unlink(missing_ok=True)
     dump(out / "agreement.json", result.agreement)
     if result.queue:
         label_io.write_queue(out / "adjudication_queue.csv", result.queue)
-        print(f"{len(result.queue)} conversation(s) need adjudication: {_rel(out / 'adjudication_queue.csv')}\n"
-              "A third person fills decision, adjudicator_id, reason and (for 'label') the label columns, "
-              "then rerun import with --adjudication. No dataset was built.", flush=True)
+        print(f"{len(result.queue)} conversation(s) need adjudication: {out / 'adjudication_queue.csv'}\n"
+              "A third person fills decision, adjudicator_id, reason and (for 'label') the label columns, saves "
+              f"the file in {source / 'adjudication'}, and reruns import. No dataset was built.", flush=True)
         return out
     (out / "adjudication_queue.csv").unlink(missing_ok=True)
     previous = json.loads((out / "MANIFEST.json").read_text()) if (out / "MANIFEST.json").exists() else None
@@ -130,9 +158,10 @@ def import_labels(workspace: Path, name: str, label_files: list[Path], adjudicat
                                | {e["adjudicator"] for e in result.excluded}),
         "agreement": result.agreement, "pii_warnings": result.pii_warnings,
         "label_files": {p.name: sha256_file(p) for p in label_files},
-        "adjudication_file": {adjudication.name: sha256_file(adjudication)} if adjudication else None,
-        "dataset_sha256": digest, "previous_versions": history,
-        "source": "human labels: two independent labelers per conversation; a third person adjudicated disagreements",
+        "adjudication_files": {p.name: sha256_file(p) for p in adjudication},
+        "dataset_sha256": digest, "previous_versions": history, "synthetic": synthetic == {True},
+        "source": "synthetic drill: generated conversations and labels, never evidence" if synthetic == {True} else
+                  "human labels: two independent labelers per conversation; a third person adjudicated disagreements",
     })
     agree = result.agreement
     print(f"Built {len(records)} conversations ({dict(Counter(r.split for r in records))}); excluded "
@@ -141,7 +170,7 @@ def import_labels(workspace: Path, name: str, label_files: list[Path], adjudicat
           f"{_fmt(agree['review_required']['kappa'])}).", flush=True)
     if result.pii_warnings:
         print(f"Warning: {len(result.pii_warnings)} conversation(s) may contain personal data "
-              f"({dict(Counter(k for w in result.pii_warnings for k in w['kinds']))}); see MANIFEST.json. "
+              f"({dict(Counter(k for w in result.pii_warnings for k in w['kinds']))}); see {out / 'MANIFEST.json'}. "
               "De-identify before any run: conversation text is sent to Nebius Token Factory.", flush=True)
     return out
 
@@ -149,47 +178,47 @@ def import_labels(workspace: Path, name: str, label_files: list[Path], adjudicat
 def load_dataset(data: Path, split: str | None = None) -> list[LabeledConversation]:
     path = data / "examples.jsonl"
     if not path.exists():
-        raise ValueError(f"{data} has no built dataset; run `routewise validation import` first")
+        raise SafeError(f"{data} has no built dataset; run `routewise validation import` first")
     return [LabeledConversation(**r) for r in read_jsonl(path) if split is None or r["split"] == split]
 
 
 # ---------------------------------------------------------------- live run
 
 
-def run(workspace: Path, name: str | None, split: str, *, smoke: int | None = None, resume: Path | None = None,
+def run(output: Path, name: str | None, split: str, *, smoke: int | None = None, resume: Path | None = None,
         budget: float = 5.0) -> Path:
     if resume:
         manifest = json.loads((resume / "manifest.json").read_text())
         name, split, kind = manifest["dataset"]["name"], manifest["split"], manifest["kind"]
-    data = workspace / "data" / str(name)
+    data = output / "data" / str(name)
     records = load_dataset(data, split)
     if resume:
         if manifest["dataset"]["sha256"] != sha256_file(data / "examples.jsonl"):
-            raise ValueError("The labels changed since this run started; start a new run instead of resuming")
+            raise SafeError("The labels changed since this run started; start a new run instead of resuming")
         wanted = set(manifest["example_ids"])
         records = [r for r in records if r.id in wanted]
     else:
         kind = "confirmation" if split == "heldout" else ("smoke" if smoke else "pilot")
         if kind == "confirmation" and smoke:
-            raise ValueError("Held-out conversations are never used for smoke tests")
+            raise SafeError("Held-out conversations are never used for smoke tests")
         if kind != "confirmation" and smoke:
             records = records[:smoke]
         if kind == "pilot" and not PILOT_SIZE[0] <= len(records) <= PILOT_SIZE[1]:
-            raise ValueError(f"A diagnostic pilot uses {PILOT_SIZE[0]}-{PILOT_SIZE[1]} development conversations; "
+            raise SafeError(f"A diagnostic pilot uses {PILOT_SIZE[0]}-{PILOT_SIZE[1]} development conversations; "
                              f"{name} has {len(records)}. Use --smoke N for a plumbing check.")
     if not records:
-        raise ValueError(f"{name} has no {split} conversations")
+        raise SafeError(f"{name} has no {split} conversations")
     seal = check_seal(data) if kind == "confirmation" else None
     if seal and not resume:
         if len(records) != seal["n"]:
-            raise ValueError("The held-out dataset does not match its seal")
-        for m in sorted((workspace / "runs").glob("valconfirm-*/manifest.json")):
+            raise SafeError("The held-out dataset does not match its seal")
+        for m in sorted((output / "runs").glob("valconfirm-*/manifest.json")):
             if json.loads(m.read_text()).get("seal_sha256") == sha256_file(data / "seal.json"):
-                raise ValueError(f"A confirmation run for this seal exists; resume it with --run {m.parent}")
+                raise SafeError(f"A confirmation run for this seal exists; resume it with --run {m.parent}")
     seed: int = seal["seed"] if seal else int(sha256_file(data / "examples.jsonl")[:8], 16)
     config = load_config(CONFIG)
     load_dotenv(REPO_ROOT / ".env")
-    run_dir = RunDir.existing(resume) if resume else RunDir.create(RUN_KINDS[kind], root=workspace / "runs")
+    run_dir = RunDir.existing(resume) if resume else RunDir.create(RUN_KINDS[kind], root=output / "runs")
     price_path = data / "prices.json" if seal else run_dir.path / "prices.json"
     if not price_path.exists():
         fetch_prices(config, price_path)
@@ -324,7 +353,7 @@ def report(run_path: Path) -> dict[str, Any]:
         sealed = json.loads((data / "seal.json").read_text())
         if manifest["seal_sha256"] != sha256_file(data / "seal.json") or summary["labels"]["revised_after_run"] \
                 or sealed["design_sha256"] != sha256_file(DESIGN):
-            raise ValueError("The seal, the design or the held-out labels changed after the confirmation run")
+            raise SafeError("The seal, the design or the held-out labels changed after the confirmation run")
         summary["decision"] = validation_design.decide(
             design["parameters"], summary["metrics"]["adopted"], summary["paired"]["adopted - previous"],
             summary["paired"]["adopted - grounded_super"])
@@ -412,7 +441,7 @@ def pilot_inputs(run_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     summary = report(run_path)
     manifest, records, by_arm = _outcomes(run_path)
     if manifest["kind"] != "pilot" or not summary["complete"]:
-        raise ValueError("Only a complete diagnostic pilot (50-100 development conversations) can inform the design")
+        raise SafeError("Only a complete diagnostic pilot (50-100 development conversations) can inform the design")
     ids = sorted(records)
     out = {arm: [by_arm[arm][i][0] for i in ids] for arm in ARMS}
     adopted = out["adopted"]
@@ -435,8 +464,14 @@ def pilot_inputs(run_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     return pilot, manifest
 
 
+def _synthetic(data: Path) -> bool:
+    return bool(json.loads((data / "MANIFEST.json").read_text()).get("synthetic"))
+
+
 def propose(run_path: Path, overrides: dict[str, float]) -> Path:
     pilot, manifest = pilot_inputs(run_path)
+    if _synthetic(run_path.parent.parent / "data" / manifest["dataset"]["name"]):
+        raise SafeError("Synthetic drill data cannot inform a confirmation design")
     design = validation_design.propose(pilot, overrides)
     design.update(study=STUDY, display_milestone=DISPLAY, created_at=datetime.now(UTC).isoformat(),
                   pilot_run=run_path.name, pilot_dataset_sha256=manifest["dataset"]["sha256"],
@@ -448,7 +483,7 @@ def propose(run_path: Path, overrides: dict[str, float]) -> Path:
     (out / "part-b.md").write_text(part_b(design))
     print(json.dumps({k: design.get(k) for k in ("feasible", "n_required", "binding", "n_collect", "labels_needed",
                                                  "expected_adjudications", "recommendation")}, indent=1))
-    print(f"Proposal: {_rel(out)}/design.json and part-b.md. Replace each {PLACEHOLDER} ...] item in part-b.md, "
+    print(f"Proposal: {out}/design.json and part-b.md. Replace each {PLACEHOLDER} ...] item in part-b.md, "
           "then run `routewise validation preregister`.", flush=True)
     return out
 
@@ -521,17 +556,17 @@ def _planning_cells(key: str, c: dict[str, Any]) -> tuple[str, str]:
     return c["pilot"], f"{c['planning_rate']:.4f}"
 
 
-def preregister(proposal: Path) -> None:
+def preregister(proposal: Path, dirs: PrivateDirs) -> None:
     design = json.loads((proposal / "design.json").read_text())
     text = (proposal / "part-b.md").read_text()
     if not design["feasible"]:
-        raise ValueError("This pilot does not support a confirmation; see the proposal's recommendation")
+        raise SafeError("This pilot does not support a confirmation; see the proposal's recommendation")
     if PLACEHOLDER in text:
-        raise ValueError(f"Replace every {PLACEHOLDER} ...] item in {proposal / 'part-b.md'} first")
+        raise SafeError(f"Replace every {PLACEHOLDER} ...] item in {proposal / 'part-b.md'} first")
     if DESIGN.exists() or "## Part B" in PROTOCOL.read_text():
-        raise ValueError("Part B is already registered; append a dated amendment instead")
-    dump(DESIGN, design)
-    PROTOCOL.write_text(PROTOCOL.read_text().rstrip() + "\n\n" + text.strip() + "\n")
+        raise SafeError("Part B is already registered; append a dated amendment instead")
+    private_mode.publish({DESIGN: json.dumps(design, indent=2, default=str) + "\n",
+                          PROTOCOL: PROTOCOL.read_text().rstrip() + "\n\n" + text.strip() + "\n"}, dirs)
     print(f"Wrote {_rel(DESIGN)} and appended Part B to {_rel(PROTOCOL)}. Commit and push both before "
           "drawing any held-out conversation.", flush=True)
 
@@ -539,30 +574,34 @@ def preregister(proposal: Path) -> None:
 # ---------------------------------------------------------------- seal
 
 
-def seal(workspace: Path, name: str) -> Path:
-    data = workspace / "data" / name
+def seal(dirs: PrivateDirs, name: str) -> Path:
+    data = dirs.output / "data" / name
     if (data / "seal.json").exists() or PUBLIC_SEAL.exists():
-        raise ValueError("The confirmation is already sealed")
+        raise SafeError("The confirmation is already sealed")
+    if _synthetic(data):
+        raise SafeError("Synthetic drill data is never sealed")
     if "## Part B" not in PROTOCOL.read_text():
-        raise ValueError("Preregister Part B before sealing held-out data")
+        raise SafeError("Preregister Part B before sealing held-out data")
     _require_committed([PROTOCOL, DESIGN])
     design = json.loads(DESIGN.read_text())
     built = json.loads((data / "MANIFEST.json").read_text())["built_at"]
     if datetime.fromisoformat(built) <= _committed_at(DESIGN):
-        raise ValueError("These labels were built before the design was committed; held-out data must come after it")
+        raise SafeError("These labels were built before the design was committed; held-out data must come after it")
     records = load_dataset(data)
     if any(r.split != "heldout" for r in records):
-        raise ValueError("A held-out dataset must contain only heldout conversations")
+        raise SafeError("A held-out dataset must contain only heldout conversations")
     if len(records) < design["n_required"]:
-        raise ValueError(f"{len(records)} accepted conversations; the design requires {design['n_required']}. "
+        raise SafeError(f"{len(records)} accepted conversations; the design requires {design['n_required']}. "
                          "Report the study as underpowered or amend the protocol; do not top up from another frame.")
-    texts = {label_io.text_sha256(r.input): r.id for r in records}
-    for other in sorted((workspace / "data").glob("*/examples.jsonl")):
+    texts, ids = {label_io.text_sha256(r.input) for r in records}, {r.id for r in records}
+    for other in sorted((dirs.output / "data").glob("*/examples.jsonl")):
         if other.parent == data:
             continue
-        for r in load_dataset(other.parent):
-            if r.id in {x.id for x in records} or label_io.text_sha256(r.input) in texts:
-                raise ValueError(f"{r.id} in {other.parent.name} overlaps the held-out set")
+        overlap = [r.id for r in load_dataset(other.parent) if r.id in ids or label_io.text_sha256(r.input) in texts]
+        if overlap:
+            note = private_mode.private_note(dirs.output, "overlap", "\n".join(overlap) + "\n")
+            raise SafeError(f"{len(overlap)} conversation(s) of {other.parent.name} overlap the held-out set; "
+                            f"their IDs are in {note}")
     config = load_config(CONFIG)
     load_dotenv(REPO_ROOT / ".env")
     fetch_prices(config, data / "prices.json")
@@ -572,7 +611,7 @@ def seal(workspace: Path, name: str) -> Path:
              "data_sha256": sha256_file(data / "examples.jsonl"), "price_sha256": sha256_file(data / "prices.json"),
              "sources": frozen_sources(), "seed": int(sha256_file(DESIGN)[:8], 16)}
     dump(data / "seal.json", value)
-    dump(PUBLIC_SEAL, value)
+    private_mode.publish({PUBLIC_SEAL: json.dumps(value, indent=2, default=str) + "\n"}, dirs)
     print(f"Sealed {len(records)} held-out conversations. Commit and push {_rel(PUBLIC_SEAL)} (hashes only), then "
           f"run `routewise validation run --name {name} --split heldout`.", flush=True)
     return data / "seal.json"
@@ -580,52 +619,112 @@ def seal(workspace: Path, name: str) -> Path:
 
 def check_seal(data: Path) -> dict[str, Any]:
     if not (data / "seal.json").exists():
-        raise ValueError("Held-out conversations run only after `routewise validation seal`")
+        raise SafeError("Held-out conversations run only after `routewise validation seal`")
     value = json.loads((data / "seal.json").read_text())
     _require_committed([PROTOCOL, DESIGN, PUBLIC_SEAL])
     if json.loads(PUBLIC_SEAL.read_text()) != value:
-        raise ValueError(f"{_rel(PUBLIC_SEAL)} does not match this dataset's seal")
+        raise SafeError(f"{_rel(PUBLIC_SEAL)} does not match this dataset's seal")
     current = frozen_sources()
     if value["sources"] != current:
-        raise ValueError(f"Frozen code, prompts or profiles changed after sealing: "
+        raise SafeError(f"Frozen code, prompts or profiles changed after sealing: "
                          f"{sorted(k for k in value['sources'].keys() | current.keys() if value['sources'].get(k) != current.get(k))}")
     for key, path in (("design_sha256", DESIGN), ("protocol_sha256", PROTOCOL), ("data_sha256", data / "examples.jsonl"),
                       ("price_sha256", data / "prices.json")):
         if value[key] != sha256_file(path):
-            raise ValueError(f"{_rel(path)} changed after sealing")
+            raise SafeError(f"{_rel(path)} changed after sealing")
     return value
 
 
+def export(dirs: PrivateDirs, run_path: Path, args: Any) -> None:
+    if args.approve:
+        dest = validation_export.approve(dirs, run_path.name, args.approve, args.reviewer,
+                                         args.export_dir or validation_export.PUBLIC_DIR)
+        print(f"Published the reviewed aggregate to {_rel(dest)}. Nothing was committed; commit it only if it "
+              "should be public.", flush=True)
+        return
+    out, digest = validation_export.stage(dirs, run_path, report(run_path), args.min_cell or validation_export.MIN_CELL)
+    print(f"\nStaged {out / 'aggregate.json'} (SHA-256 {digest}).\nCheck every value in {out / 'REVIEW.md'}; to "
+          f"publish exactly that file:\n  routewise validation export --run {run_path.name} --approve {digest} "
+          '--reviewer "<role or pseudonym>"', flush=True)
+
+
+def leak_scan(dirs: PrivateDirs, repo: Path = REPO_ROOT) -> None:
+    findings, stats = private_mode.leak_scan(dirs, repo)
+    if not stats["values"]:
+        raise SafeError("There is no private data to scan for yet; import a dataset first")
+    print(f"Checked {stats.get('files', 0)} files and {stats.get('commits', 0)} commit(s) since the private data "
+          f"appeared, for {stats['values']} private values", flush=True)
+    if stats["unreadable_private_files"]:
+        print(f"Warning: {stats['unreadable_private_files']} private file(s) could not be read, so their values "
+              "were not looked for", flush=True)
+    if not findings:
+        print("No private value was found in the repository.", flush=True)
+        return
+    note = private_mode.private_note(dirs.output, "leak-scan", "".join(
+        f"{f.location}\n" + "".join(f"  {d}\n" for d in f.details) for f in findings))
+    for f in findings:
+        where = "(a path that itself contains private data)" if f.location_is_private else f.location
+        print(f"  {where}: " + ", ".join(f"{n} {c}" for c, n in f.categories.items()), flush=True)
+    raise SafeError(f"{len(findings)} location(s) hold values from the private data; details in {note}")
+
+
+def _inside(output: Path, value: Path | str, folder: str) -> Path:
+    """A run or proposal given by name (in <output>/<folder>) or by a path inside the output directory."""
+    given = Path(value)
+    path = (output / folder / given if len(given.parts) == 1 else given.expanduser()).resolve()
+    if not path.is_relative_to(output):
+        raise SafeError(f"{path} is not inside the output directory {output}")
+    if not path.is_dir():
+        raise SafeError(f"{path} does not exist")
+    return path
+
+
 def main(args: Any) -> None:
-    workspace = (args.workspace or WORKSPACE).resolve()
     stage = args.stage
+    if stage == "drill":
+        from routewise import privacy_drill
+        privacy_drill.main(args.output)
+        return
+    dirs = private_mode.resolve_dirs(args.input, args.output, need_input=stage == "import")
+    with private_mode.session(dirs.output):
+        _dispatch(stage, dirs, args)
+
+
+def _dispatch(stage: str, dirs: PrivateDirs, args: Any) -> None:
+    output = dirs.output
     if stage == "import":
-        if not args.name or not args.labels:
-            raise ValueError("import requires --name and --labels")
-        import_labels(workspace, args.name, args.labels, args.adjudication)
+        if not args.name:
+            raise SafeError("import requires --name")
+        import_labels(dirs, args.name)
     elif stage == "run":
         if not args.name and not args.run:
-            raise ValueError("run requires --name (or --run to resume)")
-        name = args.name or json.loads((args.run / "manifest.json").read_text())["dataset"]["name"]
-        run(workspace, name, args.split, smoke=args.smoke, resume=args.run, budget=args.budget)
-    elif stage in ("report", "propose"):
+            raise SafeError("run requires --name (or --run to resume)")
+        resume = _inside(output, args.run, "runs") if args.run else None
+        name = args.name or json.loads((resume / "manifest.json").read_text())["dataset"]["name"]
+        run(output, name, args.split, smoke=args.smoke, resume=resume, budget=args.budget)
+    elif stage in ("report", "propose", "export"):
         if not args.run:
-            raise ValueError(f"{stage} requires --run")
+            raise SafeError(f"{stage} requires --run")
+        run_path = _inside(output, args.run, "runs")
         if stage == "report":
-            report(args.run)
+            report(run_path)
+        elif stage == "export":
+            export(dirs, run_path, args)
         else:
             overrides = {k: v for k, v in (("max_wrong_release_rate", args.max_wrong_release),
                                            ("cac_margin_vs_previous", args.cac_margin),
                                            ("wrong_release_margin_vs_previous", args.wrong_release_margin))
                          if v is not None}
-            propose(args.run, overrides)
+            propose(run_path, overrides)
     elif stage == "preregister":
         if not args.proposal:
-            raise ValueError("preregister requires --proposal")
-        preregister(args.proposal)
+            raise SafeError("preregister requires --proposal")
+        preregister(_inside(output, args.proposal, "proposals"), dirs)
     elif stage == "seal":
         if not args.name:
-            raise ValueError("seal requires --name")
-        seal(workspace, args.name)
+            raise SafeError("seal requires --name")
+        seal(dirs, args.name)
+    elif stage == "leak-scan":
+        leak_scan(dirs)
     else:
-        raise ValueError(stage)
+        raise SafeError(f"unknown stage {stage}")

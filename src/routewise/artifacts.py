@@ -11,11 +11,15 @@ from typing import Any
 import yaml
 
 from routewise.config import REPO_ROOT
+from routewise.private_mode import refuse_private_root
 from routewise.runlog import read_jsonl
 
 
 def artifacts_root() -> Path:
-    return Path(os.environ.get("ROUTEWISE_ARTIFACTS", REPO_ROOT))
+    """The repository, or ROUTEWISE_ARTIFACTS; never a private validation directory."""
+    root = Path(os.environ.get("ROUTEWISE_ARTIFACTS", REPO_ROOT))
+    refuse_private_root(root)
+    return root
 
 
 @dataclass(frozen=True)

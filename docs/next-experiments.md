@@ -36,6 +36,7 @@ Before collecting confirmation outcomes, specify the primary endpoint, useful ef
 **Prepared as M7** (internal key `m8`), with no data yet: [workflow](workload-validation.md), [labeling guide and template](../data/validation-template/README.md), [protocol Part A](../experiments/M8-workload-validation.md).
 - **What it compares.** The adopted M6 profile, the M5 profile and grounded Super, on identical human-labelled conversations.
 - **What comes next.** A 50–100-conversation diagnostic pilot proposes the preregistered confirmation design and sample size.
+- **Privacy.** Customer data stays outside the repository in private mode, and only reviewed aggregates are published. Run `routewise validation drill` before loading company data.
 - **Still needed.** Your conversations, two independent labelers and an adjudicator.
 
 The original proposal follows.

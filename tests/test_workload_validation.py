@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from fakes import MODELS, completion_body, transport
-from routewise import labels, validation_design as vd, workload_validation as wv
+from routewise import labels, private_mode, validation_design as vd, workload_validation as wv
 from routewise.client import TokenFactoryClient
 from routewise.config import REPO_ROOT, load_config
 from routewise.evaluation import profile_routers, run_evaluation
@@ -204,19 +204,24 @@ def offline(tmp_path, monkeypatch):
         monkeypatch.setattr(wv, name, tmp_path / f"{name.lower()}.md")
     wv.PROTOCOL.write_text("# M8\n\n## Part A\n")
     monkeypatch.setattr(wv, "_require_committed", lambda paths: None)
-    return tmp_path / "ws"
+    (tmp_path / "in").mkdir()
+    return private_mode.resolve_dirs(tmp_path / "in", tmp_path / "out", need_input=True)
 
 
-def write_rows(path, rows):
-    path.write_text("".join(json.dumps(r) + "\n" for _, r in rows))
-    return path
+def imported(dirs, name, rows):
+    """Labels in the input directory, as the coordinator leaves them, then imported."""
+    folder = dirs.input / name / "labels"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "labels.jsonl").write_text("".join(json.dumps(r) + "\n" for _, r in rows))
+    return wv.import_labels(dirs, name)
 
 
 def test_pilot_report_proposal_seal_and_confirmation(offline, tmp_path, monkeypatch):
-    ws = offline
-    with pytest.raises(labels.LabelError):
-        wv.import_labels(ws, "pilot", [write_rows(tmp_path / "bad.jsonl", [row()])], None)
-    wv.import_labels(ws, "pilot", [write_rows(tmp_path / "pilot.jsonl", conversations(60, 0))], None)
+    dirs = offline
+    ws = dirs.output
+    with pytest.raises(private_mode.SafeError, match="1 problem"):
+        imported(dirs, "bad", [row()])
+    imported(dirs, "pilot", conversations(60, 0))
     with pytest.raises(ValueError, match="no built dataset"):
         wv.run(ws, "missing", "development")
     run_path = wv.run(ws, "pilot", "development")
@@ -240,33 +245,39 @@ def test_pilot_report_proposal_seal_and_confirmation(offline, tmp_path, monkeypa
     assert design["n_collect"] >= design["n_required"] and design["labels_needed"] == 2 * design["n_collect"]
     assert all(p >= 0.9 for p in design["power_at_n_required"].values() if p is not None)
     with pytest.raises(ValueError, match="Replace every"):
-        wv.preregister(proposal)
+        wv.preregister(proposal, dirs)
     part = (proposal / "part-b.md").read_text()
+    (proposal / "part-b.md").write_text(re.sub(r"\[TO COMPLETE: [^\]]*\]", "Support tickets, June 2026.", part)
+                                        .replace("June 2026.", "June 2026, e.g. ORD-1007.", 1))
+    with pytest.raises(private_mode.SafeError, match="1 value"):  # an order ID from the pilot never goes public
+        wv.preregister(proposal, dirs)
+    assert not wv.DESIGN.exists() and "## Part B" not in wv.PROTOCOL.read_text()
     (proposal / "part-b.md").write_text(re.sub(r"\[TO COMPLETE: [^\]]*\]", "Support tickets, June 2026.", part))
-    wv.preregister(proposal)
+    wv.preregister(proposal, dirs)
     assert "## Part B" in wv.PROTOCOL.read_text() and json.loads(wv.DESIGN.read_text())["n_required"]
     with pytest.raises(ValueError, match="already registered"):
-        wv.preregister(proposal)
+        wv.preregister(proposal, dirs)
 
     # Held-out data: a small design keeps the test fast; the guards are what is tested.
     wv.DESIGN.write_text(json.dumps({**design, "n_required": 30}))
     monkeypatch.setattr(wv, "_committed_at", lambda path: datetime.now(UTC) - timedelta(seconds=1))
     heldout = [(w, {**r, "split": "heldout"}) for w, r in conversations(36, 100)]
-    wv.import_labels(ws, "late", [write_rows(tmp_path / "late.jsonl", heldout[:20])], None)
+    imported(dirs, "late", heldout[:20])
     with pytest.raises(ValueError, match="the design requires 30"):
-        wv.seal(ws, "late")
+        wv.seal(dirs, "late")
     overlap = [(w, {**r, "split": "heldout"}) for w, r in conversations(36, 30)]
-    wv.import_labels(ws, "overlap", [write_rows(tmp_path / "overlap.jsonl", overlap)], None)
-    with pytest.raises(ValueError, match="overlaps the held-out set"):
-        wv.seal(ws, "overlap")
+    imported(dirs, "overlap", overlap)
+    with pytest.raises(ValueError, match="30 conversation\\(s\\) of pilot overlap the held-out set") as err:
+        wv.seal(dirs, "overlap")
+    assert "conv-" not in str(err.value)  # the IDs are in a private note, not the message
     with pytest.raises(ValueError, match="only after `routewise validation seal`"):
         wv.run(ws, "overlap", "heldout")
     for name in ("late", "overlap"):
         for f in (ws / "data" / name).iterdir():
             f.unlink()
         (ws / "data" / name).rmdir()
-    wv.import_labels(ws, "heldout", [write_rows(tmp_path / "heldout.jsonl", heldout)], None)
-    wv.seal(ws, "heldout")
+    imported(dirs, "heldout", heldout)
+    wv.seal(dirs, "heldout")
     with pytest.raises(ValueError, match="never used for smoke tests"):
         wv.run(ws, "heldout", "heldout", smoke=3)
     confirm = wv.run(ws, "heldout", "heldout")
@@ -282,10 +293,10 @@ def test_pilot_report_proposal_seal_and_confirmation(offline, tmp_path, monkeypa
 
 
 def test_smoke_runs_cannot_inform_the_design(offline, tmp_path):
-    wv.import_labels(offline, "few", [write_rows(tmp_path / "few.jsonl", conversations(4, 0))], None)
+    imported(offline, "few", conversations(4, 0))
     with pytest.raises(ValueError, match="uses 50-100 development conversations"):
-        wv.run(offline, "few", "development")
-    smoke = wv.run(offline, "few", "development", smoke=2)
+        wv.run(offline.output, "few", "development")
+    smoke = wv.run(offline.output, "few", "development", smoke=2)
     assert json.loads((smoke / "summary.json").read_text())["n"] == 2
     with pytest.raises(ValueError, match="Only a complete diagnostic pilot"):
         wv.propose(smoke, {})

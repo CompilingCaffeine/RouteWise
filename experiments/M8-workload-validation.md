@@ -130,7 +130,7 @@ If any check cannot reach 90% power at its planning value, or needs more than 5,
   - any conversation overlaps another dataset;
   - fewer than the required n survived.
 
-  It hashes the data, design, protocol, profiles, prompt, configuration and code. The public copy of the seal, `experiments/M8-workload-validation.seal.json`, holds hashes only and is committed before the run.
+  It hashes the data, design, protocol, profiles, prompt, configuration and code. The code hash excludes the orchestration and privacy modules, which decide no outcome. The public copy of the seal, `experiments/M8-workload-validation.seal.json`, holds hashes only and is committed before the run.
 - **Run.** One run, with an order seed taken from the design hash.
 - **Stopping rule.**
   - One analysis, at the sealed size. There are no interim looks, no extension, and no replacement of excluded conversations.
@@ -144,12 +144,31 @@ If any check cannot reach 90% power at its planning value, or needs more than 5,
 
 ## Privacy
 
-Conversation text, labels, traces and per-conversation diagnostics stay in the git-ignored workspace, `private/validation/`. Only these may be published:
+As amended on 2026-10-26, before any data existed (see the amendment at the end).
+
+**Where data lives.** Conversation text, labels, model outputs, traces and per-conversation diagnostics stay in two directories outside every git repository:
+- an input directory for the label and adjudication files;
+- an output directory for everything RouteWise writes, readable by its owner only.
+
+The tool refuses either directory inside a git work tree.
+
+**Console and dashboard.**
+- The console shows counts, rates, hashes and paths only.
+- Messages that may quote data go to a private log.
+- The dashboard refuses to read a private output directory.
+
+**What may be published.** Only these, each checked against every private value before it is written to the repository:
 - the protocol and design;
 - the hash-only seal;
-- aggregate `summary.json` results.
+- aggregate exports that a named reviewer approved by their SHA-256.
 
-The importer flags likely personal data, but de-identification before labeling is the user's responsibility.
+**What a published aggregate may contain.**
+- Allowed: counts, rates, numbers, booleans, hashes, dates and fixed vocabularies.
+- Withheld: per-tag cells below 10 conversations, and tags outside the guide's list.
+
+**Rehearsal.** `routewise validation drill` exercises these protections on synthetic, sensitive-looking data before company data is loaded.
+
+**Your responsibility.** The importer flags likely personal data, but de-identification before labeling is the user's responsibility.
 
 ## Limitations declared in advance
 
@@ -161,3 +180,12 @@ The importer flags likely personal data, but de-identification before labeling i
 ## Reporting
 
 The report goes in `results/M8-report.md`, and the dashboard shows the study as "M7 · Workload validation". `results/runs.yaml` records `display_milestone: M7`. The deployed profile changes only on a separate, preregistered decision.
+
+## Amendments
+
+**2026-10-26: private mode.** Made before any conversation was supplied or labelled; no data, design or seal exists.
+- **Storage.** The git-ignored in-repository workspace, `private/validation/`, is replaced by external input and output directories (see Privacy). Ignore rules alone do not stop a copy, a forced add or a deployment, so the workspace now lives outside the repository.
+- **Exports.** Results leave the output directory only as reviewed, allowlisted aggregate exports. The run's `summary.json` stays private.
+- **What the seal covers.** The seal's code hash now excludes `private_mode.py`, `validation_export.py` and `privacy_drill.py`, as well as `workload_validation.py`.
+
+No arm, outcome, label rule, design rule or decision rule changed.

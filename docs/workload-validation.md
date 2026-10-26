@@ -42,79 +42,174 @@ Nothing in this workflow generates or checks labels with a model. The study cann
 6. **A Nebius API key** in `.env` as `NEBIUS_API_KEY`.
    - From the M6 measurements, the three arms together cost about $0.0005 per conversation: about $0.05 for a 100-conversation pilot, and a few dollars at most for a large confirmation.
    - Each run has a `--budget` guard. The default is $5.
+7. **Two private directories** on a machine you control, outside every git repository and every synced or shared folder: an input directory for the label files and an output directory for results. Run `routewise validation drill` there first, as described below.
+
+## Private mode
+
+Customer data never enters this repository. Every `routewise validation` stage reads from two directories that you choose, and each refuses to run if either is inside a git work tree:
+
+| Directory | Holds | Who writes it |
+|---|---|---|
+| Input, `--input` or `$ROUTEWISE_PRIVATE_INPUT` | `<name>/labels/`: one CSV or JSONL file per labeler.<br>`<name>/adjudication/`: the adjudicator's completed files. | The coordinator |
+| Output, `--output` or `$ROUTEWISE_PRIVATE_OUTPUT` | Built labels, traces with model outputs, per-conversation diagnostics, proposals, exports awaiting review, and logs. | RouteWise only |
+
+The input and output directories must be separate, and neither may contain the other. RouteWise creates the output directory readable by you only, and every file it writes there is readable by you only. It refuses an existing output directory that other users can read or that it did not create.
+
+**What stays private:**
+- **The console** shows counts, rates, hashes and paths, never a conversation, label, ID or model output. Label problems are listed by file and row in `label-problems.txt`. Any other error may quote the data, so the console shows only its type, and the full message goes to `<output>/logs/`.
+- **The dashboard** refuses to read a private output directory, even if `ROUTEWISE_ARTIFACTS` points at one. It never reads the validation's results.
+  - Its *Use your labelled workload* tab is part of the public demo. Never upload customer conversations or labels there.
+- **The repository** receives only:
+  - reviewed aggregate exports;
+  - the design and Part B;
+  - the hash-only seal.
+
+  Each is checked against every value in your private files before it is written:
+  - conversation and order IDs, emails, phone and card numbers;
+  - any run of 8 consecutive words that is unique to one private conversation.
+
+  If any value matches, nothing is written.
+- **Nebius Token Factory** receives the conversation text when the arms run, which is unavoidable for the study. Its handling of that data is governed by your Nebius account terms, not by this repository.
+
+**What you are still responsible for:**
+- De-identifying conversations before labeling. The importer only flags likely emails, phone numbers and card numbers.
+- Keeping the input and output directories out of synced or shared folders.
+- Never copying their files into the repository yourself. `leak-scan` looks for such copies.
+
+### Rehearse first, with synthetic data
+
+Run the drill before loading any company data. Give it a new directory next to where your real output will live:
+
+```bash
+routewise validation drill --output ~/routewise-private/drill
+```
+
+The drill sends nothing real anywhere.
+- **What it generates:** for each run, fresh random sensitive-looking values: names, emails, phone numbers, Luhn-valid card numbers, street addresses, order IDs, labeler notes and adjudication reasons. These go into eight synthetic conversations, labelled by two pretend labelers who disagree twice.
+- **What it runs:** the real command line, end to end. That includes a label file with errors and a smoke run against Nebius, which costs well under a cent. It also includes a forced unexpected failure, export staging and approval, and a leak scan.
+- **What it checks (16 checks):**
+  - no generated value reached the console, the repository or the export;
+  - the dashboard refuses the output directory;
+  - every private file is readable by its owner only;
+  - the leak scan does find values that the drill plants in a scratch repository;
+  - synthetic results can never be proposed from, sealed or published to the repository.
+
+Any failed check means stop. Every step's console output is kept in `<drill>/console/` for inspection. Delete the drill directory afterwards.
 
 ## Steps
 
-All files with conversation text stay under the git-ignored workspace, `private/validation/` by default; you can change it with `--workspace`.
-
 ```bash
-# 1. Labelers each fill in a copy of data/validation-template/labeling-template.csv (CSV or JSONL).
-routewise validation import --name pilot --labels labels-L1.csv labels-L2.csv
-#    Agreement statistics are written to private/validation/data/pilot/agreement.json.
-#    If labels disagree, the adjudicator completes data/pilot/adjudication_queue.csv:
-routewise validation import --name pilot --labels labels-L1.csv labels-L2.csv --adjudication adjudicated.csv
+export ROUTEWISE_PRIVATE_INPUT=~/routewise-private/input     # outside every git repository
+export ROUTEWISE_PRIVATE_OUTPUT=~/routewise-private/output
+
+# 1. Each labeler fills in a copy of data/validation-template/labeling-template.csv.
+#    The coordinator puts both files in $ROUTEWISE_PRIVATE_INPUT/pilot/labels/.
+routewise validation import --name pilot
+#    If labels disagree, the adjudicator completes output/data/pilot/adjudication_queue.csv.
+#    The coordinator saves it in input/pilot/adjudication/, then:
+routewise validation import --name pilot
 
 # 2. Optional plumbing check on a few conversations. It is never a pilot and cannot inform the design.
 routewise validation run --name pilot --smoke 3
 
 # 3. The diagnostic pilot: every conversation, all three arms.
 routewise validation run --name pilot
-routewise validation report --run private/validation/runs/valpilot-...   # rerun at any time, no API calls
+routewise validation report --run valpilot-...    # rerun at any time, no API calls
 
-# 4. Read the pilot's evidence and propose the confirmation design.
-routewise validation propose --run private/validation/runs/valpilot-...
-#    Writes proposals/<run>/design.json and part-b.md. Replace each "[TO COMPLETE: ...]" item, then:
-routewise validation preregister --proposal private/validation/proposals/valpilot-...
+# 4. Share only reviewed aggregates (optional, see below).
+routewise validation export --run valpilot-...
+
+# 5. Read the pilot's evidence and propose the confirmation design.
+routewise validation propose --run valpilot-...
+#    Writes output/proposals/<run>/design.json and part-b.md. Replace each "[TO COMPLETE: ...]" item, then:
+routewise validation preregister --proposal valpilot-...
 git add experiments/M8-workload-validation.md experiments/M8-workload-validation.design.json && git commit && git push
 
-# 5. Only now draw, label and adjudicate the held-out conversations (split = heldout), as a separate dataset.
-routewise validation import --name heldout --labels heldout-L1.csv heldout-L2.csv --adjudication heldout-adj.csv
+# 6. Only now draw, label and adjudicate the held-out conversations (split = heldout), in input/heldout/.
+routewise validation import --name heldout
 routewise validation seal --name heldout
 git add experiments/M8-workload-validation.seal.json && git commit && git push
 
-# 6. The single preregistered confirmation run and its decision.
+# 7. The single preregistered confirmation run and its decision.
 routewise validation run --name heldout --split heldout
+
+# Before any commit while private data exists:
+routewise validation leak-scan
 ```
 
-An interrupted run continues with `routewise validation run --run <run dir>`. It fills only the missing outcomes.
+`--run` and `--proposal` take a name inside the output directory, or a path in it. An interrupted run continues with `routewise validation run --run <run>`. It fills only the missing outcomes.
+
+## Exporting aggregate results
+
+Nothing in the output directory is meant to be shared. Results leave it only as a reviewed aggregate.
+
+1. **Stage.** `routewise validation export --run <run>` recomputes the report and writes `exports/<run>/aggregate.json` and `REVIEW.md`.
+   - **The allowlist:** counts, rates, numbers, booleans, hashes, dates and fixed vocabularies, such as arm names, field names, review-reason codes and the guide's scenario tags.
+   - **Never included:** free text, or anything that describes a single conversation.
+   - **Withheld:**
+     - per-tag cells with fewer than 10 conversations (`--min-cell`, at least 5);
+     - tags outside the guide's shared list.
+
+   They stay in the private `summary.json`.
+2. **Review.** A person reads every value in `REVIEW.md` and decides it may be public.
+3. **Approve.** `routewise validation export --run <run> --approve <SHA-256> --reviewer "<role or pseudonym>"`:
+   - publishes only the file with that hash;
+   - re-checks it against the allowlist and the private data;
+   - stamps it with the reviewer and date;
+   - writes it to `results/M8-validation/<run>.json`.
+
+   Nothing is committed: commit the file only if it should be public. Synthetic drill results are never written to the repository.
 
 ## What each stage checks
 
-- **`import`** rejects a file that breaks the format or the field contract, listing the file and row of each problem. It checks:
+- **`import`** rejects a file that breaks the format or the field contract, listing the file and row of each problem in a private file. It checks:
   - the message format and speaker roles;
   - that `contact_date` is the first Customer message;
   - that evidence quotes appear in the text;
   - that a review reason is present exactly when review is required;
   - that each conversation has two labels from two different labelers, with identical text and split;
-  - for duplicate conversations.
+  - for duplicate conversations;
+  - that synthetic drill conversations are not mixed with real ones.
 
-  It writes the dataset only when every metric-changing disagreement has been adjudicated. It warns about likely personal data.
+  It writes the dataset only when every metric-changing disagreement has been adjudicated. It warns about likely personal data, by count.
 - **`run`** accepts 50–100 development conversations as a pilot. Held-out conversations run only after `seal`, and only once.
-- **`propose`** accepts only a complete pilot run. It recomputes the report first, and if labels were revised after the run, it records that in the design.
-- **`preregister`** refuses an infeasible design, an unfinished placeholder, or an existing Part B.
+- **`export`** stages an allowlisted aggregate and publishes it only with the reviewed hash.
+- **`propose`** accepts only a complete pilot run on real data. It recomputes the report first, and if labels were revised after the run, it records that in the design.
+- **`preregister`** refuses:
+  - an infeasible design;
+  - an unfinished placeholder;
+  - an existing Part B;
+  - any value from the private data.
 - **`seal`** requires:
   - Part B and the design to be committed;
   - the held-out labels to be built after the design was committed;
-  - no overlap with any other dataset in the workspace;
-  - at least the required number of conversations.
+  - no overlap with any other dataset in the output directory;
+  - at least the required number of conversations;
+  - real, not synthetic, data.
 
   It freezes the hashes of:
   - the held-out data, design and protocol;
   - the profiles, prompt and configuration;
-  - every `src/routewise` module except the orchestration module.
+  - every `src/routewise` module except the orchestration and privacy modules (`workload_validation.py`, `private_mode.py`, `validation_export.py`, `privacy_drill.py`), which decide no outcome.
 
   It also fixes the price snapshot. The confirmation run refuses to start if any of these changed, or if the public seal copy is not committed.
+- **`leak-scan`** looks for every private value in this repository: tracked, untracked and git-ignored files (except virtual environments and caches), file names, and the diffs of every commit made since the private data first appeared. It names locations and kinds of match, never the values. The details go to a private log.
 
 ## Outputs
 
-| File | Content | Shareable |
+All of these are in the output directory, readable by you only.
+
+| File | Content | Leaves the output directory |
 |---|---|---|
-| `data/<name>/examples.jsonl` | Built labels with their provenance | No: conversation text |
-| `data/<name>/MANIFEST.json`, `agreement.json` | Counts, label agreement (Cohen's κ), personal-data warnings, file hashes | Aggregates, plus labeler pseudonyms |
-| `runs/<run>/traces.jsonl` | Every call, as recorded | No: extracted values |
-| `runs/<run>/summary.json` | Per-arm metrics, paired comparisons, per-tag rates, wrong fields, review causes, issue-date analyzer coverage | Yes: aggregates only |
-| `runs/<run>/diagnostics.json` | Every wrong release, avoidable review, arm disagreement and analyzer–label mismatch, by conversation | No |
-| `proposals/<run>/design.json`, `part-b.md` | The proposed confirmation design | Yes |
+| `data/<name>/examples.jsonl` | Built labels with their provenance | Never |
+| `data/<name>/MANIFEST.json`, `agreement.json` | Counts, label agreement (Cohen's κ), personal-data warnings by conversation, file hashes | Only as allowlisted aggregates in an export |
+| `data/<name>/label-problems.txt`, `adjudication_queue.csv` | Label errors and disagreements, quoting the labels | Never |
+| `runs/<run>/traces.jsonl` | Every call, with model outputs | Never |
+| `runs/<run>/summary.json` | Per-arm metrics, paired comparisons, per-tag rates, wrong fields, review causes, analyzer coverage | Only through a reviewed export |
+| `runs/<run>/diagnostics.json` | Every wrong release, avoidable review, arm disagreement and analyzer–label mismatch, by conversation | Never |
+| `exports/<run>/aggregate.json`, `REVIEW.md` | The allowlisted aggregate and its review sheet | `aggregate.json`, once approved by its hash |
+| `proposals/<run>/design.json`, `part-b.md` | The proposed confirmation design | Through `preregister`, after a check against the private data |
+| `logs/` | Error details and library log records, which may quote private data | Never |
 
 ## What the pilot can and cannot tell you
 
