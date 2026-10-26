@@ -7,8 +7,9 @@ import json
 import math
 import threading
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Collection, Sequence
 from pathlib import Path
+from random import Random
 from typing import Any
 
 from routewise.benchmark import run_parallel
@@ -63,6 +64,31 @@ def build_routers(
     return routers
 
 
+def profile_routers(
+    client: TokenFactoryClient,
+    config: Config,
+    profiles: dict[str, dict[str, Any]],
+    prices: dict[str, Price],
+    prompts: dict[str, PromptTemplate],
+) -> dict[str, Router]:
+    """Deployment profiles exactly as declared, plus grounded Super, as separately labelled extraction arms."""
+    routers: dict[str, Any] = {}
+    for name, policy in profiles.items():
+        if policy["prompts"]["extraction"] != prompts["extraction"].version:
+            raise ValueError(f"{name}: profile expects {policy['prompts']['extraction']}, "
+                             f"not {prompts['extraction'].version}")
+        if policy.get("date_normalization") == "deterministic":
+            from routewise.recovery import RecoveryRouter
+            routers[name] = RecoveryRouter(client, config, prices, prompts["extraction"], None, strategy="deterministic")
+            routers[name].strategy = name  # the trace label; the constructor fixed the decision logic
+        else:
+            routers[name] = Router(client, config, prices, prompts, policy_options(policy), strategy=name, policy=policy)
+    super_label = config.candidate("super").label
+    routers["grounded_super"] = Router(client, config, prices, prompts, {"extraction": RouteOption(super_label)},
+                                       strategy="grounded_super")
+    return routers
+
+
 def run_evaluation(
     routers: dict[str, Router],
     examples: Sequence[Example],
@@ -71,9 +97,12 @@ def run_evaluation(
     concurrency: int = 4,
     rpm: float = 50,
     progress: Callable[[str], None] = print,
+    order_seed: int | str | None = None,
+    skip: Collection[tuple[str, str]] = (),
 ) -> list[Trace]:
+    """Every router on every example. `order_seed` shuffles conversations and each conversation's arm order
+    (balancing time and prompt-cache effects); `skip` holds (example_id, strategy) pairs already recorded."""
     lock = threading.Lock()
-    total = len(examples) * len(routers)
     done = [0]
 
     def job(router: Router, ex: Example) -> Callable[[], Trace]:
@@ -92,7 +121,16 @@ def run_evaluation(
 
         return run_one
 
-    jobs = [job(routers[name], ex) for ex in examples for name in routers]
+    order = list(examples)
+    if order_seed is not None:
+        Random(order_seed).shuffle(order)
+    jobs = []
+    for ex in order:
+        names = list(routers)
+        if order_seed is not None:
+            Random(f"{order_seed}:{ex.id}").shuffle(names)
+        jobs += [job(routers[name], ex) for name in names if (ex.id, name) not in skip]
+    total = len(jobs)
     return run_parallel(jobs, concurrency=concurrency, rpm=rpm)  # type: ignore[return-value]
 
 

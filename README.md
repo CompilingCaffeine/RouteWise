@@ -22,6 +22,13 @@ The dashboard includes the original benchmark and held-out evidence, live routin
 
 See the [M6 report](results/M7-report.md).
 
+**Next: independent workload validation (M7, prepared; no data yet).** Every result above uses synthetic, model-written conversations with agent-reviewed labels. M7 provides:
+- a human-labeling template and import format;
+- a three-arm comparison of the adopted profile, the M5 profile and grounded Super on identical conversations;
+- a 50–100-conversation diagnostic pilot that proposes a preregistered confirmation size.
+
+It needs real conversations and two independent human labelers plus an adjudicator; no model labels are accepted. See [docs/workload-validation.md](docs/workload-validation.md).
+
 All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
 
 **Declared requirements.** Extraction: task accuracy ≥ 85%, field accuracy ≥ 95%, p95 ≤ 4 s. Classification: task accuracy ≥ 95%, p95 ≤ 3 s.
@@ -154,7 +161,7 @@ M5's six remaining errors were relative refund dates. Both models returned null 
 - **Latency.** The deadline gate passed narrowly (4.9% against 5%). Nano served more slowly today than in M5 (call p95 3.35 s versus 2.06 s), and the M5 route itself would have missed that gate.
 - **Scope.** The data is synthetic and agent-reviewed, and the study author fixed the expression inventory. The one family with writer-chosen wording kept only 7 conversations, so wording the parser cannot read is still untested.
 
-[Recommended next experiments](docs/next-experiments.md): independent workload labels, then multi-day latency validation.
+[Recommended next experiments](docs/next-experiments.md): independent workload labels ([prepared as M7](docs/workload-validation.md)), then multi-day latency validation.
 
 ## Why not just use a generic router?
 
@@ -241,6 +248,14 @@ routewise --config config/grounded.yaml route --policy policies/deployment/m7-ex
 
 Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
 
+To test the adopted profile on your own conversations, follow [docs/workload-validation.md](docs/workload-validation.md). Labelers fill in [`data/validation-template/labeling-template.csv`](data/validation-template/README.md), and then:
+
+```bash
+routewise validation import --name pilot --labels labels-L1.csv labels-L2.csv [--adjudication adjudicated.csv]
+routewise validation run --name pilot                  # adopted (M6), previous (M5) and grounded Super, same conversations
+routewise validation propose --run private/validation/runs/valpilot-…   # confirmation design and sample size
+```
+
 ## Reproduce
 
 ```bash
@@ -252,6 +267,7 @@ routewise evaluate                     # baselines + RouteWise (+ hedged variant
 routewise evaluate --inject-stalls nano:0.10:3000-6000   # controlled fault injection (seeded, identical per strategy)
 routewise confirmation report --study m6 --run runs/confirmation-20261025T212745Z-ac61b1
 routewise recovery report --run runs/datesconfirm-20261026T133902Z-ab36f4   # M6 (study key m7)
+routewise validation report --run private/validation/runs/…   # M7 (study key m8), once you have run it on your data
 routewise report --run runs/eval-…     # recompute a summary from recorded traces (no API calls)
 routewise route --example ext-025      # follow one request through validation/escalation/hedging
 streamlit run app/streamlit_app.py     # dashboard

@@ -24,7 +24,7 @@ For hedges, response latency is measured at an actual answer callback. Final cos
 
 The product displays the completed confirmation as **M5**, following M1–M4. Its original preregistered study key remains `m6`. The original protocol/report paths, raw manifests, run IDs, deployment-policy filename and reproduction commands retain that identity. The earlier aborted study retains its original `m5` key in the audit records and is not counted as a completed milestone. This is a presentation change; measurements and preregistrations are unchanged.
 
-The relative-date study (internal key `m7`) is displayed as **M6**. Its protocol, report, data (`data/v5`) and run IDs use the internal key.
+The relative-date study (internal key `m7`) is displayed as **M6**. Its protocol, report, data (`data/v5`) and run IDs use the internal key. The workload validation (internal key `m8`) is displayed as **M7**.
 
 ## Relative-date recovery (M6)
 
@@ -37,4 +37,18 @@ A route can look more accurate simply by sending more requests to review. M6 the
 All rates use every request as the denominator. The primary endpoint is the paired difference in correct autonomous completions on a relative-date challenge set, with a preregistered minimum useful improvement of 10 points. Its interval comes from a conversation bootstrap, with family-cluster intervals as a sensitivity check.
 
 The challenge set deliberately includes ambiguous issue timing (business days, ranges, "next <weekday>"), for which review is the correct outcome. That oversampling would distort production rates, so the challenge set is never pooled with the representative workload. The representative set carries the deployment gates: the M5 accuracy and deadline bounds, non-inferiority to the current route on correct completions and wrong releases, and a cost advantage over grounded Super.
+
+## Independent workload validation (M7, prepared)
+
+M5 and M6 measure the mechanism on synthetic conversations whose labels came from fact sheets and a coding agent's review. M7 ([protocol](../experiments/M8-workload-validation.md), [workflow](workload-validation.md)) changes the source of truth instead of the route:
+- Real or human-written conversations.
+- Two independent human labels per conversation under a published [field contract](../data/validation-template/README.md).
+- A third person adjudicates every disagreement that changes a metric.
+- No model labels, and no model verification of labels.
+
+Agreement statistics (Cohen's κ for review status) are recorded before any model run.
+
+The adopted profile, the M5 profile and grounded Super run on identical conversations, using the M6 outcome definitions. The primary endpoint is safety: the adopted profile's wrong-release rate, with a one-sided 95% Wilson upper bound of at most 2% by default. The existing deployment requirements, non-inferiority to the M5 profile and a cost advantage over grounded Super are gates.
+
+A 50–100-conversation pilot is descriptive. Its 80% confidence limits on the unfavourable side set the planning values, and exact binomial power then sizes the confirmation. Because a pilot without wrong releases cannot rule out a rate near 1%, bounding wrong releases at 2% can require far more conversations than bounding them at 5%. The proposal shows that trade-off rather than choosing it.
 

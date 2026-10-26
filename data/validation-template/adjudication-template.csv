@@ -1,0 +1,2 @@
+conversation_id,decision,adjudicator_id,reason,refund_requested,refund_amount,currency,order_id,contact_date,refund_date,review_required,review_reason,evidence,scenario_tags
+EXAMPLE-002,label,EXAMPLE-adjudicator,One labeler resolved '3-5 business days' to a date; business-day ranges require review under the contract.,true,45,EUR,A-20931,2026-03-09,,true,issue_date_ambiguous: 3-5 business days names no single issue date,Can I get a refund of the 45 EUR? | We will refund 45 EUR within 3-5 business days.,business_days; damaged_item

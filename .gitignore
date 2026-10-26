@@ -5,3 +5,5 @@ __pycache__/
 .env
 .streamlit/secrets.toml
 .DS_Store
+# Workload-validation data: real conversations, labels and per-conversation results (docs/workload-validation.md)
+private/

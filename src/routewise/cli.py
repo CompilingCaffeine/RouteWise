@@ -131,6 +131,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     recovery.add_argument('--set', dest='which', choices=('dev', 'confirm'), help='workload for prepare/build')
     recovery.add_argument('--run', type=Path, help='confirmation run to resume or report')
 
+    val = sub.add_parser('validation', help='M7 (study m8): validate the adopted profile on your human-labelled workload')
+    val.add_argument('stage', choices=('import', 'run', 'report', 'propose', 'preregister', 'seal'))
+    val.add_argument('--workspace', type=Path, help='private working directory (default: private/validation, git-ignored)')
+    val.add_argument('--name', help='dataset name inside the workspace')
+    val.add_argument('--labels', type=Path, nargs='+', help='labeling files (CSV or JSONL), two labels per conversation')
+    val.add_argument('--adjudication', type=Path, help='completed adjudication file (CSV or JSONL)')
+    val.add_argument('--split', choices=('development', 'heldout'), default='development')
+    val.add_argument('--smoke', type=int, help='first N development conversations only: a plumbing check, never a pilot')
+    val.add_argument('--run', type=Path, help='run directory to resume, report or propose from')
+    val.add_argument('--proposal', type=Path, help='proposal directory to preregister')
+    val.add_argument('--budget', type=float, default=5.0, help='API spend guard for one run, USD')
+    val.add_argument('--max-wrong-release', type=float, help='primary limit on the wrong-release rate (default 0.02)')
+    val.add_argument('--cac-margin', type=float, help='CAC non-inferiority margin vs the previous profile (default 0.02)')
+    val.add_argument('--wrong-release-margin', type=float,
+                     help='wrong-release non-inferiority margin vs the previous profile (default 0.01)')
+
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     load_dotenv(config.path.parent.parent / ".env")
@@ -153,6 +169,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "risk-study": cmd_risk_study,
         "confirmation": cmd_confirmation,
         "recovery": cmd_recovery,
+        "validation": cmd_validation,
     }
     try:
         return commands[args.command](config, args)
@@ -186,6 +203,16 @@ def cmd_confirmation(config: Config, args: argparse.Namespace) -> int:
 def cmd_recovery(config: Config, args: argparse.Namespace) -> int:
     from routewise import recovery_study
     recovery_study.main(args.stage, args.which, args.run)
+    return 0
+
+
+def cmd_validation(config: Config, args: argparse.Namespace) -> int:
+    from routewise import workload_validation
+    try:
+        workload_validation.main(args)
+    except (ValueError, OSError) as exc:  # label-file problems are listed by file and row
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 

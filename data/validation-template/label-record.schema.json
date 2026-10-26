@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RouteWise workload-validation label row",
+  "description": "One person's label for one conversation. A JSONL import has one such object per line; a CSV import uses the same column names, with blank cells for null, 'true'/'false' for booleans, '|' between evidence quotes and ';' between tags. Each conversation needs two rows from two different labelers. The importer also checks the field contract in README.md, which this schema cannot express (evidence quotes appear in the text, contact_date is the first Customer message date, and review_reason is present exactly when review is required).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["conversation_id", "split", "text", "refund_requested", "refund_amount", "currency", "order_id",
+               "contact_date", "refund_date", "review_required", "evidence", "scenario_tags", "labeler_id"],
+  "properties": {
+    "conversation_id": {"type": "string", "minLength": 1, "not": {"pattern": "^[Ee][Xx][Aa][Mm][Pp][Ll][Ee]-"},
+                        "description": "Stable ID chosen by the coordinator; the same in both labelers' copies."},
+    "split": {"enum": ["development", "heldout"],
+              "description": "Assigned by the coordinator: development for the pilot, heldout for the confirmation."},
+    "text": {"type": "string", "minLength": 1, "maxLength": 20000,
+             "description": "The original de-identified conversation, one '[YYYY-MM-DD HH:MM] Speaker: message' line per message; Speaker is Customer, Agent or System."},
+    "refund_requested": {"type": "boolean"},
+    "refund_amount": {"type": ["number", "null"], "minimum": 0},
+    "currency": {"enum": ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", null]},
+    "order_id": {"type": ["string", "null"], "minLength": 1},
+    "contact_date": {"type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "refund_date": {"type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "review_required": {"type": "boolean"},
+    "review_reason": {"type": ["string", "null"],
+                      "pattern": "^(issue_date_ambiguous|conflicting_statements|amount_ambiguous|order_ambiguous|request_ambiguous|other)(:.*)?$",
+                      "description": "Required when review_required is true; a code, optionally followed by ': explanation'."},
+    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1},
+                 "description": "Verbatim quotes from the text that support the label."},
+    "scenario_tags": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$"},
+                      "description": "The first tag is the primary scenario."},
+    "labeler_id": {"type": "string", "minLength": 1},
+    "notes": {"type": ["string", "null"]}
+  }
+}

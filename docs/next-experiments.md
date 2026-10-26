@@ -33,6 +33,13 @@ Before collecting confirmation outcomes, specify the primary endpoint, useful ef
 
 ## 2. Validate a realistic workload with independent labels
 
+**Prepared as M7** (internal key `m8`), with no data yet: [workflow](workload-validation.md), [labeling guide and template](../data/validation-template/README.md), [protocol Part A](../experiments/M8-workload-validation.md).
+- **What it compares.** The adopted M6 profile, the M5 profile and grounded Super, on identical human-labelled conversations.
+- **What comes next.** A 50–100-conversation diagnostic pilot proposes the preregistered confirmation design and sample size.
+- **Still needed.** Your conversations, two independent labelers and an adjudicator.
+
+The original proposal follows.
+
 This is the largest evidence gap for the product claim. The current data is synthetic and agent-reviewed, and its family-cluster sensitivity interval reaches below the 95% target.
 
 Start with a small diagnostic pilot of human-written or appropriately de-identified real support conversations. Ask independent reviewers to label them without seeing model outputs, adjudicate disagreements, and retain the ambiguous cases with an explicit field contract. A diagnostic pilot does not establish a 95% reliability claim.

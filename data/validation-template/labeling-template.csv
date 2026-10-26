@@ -1,0 +1,6 @@
+conversation_id,split,text,refund_requested,refund_amount,currency,order_id,contact_date,refund_date,review_required,review_reason,evidence,scenario_tags,labeler_id,notes
+EXAMPLE-001,development,"[2026-03-02 09:14] Customer: Hi, I returned the blender from order ORD-55120 and would like my money back.
+[2026-03-02 11:40] Agent: Thanks for waiting. Your return was received and a refund of $89.99 will be issued in three days.
+[2026-03-02 11:52] Customer: Thank you!",true,89.99,USD,ORD-55120,2026-03-02,2026-03-05,false,,would like my money back | a refund of $89.99 will be issued in three days | order ORD-55120,relative_issue_date; return_received,EXAMPLE-labeler,Illustration only. 'in three days' resolves from the Agent message date: 2026-03-02 + 3.
+EXAMPLE-002,development,"[2026-03-09 16:02] Customer: My order #A-20931 came damaged. Can I get a refund of the 45 EUR?
+[2026-03-10 09:30] Agent: Sorry about that. We will refund 45 EUR within 3-5 business days.",true,45,EUR,A-20931,2026-03-09,,true,issue_date_ambiguous: 3-5 business days names no single issue date,Can I get a refund of the 45 EUR? | We will refund 45 EUR within 3-5 business days.,business_days; damaged_item,EXAMPLE-labeler,Illustration only. Undeterminable refund_date is left blank; every other field is filled.
