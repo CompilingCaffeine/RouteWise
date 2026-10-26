@@ -13,8 +13,13 @@ st.markdown(
     "each has raw per-call records in `runs/`. None of them changes the headline result."
 )
 
-tab5, tab4, tab3, tab1, tab2 = st.tabs(["M5/M6 · Grounding + live hedging", "M4 · Is validation worth it?", "M3 · Can we predict failures?",
-                                  "M1 · Where does latency go?", "M2 · Latency under load"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "M1 · Where does latency go?",
+    "M2 · Latency under load",
+    "M3 · Can we predict failures?",
+    "M4 · Is validation worth it?",
+    "M5/M6 · Grounding + live hedging",
+])
 
 with tab5:
     runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
