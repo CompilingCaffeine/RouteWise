@@ -250,6 +250,8 @@ class RecoveryRouter:
 
     def route(self, task: str, text: str, *, example_id: str | None = None, expected: dict[str, Any] | None = None,
               on_answer: Callable[[dict[str, Any]], None] | None = None) -> Trace:
+        if task != "extraction":
+            raise ValueError("issue-date recovery applies only to extraction")
         t0 = time.perf_counter()
         timeline: dict[str, float] = {"received": 0.0}
         n = [0]

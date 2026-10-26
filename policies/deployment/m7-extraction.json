@@ -1,0 +1,28 @@
+{
+  "policy_id": "m7-grounded-extraction-date-normalization",
+  "source_run": "datesdev-20261026T130720Z-04a579",
+  "selection": "data/v5/selection.json; frozen in experiments/M7-relative-date-recovery.md Part B",
+  "validation_run": "datesconfirm-20261026T133902Z-ab36f4",
+  "prompts": {
+    "extraction": "extraction_v4"
+  },
+  "date_normalization": "deterministic",
+  "scope": "Synthetic refund extraction with relative issue dates; ambiguous issue timing (business days, ranges, next <weekday>, vague periods) goes to review. Validate on your own workload.",
+  "tasks": {
+    "extraction": {
+      "status": "ok",
+      "choice": {
+        "primary": "nano",
+        "escalate_to": "super",
+        "hedge_after_ms": null
+      },
+      "choice_label": "nano -> super on fail, with deterministic issue-date normalization",
+      "reason": "Adopted after a preregistered confirmation: +44.7 points of correct autonomous completions on 367 fresh relative-date conversations with no wrong answers released, and 98.4% correct without review, 100% task accuracy and $0.080/1k on 312 representative conversations. Ambiguous issue dates and final validation failures require review.",
+      "thresholds": {
+        "min_task_accuracy": 0.95,
+        "min_field_accuracy": 0.95,
+        "max_p95_latency_ms": 4000
+      }
+    }
+  }
+}

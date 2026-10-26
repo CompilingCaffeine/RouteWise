@@ -4,6 +4,12 @@ These are proposals, not preregistered studies or new measured results. The comp
 
 ## 1. Recover relative dates without releasing wrong answers
 
+**Completed as M6** (internal key `m7`): [protocol](../experiments/M7-relative-date-recovery.md), [report](../results/M7-report.md).
+- **Outcome.** Deterministic issue-date normalization was selected on development data and confirmed on fresh conversations. Correct autonomous completions on the challenge set rose by +44.7 points, with no wrong answers released. The representative workload passed every gate, and the profile is adopted.
+- **Still open.** The reasoning fallback was not confirmed. Its possible advantage, wording the parser cannot read, needs a larger writer-chosen-phrasing set than the 7 conversations that survived review.
+
+The original proposal follows.
+
 The selected route achieved 98.2% overall task accuracy, but all six errors came from relative refund dates: 12/18 correct in that family. Every final error was flagged by validation, including after Super escalation. The next useful question is whether we can resolve those cases cheaply and safely.
 
 Use the exposed results for development only. Compare three approaches on separate development examples:
@@ -43,6 +49,6 @@ Choose the deadline from an actual product need, freeze the hedge delay on devel
 
 ## Recommended order
 
-Develop date recovery and obtain independent labels first; confirm one frozen candidate on fresh data next. Run a multi-day hedging comparison only if latency risk is material to the intended user. The goal is a defensible deployment decision with fewer, more informative comparisons.
+Date recovery is done. Obtain independent labels next, then confirm on fresh data. Run a multi-day hedging comparison only if latency risk is material to the intended user. The goal is a defensible deployment decision with fewer, more informative comparisons.
 
 Methods references: [NIST sample-size planning](https://www.itl.nist.gov/div898/handbook/prc/section2/prc242.htm) and [NIST randomized block designs](https://www.itl.nist.gov/div898/handbook/pri/section3/pri332.htm). The hackathon's [judging criteria](https://nebiusglobalaihackathon.devpost.com/) emphasize a coherent product and a credible case for a real audience; independent workload evidence supports those goals.

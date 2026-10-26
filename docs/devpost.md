@@ -6,7 +6,7 @@
 
 **Code:** https://github.com/CompilingCaffeine/RouteWise (MIT)
 
-The M5 implementation is published in the live demo. Record and upload the updated demo video before submitting.
+The M5 and M6 implementations are published in the live demo. Record and upload the updated demo video before submitting.
 
 ## Inspiration
 
@@ -50,6 +50,26 @@ Known priced API usage for M5 was **$2.37**, including generation, verification,
 
 The selected route used $0.103 per 1,000 tasks versus $0.339 for the qualifying matched grounded-Super control: about 70% less, with observed accuracy of 98.2% versus 98.8%. This does not establish one-point non-inferiority. Hedging added about 29% cost while both routes met the deadline.
 
+### M6: relative dates without wrong answers
+
+All six of M5's remaining errors were relative refund dates such as "in four days". Both Nano and Super returned null or the message date. M6 compared two fixes:
+
+- **Deterministic issue-date normalization.** An analyzer resolves the store's statement from that message's timestamp, ignores arrival dates and customer restatements, and applies explicit corrections. It sends business days, ranges and "next Friday" to review.
+- **A reasoning fallback.** A reasoning-enabled call is made when date validation fails.
+
+On development data both reached the same accuracy, but the fallback cost 1.5–3.5× more, or missed the latency criterion. Normalization was frozen, along with a power-based sample size, before any confirmation conversation was written.
+
+| Fresh confirmation | Route | Correct, no review | Wrong answers released | $ / 1k |
+|---|---|---:|---:|---:|
+| Relative-date challenge (367) | M5 route | 30.8% | 153 | $0.204 |
+| | Grounded Super | 28.3% | 139 | $0.353 |
+| | **Date normalization** | **75.5%** | **0** | **$0.077** |
+| Representative workload (312) | M5 route | 97.4% | 0 | $0.104 |
+| | Grounded Super | 96.5% | 1 | $0.349 |
+| | **Date normalization** | **98.4%** | **0** | **$0.080** |
+
+The primary improvement was +44.7 points (95% CI 39.5–49.6, preregistered threshold +10). All four safety gates passed, and normalization is now the deployed extraction profile. Every one of its challenge-set reviews was a deliberately ambiguous case, and it answered all 277 answerable challenge conversations correctly. The 4-second deadline gate passed narrowly on a day when Nano served more slowly than during M5. M6 used $5.48 of known priced API usage. Full results: `results/M7-report.md`.
+
 ## How we built it
 
 All model inference, synthetic writing and reasoning verification run on Nebius Token Factory with NVIDIA Nemotron 3 Nano, Super and Ultra. The OpenAI-compatible Python SDK handles requests; no OpenAI model inference is used. Structured JSON output, model-specific reasoning controls, cached-token usage and live published prices are recorded.
@@ -69,10 +89,12 @@ Refund issue dates and arrival dates are different facts. M5 uses explicitly bou
 - Tail latency and quality need separate evidence. A low point-estimate p95 is not sufficient to establish a deadline requirement.
 - A learned pre-route predictor can learn scenario shortcuts: M3 scored AUC 0.80 on random folds and 0.48 on unseen families, so we did not adopt it.
 - The best configuration may be a fixed model. The product should recommend the measured choice and expose uncertainty.
+- Count reviews and wrong releases separately. The M5 route's validator released null for "in 3 business days" and "this Friday", wrong answers it could not see. Measuring correct autonomous completions per incoming request kept "send more to review" from looking like an improvement.
+- When a deterministic check already knows the answer, use it. A reasoning fallback matched normalization's development accuracy at several times the cost and latency.
 
 ## Limits and next steps
 
-The benchmark prose is synthetic and model-written. Labels come from fact sheets and source checks; adjudication was done by a coding agent, not a human domain expert. Explicit fact statements improve label defensibility but narrow language diversity. All six errors from the selected route were relative-date failures flagged by validation. That family scored 12/18 correct, and the family-cluster sensitivity interval is 94.2–100%, crossing the target. The result therefore depends on the observed workload mix. Three same-day time windows are not multi-day availability evidence.
+The benchmark prose is synthetic and model-written. Labels come from fact sheets and source checks; adjudication was done by a coding agent, not a human domain expert. Explicit fact statements improve label defensibility but narrow language diversity. All six errors from the M5 route were relative-date failures flagged by validation. That family scored 12/18 correct, and the family-cluster sensitivity interval is 94.2–100%, crossing the target. M6 addresses that family on a separate challenge set. However, the study author fixed its expression inventory, and the one family with writer-chosen wording kept only 7 conversations, so arbitrary customer phrasing is still untested. Three same-day time windows are not multi-day availability evidence.
 
 The next validation step is independently labelled, de-identified customer conversations, followed by multi-day measurements at realistic arrival rates. The import workflow is built so a team can perform that evaluation on its own workload.
 
@@ -88,7 +110,7 @@ We implemented workload import and separate validation, source-grounded extracti
 - **`/v1/models?verbose=true`.** It returns machine-readable per-token prices, including cached-input prices, plus context length and features. We used it as the *only* price source, so all costs are computed from live published prices rather than typed by hand.
 - **JSON-schema constrained output.** Successful extraction completions in our probes and production benchmarks were schema-valid JSON.
 - **Detailed usage blocks.** They include cached-token counts, and informative `x-ratelimit-*` headers came back on every response.
-- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5 costs are separately reported with all traces.
+- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5 and M6 costs are separately reported with all traces.
 
 **Friction we hit**
 

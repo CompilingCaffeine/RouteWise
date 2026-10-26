@@ -39,3 +39,13 @@ confirmation_studies:
       $0.103 per 1k tasks, about 70% below the qualifying matched grounded-Super control.
       The predeclared hedged intervention also passes; the optimizer chooses unhedged
       routing because both meet the deadline and hedging costs about 29% more.
+  - run: datesconfirm-20261026T133902Z-ab36f4
+    role: M7 preregistered relative-date recovery confirmation
+    display_milestone: M6  # Presentation label; original study key m7.
+    note: >-
+      Deterministic issue-date normalization, selected on development data and frozen before any
+      confirmation conversation existed. On 367 fresh relative-date challenge conversations (90 requiring
+      review), correct autonomous completions rose from 30.8% to 75.5% (+44.7 points, 95% CI 39.5-49.6)
+      with no wrong answers released (current route: 153). On 312 separate representative conversations:
+      98.4% correct without review, 100% task accuracy, $0.080 per 1k (23% below the M5 route); the
+      deadline gate passed narrowly (4.9% upper bound) on a slower Nano serving day. All gates passed; adopted.

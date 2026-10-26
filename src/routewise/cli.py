@@ -364,6 +364,10 @@ def cmd_route(config: Config, args: argparse.Namespace) -> int:
             print(f"  {'pass' if c['passed'] else 'FAIL'}  {c['rule']}{(': ' + c['detail']) if c['detail'] else ''}")
     if trace.escalated:
         print(f"\nescalated: {trace.escalation_reason}")
+    if trace.recovery:
+        analysis = trace.recovery["analysis"]
+        print(f"\nissue date: {analysis['status']} {analysis['date'] or ''} ({analysis['reason']}); action: {trace.recovery['action']}")
+        print(f"final output: {json.dumps(trace.final_output)}")
     print(f"\nfinal valid={trace.final_valid}  total {trace.latency_ms:.0f} ms  ${trace.cost_usd:.6f}")
     if trace.score:
         print(f"ground truth: task_correct={trace.score['task_correct']} field_acc={trace.score['field_accuracy']:.2f}")

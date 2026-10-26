@@ -23,3 +23,18 @@ For hedges, response latency is measured at an actual answer callback. Final cos
 ## Milestone labels and original study identities
 
 The product displays the completed confirmation as **M5**, following M1–M4. Its original preregistered study key remains `m6`. The original protocol/report paths, raw manifests, run IDs, deployment-policy filename and reproduction commands retain that identity. The earlier aborted study retains its original `m5` key in the audit records and is not counted as a completed milestone. This is a presentation change; measurements and preregistrations are unchanged.
+
+The relative-date study (internal key `m7`) is displayed as **M6**. Its protocol, report, data (`data/v5`) and run IDs use the internal key.
+
+## Relative-date recovery (M6)
+
+A route can look more accurate simply by sending more requests to review. M6 therefore scores every incoming request as exactly one of three outcomes:
+
+- **Correct autonomous completion:** released without review, and all six fields correct.
+- **Wrong answer released:** released, but wrong, or released when the case required review.
+- **Review:** not released. A review is never counted as correct.
+
+All rates use every request as the denominator. The primary endpoint is the paired difference in correct autonomous completions on a relative-date challenge set, with a preregistered minimum useful improvement of 10 points. Its interval comes from a conversation bootstrap, with family-cluster intervals as a sensitivity check.
+
+The challenge set deliberately includes ambiguous issue timing (business days, ranges, "next <weekday>"), for which review is the correct outcome. That oversampling would distort production rates, so the challenge set is never pooled with the representative workload. The representative set carries the deployment gates: the M5 accuracy and deadline bounds, non-inferiority to the current route on correct completions and wrong releases, and a cost advantage over grounded Super.
+

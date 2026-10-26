@@ -16,6 +16,12 @@ The dashboard includes the original benchmark and held-out evidence, live routin
 
 **Latest confirmation:** source-grounded Nano → Super achieved **98.2% task accuracy** (lower 95% bound **96.5%**), **2.44 s p95**, and **$0.103 / 1k tasks**—about **70% below the qualifying grounded-Super control**. The original v1 result remains below; see [M5 details](results/M6-report.md).
 
+**Relative-date recovery (M6):** deterministic issue-date normalization was preregistered, selected on development data and adopted on fresh conversations.
+- **Relative-date challenge set (367 conversations):** correct answers without review rose from **30.8% to 75.5%** (+44.7 points, 95% CI 39.5–49.6), and wrong answers released fell from 153 to **0**.
+- **Representative workload (312 conversations):** 98.4% correct without review and 100% task accuracy, at $0.080 / 1k tasks, 23% below the M5 route.
+
+See the [M6 report](results/M7-report.md).
+
 All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
 
 **Declared requirements.** Extraction: task accuracy ≥ 85%, field accuracy ≥ 95%, p95 ≤ 4 s. Classification: task accuracy ≥ 95%, p95 ≤ 3 s.
@@ -96,7 +102,7 @@ Each experiment was pre-registered in [`experiments/`](experiments/), with its q
 - **Classification is too easy:** every model scored 100% on the classification tuning items, so they don't separate the models.
 - **Synthetic labels:** most extraction items come from templates, with labels correct by construction. 10 items are hand-written.
 - **Single-day measurements:** latency was measured on one day against shared serverless endpoints.
-- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). The original experiments and v2 workload used approximately **$6.00** for 10,843 model calls. M5 used **$2.37** of known priced API usage; the complete follow-up cost ledger is retained in the [report appendix](results/M6-report.md).
+- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). The original experiments and v2 workload used approximately **$6.00** for 10,843 model calls. M5 used **$2.37** of known priced API usage; the complete follow-up cost ledger is retained in the [report appendix](results/M6-report.md). M6 used **$5.48**, of which $4.62 went to writing 824 and label-verifying 787 conversations ([M6 report](results/M7-report.md#accounting)).
 
 ### Fresh-data confirmation: M5 (`confirmation-20261025T212745Z-ac61b1`)
 
@@ -117,7 +123,38 @@ The four comparisons share clarified field rules, source constraints and metadat
 
 See the [full M5 report](results/M6-report.md), [protocol](experiments/M6-issue-date-confirmation.md), and **Workload optimizer** in the dashboard for all nine arms, qualification gates, paired intervals, per-family/window results and source evidence.
 
-[Recommended next experiments](docs/next-experiments.md): relative-date recovery, independent workload labels, then multi-day latency validation.
+### Relative-date recovery: M6 (`datesconfirm-20261026T133902Z-ab36f4`)
+
+M5's six remaining errors were relative refund dates. Both models returned null or the message date for "in four days". M6 compared two fixes:
+
+- **Deterministic normalization.** An analyzer resolves the store's issue-date statement against that message's own timestamp. It ignores arrival dates and customer restatements, applies explicit corrections, and sends ambiguous timing to review: business days, ranges, "next Friday".
+- **Reasoning fallback.** A reasoning-enabled model call is made when date validation fails.
+
+**Choice and freeze.**
+- **Development:** on 92 development conversations plus a replay of the exposed M5 data, both approaches reached the same accuracy. The reasoning fallback cost 1.5–3.5× more, or missed the 4 s p95 criterion with Nano.
+- **Freeze:** normalization was frozen, with code hashes and a power-based sample size, before any confirmation conversation existed ([protocol](experiments/M7-relative-date-recovery.md)).
+
+**Relative-date challenge set** (367 conversations; the 90 with deliberately ambiguous timing must go to review):
+
+| Route | Correct, no review | Wrong answers released | Review (all necessary?) | $ / 1k | p95 |
+|---|---:|---:|---|---:|---:|
+| M5 route: grounded Nano → Super | 30.8% | 153 | 27.5% (none necessary) | $0.204 | 4.28 s |
+| Grounded Super | 28.3% | 139 | 33.8% (none necessary) | $0.353 | 1.59 s |
+| **Date normalization** | **75.5%** | **0** | 24.5% (all necessary) | **$0.077** | 3.31 s |
+
+**Representative workload** (312 conversations, evaluated separately):
+
+| Route | Correct, no review | Wrong released | Task acc. (lower 95%) | $ / 1k | Deadline-miss upper 95% |
+|---|---:|---:|---:|---:|---:|
+| M5 route | 97.4% | 0 | 99.4% (98.1%) | $0.104 | 5.7% |
+| Grounded Super | 96.5% | 1 | 98.4% (96.7%) | $0.349 | 1.4% |
+| **Date normalization** | **98.4%** | **0** | **100% (99.1%)** | **$0.080** | **4.9%** |
+
+**Gates.** The primary criterion (lower bound above +10 points) and all four safety gates passed, so normalization is now the deployed extraction profile.
+- **Latency.** The deadline gate passed narrowly (4.9% against 5%). Nano served more slowly today than in M5 (call p95 3.35 s versus 2.06 s), and the M5 route itself would have missed that gate.
+- **Scope.** The data is synthetic and agent-reviewed, and the study author fixed the expression inventory. The one family with writer-chosen wording kept only 7 conversations, so wording the parser cannot read is still untested.
+
+[Recommended next experiments](docs/next-experiments.md): independent workload labels, then multi-day latency validation.
 
 ## Why not just use a generic router?
 
@@ -195,14 +232,14 @@ echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
 
 ## Use the measured extraction route
 
-The original default config/policies preserve v1. The M5 extraction profile uses prompt v4, source grounding, a 95% task target and Nano → Super escalation without hedging:
+The original default config/policies preserve v1. The adopted M6 extraction profile uses prompt v4, source grounding, Nano → Super escalation without hedging, and deterministic issue-date normalization:
 
 ```bash
-routewise --config config/grounded.yaml route --policy policies/deployment/m6-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345.
-[2026-04-01 10:00] Agent: A refund of USD 25 will be issued on 2026-04-03.' --json
+routewise --config config/grounded.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345 please, I paid $40.00.
+[2026-04-02 10:00] Agent: Approved. The refund will be issued this Friday.'
 ```
 
-Check `final_valid`; a failed final answer needs review. This profile is workload-specific, with the family-mix limits documented in the [M5 report](results/M6-report.md). The dashboard's Workload optimizer offers the same measured configuration and supports importing a new labelled workload.
+Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
 
 ## Reproduce
 
@@ -214,6 +251,7 @@ routewise policy                       # cheapest qualifying route per task → 
 routewise evaluate                     # baselines + RouteWise (+ hedged variant) × held-out split, live → runs/eval-*/
 routewise evaluate --inject-stalls nano:0.10:3000-6000   # controlled fault injection (seeded, identical per strategy)
 routewise confirmation report --study m6 --run runs/confirmation-20261025T212745Z-ac61b1
+routewise recovery report --run runs/datesconfirm-20261026T133902Z-ab36f4   # M6 (study key m7)
 routewise report --run runs/eval-…     # recompute a summary from recorded traces (no API calls)
 routewise route --example ext-025      # follow one request through validation/escalation/hedging
 streamlit run app/streamlit_app.py     # dashboard

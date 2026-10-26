@@ -52,6 +52,10 @@ def build_routers(
         client, config, prices, prompts, {t: o.without_hedge() for t, o in options.items()},
         strategy="routewise", policy=policy,
     )
+    if policy.get("date_normalization") == "deterministic":
+        # M7 (displayed as M6) adopted profile: same Nano -> Super route plus issue-date normalization.
+        from routewise.recovery import RecoveryRouter
+        routers["routewise"] = RecoveryRouter(client, config, prices, prompts["extraction"], None, strategy="deterministic")
     if any(o.hedge_after_ms is not None for o in options.values()):
         routers["routewise_hedged"] = Router(
             client, config, prices, prompts, options, strategy="routewise_hedged", policy=policy

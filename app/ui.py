@@ -113,6 +113,104 @@ def render_confirmation_takeaways(summary: dict) -> None:
                     f"p95 improves to {hedge['p95_latency_ms']/1000:.2f} s; both routes meet the 4 s deadline.")
 
 
+RECOVERY_LABELS = {
+    'control': 'Current route · grounded Nano → Super',
+    'fixed_grounded_super': 'Grounded Super',
+    'deterministic': 'Date normalization (frozen candidate)',
+    'reasoning_nano': 'Reasoning fallback · Nano', 'reasoning_super': 'Reasoning fallback · Super',
+    'reasoning_ultra': 'Reasoning fallback · Ultra',
+}
+GATE_TEXT = {
+    'primary': 'Challenge: correct autonomous completions improve by more than 10 points (95% lower bound)',
+    'S1': 'Challenge: wrong answers released rise by at most 2 points (95% upper bound)',
+    'S2': 'Representative: 95% accuracy and field gates, 4 s deadline, complete cost',
+    'S3': 'Representative: no loss of correct autonomous answers (−1 pt) or rise in wrong releases (+1 pt)',
+    'S4': 'Representative: cheaper than grounded Super (95% upper bound below zero)',
+}
+
+
+def recovery_rows(metrics: dict, arms: list[str]) -> list[dict]:
+    rows = []
+    for name in arms:
+        m = metrics[name]
+        rows.append({
+            'route': RECOVERY_LABELS.get(name, name),
+            'correct, no review': pct(m['cac_rate']),
+            'sent to review': f"{pct(m['review_rate'])} ({pct(m['necessary_review_rate'])} needed)",
+            'wrong answers released': f"{m['undetected_errors']} ({pct(m['undetected_rate'])})",
+            'accuracy when released': pct(m['released_accuracy']),
+            '$ / 1k': money(m['cost_per_1k_tasks'], 3),
+            'p95': '–' if m['p95_latency_ms'] is None else f"{m['p95_latency_ms']/1000:.2f} s",
+            '> 4 s': m['deadline_misses'],
+        })
+    return rows
+
+
+def render_date_recovery(summary: dict, selection: dict | None) -> None:
+    """M6 (internal study m7): preregistered relative-date recovery, kept as two separate evaluations."""
+    cand = summary['candidate']
+    arms = ['control', 'fixed_grounded_super', cand]
+    decision = summary.get('decision')
+    ch, rep = summary['metrics']['challenge'], summary['metrics']['representative']
+    st.subheader('Can relative refund dates be resolved without releasing wrong answers?')
+    if not summary['complete'] or decision is None:
+        st.warning('The confirmation run is incomplete; no decision is shown.')
+        return
+    primary = decision['detail']['primary_cac_diff']
+    lo, hi = primary['ci95']
+    if decision['adopt']:
+        st.success(f"Adopt date normalization. On fresh relative-date conversations it answers "
+                   f"{primary['diff']*100:+.1f} points more requests correctly without review "
+                   f"(95% CI {lo*100:+.1f} to {hi*100:+.1f}), and it passes every safety gate.")
+    else:
+        failed = [k for k, ok in decision['checks'].items() if not ok]
+        st.warning('Keep the current route. The frozen candidate did not pass: ' + ', '.join(failed) + '.')
+    cols = st.columns(3)
+    cols[0].metric('Correct without review, challenge set', pct(ch[cand]['cac_rate']),
+                   f"{(ch[cand]['cac_rate']-ch['control']['cac_rate'])*100:+.1f} pts vs current")
+    cols[1].metric('Wrong answers released, challenge set', ch[cand]['undetected_errors'],
+                   f"{ch[cand]['undetected_errors']-ch['control']['undetected_errors']:+d} vs current", delta_color='inverse')
+    cols[2].metric('Cost per 1k, representative', money(rep[cand]['cost_per_1k_tasks'], 3),
+                   f"{(rep[cand]['cost_per_1k_tasks']/rep['control']['cost_per_1k_tasks']-1)*100:+.0f}% vs current",
+                   delta_color='inverse')
+    st.markdown(f"**Relative-date challenge set** · {ch[cand]['n']} fresh conversations, "
+                f"{ch[cand]['n_review_required']} of them deliberately ambiguous (business days, ranges, "
+                "\"next Friday\"). For those, the correct outcome is review.")
+    st.dataframe(recovery_rows(ch, arms), hide_index=True, width='stretch')
+    st.markdown(f"**Representative workload** · {rep[cand]['n']} fresh conversations at the declared "
+                "scenario mix, evaluated separately and never pooled with the challenge set.")
+    st.dataframe(recovery_rows(rep, arms), hide_index=True, width='stretch')
+    st.caption('Review is never counted as a correct answer. Every rate uses all incoming requests, so sending more '
+               'requests to review cannot look like an improvement. Costs include every model call.')
+    st.dataframe([{'preregistered gate': GATE_TEXT[k], 'result': '✓ pass' if ok else '✗ fail'}
+                  for k, ok in decision['checks'].items()], hide_index=True, width='stretch')
+    with st.expander('Challenge set by scenario family'):
+        fams = [r for r in summary['families']['challenge'] if r['strategy'] in arms]
+        table = {}
+        for r in fams:
+            row = table.setdefault(r['family'], {'family': r['family'], 'n': r['n']})
+            row[RECOVERY_LABELS.get(r['strategy'], r['strategy'])] = f"{pct(r['cac_rate'], 0)} · {r['undetected_errors']} wrong"
+        st.dataframe(list(table.values()), hide_index=True, width='stretch')
+        st.caption('Each cell: correct without review · wrong answers released.')
+    if selection:
+        with st.expander('How the candidate was chosen on development data'):
+            dev, v4 = selection['dev'], selection['v4_replay']
+            st.dataframe([{'route': RECOVERY_LABELS.get(n, n), 'dev: correct, no review': pct(dev[n]['cac_rate']),
+                           'dev: wrong released': dev[n]['undetected_errors'],
+                           'v4 replay: $ / 1k': money(v4[n]['cost_per_1k_tasks'], 3),
+                           'v4 replay: p95': f"{v4[n]['p95_latency_ms']/1000:.2f} s",
+                           'eligible': '✓ selected' if n == selection['selected'] else 'yes' if n in selection['eligible'] else
+                           ('–' if n in ('control', 'fixed_grounded_super') else 'no')}
+                          for n in dev], hide_index=True, width='stretch')
+            st.caption('Reasoning fallbacks matched date normalization on development accuracy but cost more; the Nano '
+                       'reasoning fallback missed the 4 s p95 criterion. The cheapest eligible route was frozen before '
+                       'any confirmation data existed.')
+    st.caption(f"Synthetic, model-written conversations; labels fixed before writing and agent-reviewed, not human-validated. "
+               f"Run {summary['run']}; internal study key m7.")
+    st.markdown('[Protocol](https://github.com/CompilingCaffeine/RouteWise/blob/main/experiments/M7-relative-date-recovery.md) · '
+                '[Full report](https://github.com/CompilingCaffeine/RouteWise/blob/main/results/M7-report.md)')
+
+
 def tradeoff_chart(
     df: pd.DataFrame,
     *,

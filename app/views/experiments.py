@@ -3,21 +3,32 @@ import streamlit as st
 
 from routewise import artifacts
 from routewise.config import load_config
-from ui import (CONFIGURATION_LABELS, line_chart, money, ms, pct, reliability_chart,
-                render_confirmation_takeaways, signed_bars, stacked_bar, tradeoff_chart, useful_comparison_rows)
+from ui import (CONFIGURATION_LABELS, line_chart, money, ms, pct, reliability_chart, render_confirmation_takeaways,
+                render_date_recovery, signed_bars, stacked_bar, tradeoff_chart, useful_comparison_rows)
 
 config = load_config()
 st.title("Experiments")
 st.markdown("What each experiment taught us about quality, latency and cost. "
             "The comparisons below explain which changes are worth using.")
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "M1 · Where does latency go?",
     "M2 · Latency under load",
     "M3 · Can we predict failures?",
     "M4 · Is validation worth it?",
     "M5 · Grounding + escalation",
+    "M6 · Relative-date recovery",
 ])
+
+with tab6:
+    runs = [r for r in artifacts.list_runs('datesconfirm') if r.manifest.get('study') == 'm7'
+            and (r.path/'summary.json').exists()]
+    selection_path = artifacts.artifacts_root()/'data/v5/selection.json'
+    if not runs:
+        st.info('The M6 confirmation has not been run yet.')
+    else:
+        render_date_recovery(artifacts.load_json(runs[0].path/'summary.json'),
+                             artifacts.load_json(selection_path) if selection_path.exists() else None)
 
 with tab5:
     runs = [r for r in artifacts.list_runs('confirmation') if r.manifest.get('study') == 'm6'

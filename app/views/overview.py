@@ -22,14 +22,16 @@ with st.container(border=True):
     st.markdown(
         "**Hypothesis under test** — for a structured information-extraction workload, RouteWise reduces total "
     "inference cost while meeting a stated quality target. The original experiment used smallest/strongest "
-    "baselines; M5 adds Super and grounded fixed-model controls on fresh data."
+    "baselines; M5 adds Super and grounded fixed-model controls on fresh data, and M6 adds deterministic "
+    "relative-date recovery."
     )
 
 confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
                  and artifacts.load_json(r.path/'summary.json').get('complete')]
 if confirmations:
     fresh = artifacts.load_json(confirmations[0].path/'summary.json')
-    st.subheader(f"Fresh-data confirmation · {fresh.get('study', 'm5').upper()}")
+    # Display labels follow M1-M4; original study keys stay in manifests (m6 is displayed as M5).
+    st.subheader(f"Fresh-data confirmation · {({'m6': 'M5'}).get(fresh.get('study'), fresh.get('study', 'm5').upper())}")
     selected = fresh['cheapest_qualifying']
     names = {'grounding_only': 'Grounded Nano → Super (without hedging)',
              'grounded_hedged': 'Grounded Nano → Super + hedge'}
@@ -50,6 +52,27 @@ if confirmations:
         low, high = fresh['metrics'][selected]['accuracy_family_cluster_ci95']
         st.caption(f'Family-mix sensitivity interval: {pct(low)}–{pct(high)}. The result is conditional on '
                    'this synthetic workload; validate real customer data and additional serving days.')
+
+recoveries = [r for r in artifacts.list_runs('datesconfirm') if (r.path/'summary.json').exists()
+              and artifacts.load_json(r.path/'summary.json').get('complete')]
+if recoveries:
+    rec = artifacts.load_json(recoveries[0].path/'summary.json')
+    ch, rep = rec['metrics']['challenge'], rec['metrics']['representative']
+    cand, primary = rec['candidate'], rec['decision']['detail']['primary_cac_diff']
+    st.subheader('Relative-date recovery · M6')
+    status_badge(rec['decision']['adopt'], 'Adopted: deterministic issue-date normalization',
+                 'Not adopted; the current route remains')
+    cols = st.columns(4)
+    cols[0].metric('Relative dates answered without review', pct(ch[cand]['cac_rate']),
+                   f"{primary['diff']*100:+.1f} pts vs M5 route")
+    cols[1].metric('Wrong answers released (challenge)', ch[cand]['undetected_errors'],
+                   f"{ch[cand]['undetected_errors'] - ch['control']['undetected_errors']:+d}", delta_color='inverse')
+    cols[2].metric('Representative: correct, no review', pct(rep[cand]['cac_rate']))
+    cols[3].metric('Representative cost / 1,000', money(rep[cand]['cost_per_1k_tasks']),
+                   f"{(rep[cand]['cost_per_1k_tasks']/rep['control']['cost_per_1k_tasks']-1)*100:+.0f}%", delta_color='inverse')
+    st.caption(f"{ch[cand]['n']} fresh relative-date conversations ({ch[cand]['n_review_required']} deliberately "
+               f"ambiguous, which must go to review) and {rep[cand]['n']} representative conversations, evaluated "
+               'separately. Preregistered gates; synthetic, agent-reviewed data. Details under Experiments → M6.')
 
 if latest_eval and (latest_eval.path / "summary.json").exists():
     summary = artifacts.load_json(latest_eval.path / "summary.json")

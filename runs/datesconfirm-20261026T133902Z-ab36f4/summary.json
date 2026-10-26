@@ -1,0 +1,1565 @@
+{
+  "study": "m7",
+  "display_milestone": "M6",
+  "run": "datesconfirm-20261026T133902Z-ab36f4",
+  "candidate": "deterministic",
+  "complete": true,
+  "n_observations": 2037,
+  "n_expected_observations": 2037,
+  "metrics": {
+    "challenge": {
+      "fixed_grounded_super": {
+        "n": 367,
+        "n_review_required": 90,
+        "correct_autonomous": 104,
+        "cac_rate": 0.28337874659400547,
+        "review_rate": 0.33787465940054495,
+        "necessary_review_rate": 0.0,
+        "avoidable_review_rate": 0.33787465940054495,
+        "undetected_errors": 139,
+        "undetected_rate": 0.3787465940054496,
+        "undetected_upper95": 0.4211395972765959,
+        "released_accuracy": 0.4279835390946502,
+        "task_accuracy": 0.5992779783393501,
+        "accuracy_lower95": 0.5501119484609538,
+        "field_accuracy": 0.9332129963898917,
+        "escalation_rate": 0.0,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.12941039999999998,
+        "cost_per_1k_tasks": 0.35261689373297,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1047.883625025861,
+        "p95_latency_ms": 1586.6150661604477,
+        "deadline_misses": 2,
+        "deadline_miss_rate": 0.005449591280653951,
+        "deadline_miss_upper95": 0.016332490045888406
+      },
+      "deterministic": {
+        "n": 367,
+        "n_review_required": 90,
+        "correct_autonomous": 277,
+        "cac_rate": 0.7547683923705722,
+        "review_rate": 0.2452316076294278,
+        "necessary_review_rate": 0.2452316076294278,
+        "avoidable_review_rate": 0.0,
+        "undetected_errors": 0,
+        "undetected_rate": 0.0,
+        "undetected_upper95": 0.007318103561061007,
+        "released_accuracy": 1.0,
+        "task_accuracy": 1.0,
+        "accuracy_lower95": 0.9903271725662476,
+        "field_accuracy": 1.0,
+        "escalation_rate": 0.0,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.028134839999999998,
+        "cost_per_1k_tasks": 0.07666168937329701,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1361.891749955248,
+        "p95_latency_ms": 3308.7654499919154,
+        "deadline_misses": 2,
+        "deadline_miss_rate": 0.005449591280653951,
+        "deadline_miss_upper95": 0.016332490045888406
+      },
+      "control": {
+        "n": 367,
+        "n_review_required": 90,
+        "correct_autonomous": 113,
+        "cac_rate": 0.3079019073569482,
+        "review_rate": 0.27520435967302453,
+        "necessary_review_rate": 0.0,
+        "avoidable_review_rate": 0.27520435967302453,
+        "undetected_errors": 153,
+        "undetected_rate": 0.41689373297002724,
+        "undetected_upper95": 0.4596842813762742,
+        "released_accuracy": 0.424812030075188,
+        "task_accuracy": 0.5956678700361011,
+        "accuracy_lower95": 0.5464668849158999,
+        "field_accuracy": 0.9326113116726834,
+        "escalation_rate": 0.4305177111716621,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.07485762,
+        "cost_per_1k_tasks": 0.2039717166212534,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1899.9792919494212,
+        "p95_latency_ms": 4282.996487419586,
+        "deadline_misses": 23,
+        "deadline_miss_rate": 0.06267029972752043,
+        "deadline_miss_upper95": 0.08684995443359494
+      }
+    },
+    "representative": {
+      "fixed_grounded_super": {
+        "n": 312,
+        "n_review_required": 0,
+        "correct_autonomous": 301,
+        "cac_rate": 0.9647435897435898,
+        "review_rate": 0.03205128205128205,
+        "necessary_review_rate": 0.0,
+        "avoidable_review_rate": 0.03205128205128205,
+        "undetected_errors": 1,
+        "undetected_rate": 0.003205128205128205,
+        "undetected_upper95": 0.01423684601719921,
+        "released_accuracy": 0.9966887417218543,
+        "task_accuracy": 0.9839743589743589,
+        "accuracy_lower95": 0.9674492387267319,
+        "field_accuracy": 0.9973290598290598,
+        "escalation_rate": 0.0,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.10893749999999999,
+        "cost_per_1k_tasks": 0.34915865384615385,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1011.8597919936292,
+        "p95_latency_ms": 1696.761860061087,
+        "deadline_misses": 1,
+        "deadline_miss_rate": 0.003205128205128205,
+        "deadline_miss_upper95": 0.01423684601719921
+      },
+      "deterministic": {
+        "n": 312,
+        "n_review_required": 0,
+        "correct_autonomous": 307,
+        "cac_rate": 0.9839743589743589,
+        "review_rate": 0.016025641025641024,
+        "necessary_review_rate": 0.0,
+        "avoidable_review_rate": 0.016025641025641024,
+        "undetected_errors": 0,
+        "undetected_rate": 0.0,
+        "undetected_upper95": 0.00859706322424554,
+        "released_accuracy": 1.0,
+        "task_accuracy": 1.0,
+        "accuracy_lower95": 0.9914029367757544,
+        "field_accuracy": 1.0,
+        "escalation_rate": 0.016025641025641024,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.02498928,
+        "cost_per_1k_tasks": 0.08009384615384615,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1387.0702289859764,
+        "p95_latency_ms": 3609.181018883828,
+        "deadline_misses": 9,
+        "deadline_miss_rate": 0.028846153846153848,
+        "deadline_miss_upper95": 0.048935566541265525
+      },
+      "control": {
+        "n": 312,
+        "n_review_required": 0,
+        "correct_autonomous": 304,
+        "cac_rate": 0.9743589743589743,
+        "review_rate": 0.02564102564102564,
+        "necessary_review_rate": 0.0,
+        "avoidable_review_rate": 0.02564102564102564,
+        "undetected_errors": 0,
+        "undetected_rate": 0.0,
+        "undetected_upper95": 0.00859706322424554,
+        "released_accuracy": 1.0,
+        "task_accuracy": 0.9935897435897436,
+        "accuracy_lower95": 0.9808162131145981,
+        "field_accuracy": 0.998931623931624,
+        "escalation_rate": 0.10576923076923077,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.03228798,
+        "cost_per_1k_tasks": 0.10348711538461539,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1466.834499995457,
+        "p95_latency_ms": 3641.3318168662954,
+        "deadline_misses": 11,
+        "deadline_miss_rate": 0.035256410256410256,
+        "deadline_miss_upper95": 0.05681255709885723
+      }
+    }
+  },
+  "families": {
+    "challenge": [
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "arrival_only_relative",
+        "n": 30,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.35085,
+        "p95_latency_ms": 1350.574727592175
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "boundary_relative",
+        "n": 30,
+        "cac_rate": 0.5,
+        "review_rate": 0.5,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.34963999999999995,
+        "p95_latency_ms": 1455.8684918447398
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "business_days",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.3497,
+        "p95_latency_ms": 3145.655554346742
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "corrected_promise",
+        "n": 30,
+        "cac_rate": 0.5333333333333333,
+        "review_rate": 0.4666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.36182999999999993,
+        "p95_latency_ms": 1338.7189375032904
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "customer_restatement",
+        "n": 30,
+        "cac_rate": 0.23333333333333334,
+        "review_rate": 0.7666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.3676,
+        "p95_latency_ms": 1558.2222357712453
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "day_after_tomorrow",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 1.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.35546,
+        "p95_latency_ms": 1461.0542188805994
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "issue_and_arrival",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.35669999999999996,
+        "p95_latency_ms": 1620.2431206213078
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "next_or_vague",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.34466,
+        "p95_latency_ms": 1482.4622150801588
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "paraphrased_offset",
+        "n": 7,
+        "cac_rate": 0.0,
+        "review_rate": 0.42857142857142855,
+        "undetected_errors": 4,
+        "cost_per_1k_tasks": 0.35352857142857136,
+        "p95_latency_ms": 1585.623633582145
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "past_relative",
+        "n": 30,
+        "cac_rate": 0.26666666666666666,
+        "review_rate": 0.7333333333333333,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.35377,
+        "p95_latency_ms": 2528.14949156018
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "range_or_bound",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.34796,
+        "p95_latency_ms": 1909.0501170081557
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "this_weekday",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.16666666666666666,
+        "undetected_errors": 25,
+        "cost_per_1k_tasks": 0.34864,
+        "p95_latency_ms": 1747.1936105925129
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "week_offset",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.3333333333333333,
+        "undetected_errors": 20,
+        "cost_per_1k_tasks": 0.34437999999999996,
+        "p95_latency_ms": 1418.2350686111022
+      },
+      {
+        "strategy": "deterministic",
+        "family": "arrival_only_relative",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07661199999999999,
+        "p95_latency_ms": 3125.824252323946
+      },
+      {
+        "strategy": "deterministic",
+        "family": "boundary_relative",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.075496,
+        "p95_latency_ms": 3169.1102705313824
+      },
+      {
+        "strategy": "deterministic",
+        "family": "business_days",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 1.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07638599999999998,
+        "p95_latency_ms": 3208.729131266591
+      },
+      {
+        "strategy": "deterministic",
+        "family": "corrected_promise",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07910199999999999,
+        "p95_latency_ms": 2664.281456251047
+      },
+      {
+        "strategy": "deterministic",
+        "family": "customer_restatement",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.08005599999999999,
+        "p95_latency_ms": 3181.795843600412
+      },
+      {
+        "strategy": "deterministic",
+        "family": "day_after_tomorrow",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07626000000000001,
+        "p95_latency_ms": 3657.599643772119
+      },
+      {
+        "strategy": "deterministic",
+        "family": "issue_and_arrival",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07599,
+        "p95_latency_ms": 3350.0880293519003
+      },
+      {
+        "strategy": "deterministic",
+        "family": "next_or_vague",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 1.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.075266,
+        "p95_latency_ms": 2815.200912635192
+      },
+      {
+        "strategy": "deterministic",
+        "family": "paraphrased_offset",
+        "n": 7,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07670571428571428,
+        "p95_latency_ms": 3575.951883295784
+      },
+      {
+        "strategy": "deterministic",
+        "family": "past_relative",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07771399999999999,
+        "p95_latency_ms": 2996.1936774139767
+      },
+      {
+        "strategy": "deterministic",
+        "family": "range_or_bound",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 1.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07601399999999998,
+        "p95_latency_ms": 1864.350185584044
+      },
+      {
+        "strategy": "deterministic",
+        "family": "this_weekday",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.075764,
+        "p95_latency_ms": 3555.18500173348
+      },
+      {
+        "strategy": "deterministic",
+        "family": "week_offset",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07526999999999999,
+        "p95_latency_ms": 2962.5006150774425
+      },
+      {
+        "strategy": "control",
+        "family": "arrival_only_relative",
+        "n": 30,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.085238,
+        "p95_latency_ms": 3200.0403650890803
+      },
+      {
+        "strategy": "control",
+        "family": "boundary_relative",
+        "n": 30,
+        "cac_rate": 0.6,
+        "review_rate": 0.4,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.370752,
+        "p95_latency_ms": 4518.427760264604
+      },
+      {
+        "strategy": "control",
+        "family": "business_days",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.07638599999999998,
+        "p95_latency_ms": 3331.437012690003
+      },
+      {
+        "strategy": "control",
+        "family": "corrected_promise",
+        "n": 30,
+        "cac_rate": 0.5666666666666667,
+        "review_rate": 0.36666666666666664,
+        "undetected_errors": 2,
+        "cost_per_1k_tasks": 0.21950799999999995,
+        "p95_latency_ms": 4119.565931390391
+      },
+      {
+        "strategy": "control",
+        "family": "customer_restatement",
+        "n": 30,
+        "cac_rate": 0.4,
+        "review_rate": 0.5666666666666667,
+        "undetected_errors": 1,
+        "cost_per_1k_tasks": 0.33483,
+        "p95_latency_ms": 4434.224431266193
+      },
+      {
+        "strategy": "control",
+        "family": "day_after_tomorrow",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.8666666666666667,
+        "undetected_errors": 4,
+        "cost_per_1k_tasks": 0.34115799999999996,
+        "p95_latency_ms": 4646.801626568777
+      },
+      {
+        "strategy": "control",
+        "family": "issue_and_arrival",
+        "n": 30,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.347472,
+        "p95_latency_ms": 4606.540575297549
+      },
+      {
+        "strategy": "control",
+        "family": "next_or_vague",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.075266,
+        "p95_latency_ms": 2770.1320873253285
+      },
+      {
+        "strategy": "control",
+        "family": "paraphrased_offset",
+        "n": 7,
+        "cac_rate": 0.0,
+        "review_rate": 0.14285714285714285,
+        "undetected_errors": 6,
+        "cost_per_1k_tasks": 0.14687142857142857,
+        "p95_latency_ms": 4336.488128587371
+      },
+      {
+        "strategy": "control",
+        "family": "past_relative",
+        "n": 30,
+        "cac_rate": 0.26666666666666666,
+        "review_rate": 0.7333333333333333,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.29252,
+        "p95_latency_ms": 7398.547387347211
+      },
+      {
+        "strategy": "control",
+        "family": "range_or_bound",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.087784,
+        "p95_latency_ms": 2261.87317238946
+      },
+      {
+        "strategy": "control",
+        "family": "this_weekday",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.0,
+        "undetected_errors": 30,
+        "cost_per_1k_tasks": 0.075844,
+        "p95_latency_ms": 3464.4018203456653
+      },
+      {
+        "strategy": "control",
+        "family": "week_offset",
+        "n": 30,
+        "cac_rate": 0.0,
+        "review_rate": 0.3333333333333333,
+        "undetected_errors": 20,
+        "cost_per_1k_tasks": 0.15422599999999997,
+        "p95_latency_ms": 3464.007448230405
+      }
+    ],
+    "representative": [
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "arrival_versus_issue",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.32130000000000003,
+        "p95_latency_ms": 1764.3553876027013
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "arrival_without_issue",
+        "n": 15,
+        "cac_rate": 0.8,
+        "review_rate": 0.13333333333333333,
+        "undetected_errors": 1,
+        "cost_per_1k_tasks": 0.3099,
+        "p95_latency_ms": 1912.2429251903686
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "counteroffer",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.399,
+        "p95_latency_ms": 1777.488617016935
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "currency_symbol",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.36855,
+        "p95_latency_ms": 1510.1466102991253
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "full_refund_absolute",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.34826,
+        "p95_latency_ms": 1522.5213622907183
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "large_amount",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.33592,
+        "p95_latency_ms": 1522.4582125083548
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "multi_date",
+        "n": 12,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.37475,
+        "p95_latency_ms": 1466.1077983968426
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "multi_item_sum",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.39138,
+        "p95_latency_ms": 1203.6867957096547
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "negated_refund",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.32749999999999996,
+        "p95_latency_ms": 1142.1001248934772
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "no_amount_stated",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.30868,
+        "p95_latency_ms": 1414.0349455818073
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "numeric_order",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.3212399999999999,
+        "p95_latency_ms": 1218.2175373891369
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "partial_refund_distractor",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.40238571428571424,
+        "p95_latency_ms": 1922.228627291042
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "product_and_date_not_id",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.3093428571428571,
+        "p95_latency_ms": 1336.4796210313216
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "refund_in_past",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.3467,
+        "p95_latency_ms": 1669.191245612456
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "refund_no_date",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.34494,
+        "p95_latency_ms": 1548.9302955102175
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "relative_refund_date",
+        "n": 12,
+        "cac_rate": 0.6666666666666666,
+        "review_rate": 0.3333333333333333,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.34097500000000003,
+        "p95_latency_ms": 3675.2627703361177
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "replacement_only",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.30135999999999996,
+        "p95_latency_ms": 2125.8002710936144
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "shipping_fee_only",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.36334,
+        "p95_latency_ms": 1409.9565038108267
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "superseded_order",
+        "n": 13,
+        "cac_rate": 0.9230769230769231,
+        "review_rate": 0.07692307692307693,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.3450230769230769,
+        "p95_latency_ms": 1878.2673832029109
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "system_message_first",
+        "n": 8,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.37871249999999995,
+        "p95_latency_ms": 2721.548218332465
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "tracking_distractor",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.33366,
+        "p95_latency_ms": 1468.439628690249
+      },
+      {
+        "strategy": "fixed_grounded_super",
+        "family": "two_orders",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.42747999999999997,
+        "p95_latency_ms": 2304.548933630577
+      },
+      {
+        "strategy": "deterministic",
+        "family": "arrival_versus_issue",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.078648,
+        "p95_latency_ms": 2672.8665206930614
+      },
+      {
+        "strategy": "deterministic",
+        "family": "arrival_without_issue",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.075204,
+        "p95_latency_ms": 2355.6863749923655
+      },
+      {
+        "strategy": "deterministic",
+        "family": "counteroffer",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.085988,
+        "p95_latency_ms": 3334.7560251189866
+      },
+      {
+        "strategy": "deterministic",
+        "family": "currency_symbol",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.08023285714285712,
+        "p95_latency_ms": 2733.6716960504414
+      },
+      {
+        "strategy": "deterministic",
+        "family": "full_refund_absolute",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.076652,
+        "p95_latency_ms": 3192.8147624770654
+      },
+      {
+        "strategy": "deterministic",
+        "family": "large_amount",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07316,
+        "p95_latency_ms": 5196.344900206896
+      },
+      {
+        "strategy": "deterministic",
+        "family": "multi_date",
+        "n": 12,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.082035,
+        "p95_latency_ms": 5508.532220480262
+      },
+      {
+        "strategy": "deterministic",
+        "family": "multi_item_sum",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.085156,
+        "p95_latency_ms": 3748.4322000877005
+      },
+      {
+        "strategy": "deterministic",
+        "family": "negated_refund",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.070796,
+        "p95_latency_ms": 2495.468095585239
+      },
+      {
+        "strategy": "deterministic",
+        "family": "no_amount_stated",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.067568,
+        "p95_latency_ms": 1909.522271202878
+      },
+      {
+        "strategy": "deterministic",
+        "family": "numeric_order",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07042799999999999,
+        "p95_latency_ms": 2401.0616625950215
+      },
+      {
+        "strategy": "deterministic",
+        "family": "partial_refund_distractor",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.08670428571428572,
+        "p95_latency_ms": 2373.0727874004506
+      },
+      {
+        "strategy": "deterministic",
+        "family": "product_and_date_not_id",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.06756857142857142,
+        "p95_latency_ms": 2171.483135654125
+      },
+      {
+        "strategy": "deterministic",
+        "family": "refund_in_past",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.09797199999999999,
+        "p95_latency_ms": 3699.9212957045534
+      },
+      {
+        "strategy": "deterministic",
+        "family": "refund_no_date",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.075428,
+        "p95_latency_ms": 2596.3185911939954
+      },
+      {
+        "strategy": "deterministic",
+        "family": "relative_refund_date",
+        "n": 12,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.074345,
+        "p95_latency_ms": 2024.6153125277488
+      },
+      {
+        "strategy": "deterministic",
+        "family": "replacement_only",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.06572,
+        "p95_latency_ms": 3209.380962495926
+      },
+      {
+        "strategy": "deterministic",
+        "family": "shipping_fee_only",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07937999999999999,
+        "p95_latency_ms": 3349.227099964629
+      },
+      {
+        "strategy": "deterministic",
+        "family": "superseded_order",
+        "n": 13,
+        "cac_rate": 0.9230769230769231,
+        "review_rate": 0.07692307692307693,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.10084153846153847,
+        "p95_latency_ms": 2419.5203586015855
+      },
+      {
+        "strategy": "deterministic",
+        "family": "system_message_first",
+        "n": 8,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.0826575,
+        "p95_latency_ms": 3956.054595936439
+      },
+      {
+        "strategy": "deterministic",
+        "family": "tracking_distractor",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.09605599999999999,
+        "p95_latency_ms": 3552.622662525392
+      },
+      {
+        "strategy": "deterministic",
+        "family": "two_orders",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.09233999999999999,
+        "p95_latency_ms": 1929.0991748857778
+      },
+      {
+        "strategy": "control",
+        "family": "arrival_versus_issue",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.078648,
+        "p95_latency_ms": 2539.9784001405365
+      },
+      {
+        "strategy": "control",
+        "family": "arrival_without_issue",
+        "n": 15,
+        "cac_rate": 0.8666666666666667,
+        "review_rate": 0.13333333333333333,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.082716,
+        "p95_latency_ms": 2273.2153623946947
+      },
+      {
+        "strategy": "control",
+        "family": "counteroffer",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.085988,
+        "p95_latency_ms": 3327.6218580896966
+      },
+      {
+        "strategy": "control",
+        "family": "currency_symbol",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.14335285714285714,
+        "p95_latency_ms": 2683.404877109569
+      },
+      {
+        "strategy": "control",
+        "family": "full_refund_absolute",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.10936399999999999,
+        "p95_latency_ms": 3904.2813954700255
+      },
+      {
+        "strategy": "control",
+        "family": "large_amount",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.16291999999999998,
+        "p95_latency_ms": 4528.797962493264
+      },
+      {
+        "strategy": "control",
+        "family": "multi_date",
+        "n": 12,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.082035,
+        "p95_latency_ms": 5552.513427301888
+      },
+      {
+        "strategy": "control",
+        "family": "multi_item_sum",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.11091599999999999,
+        "p95_latency_ms": 4044.80112856254
+      },
+      {
+        "strategy": "control",
+        "family": "negated_refund",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.070796,
+        "p95_latency_ms": 2599.331404513214
+      },
+      {
+        "strategy": "control",
+        "family": "no_amount_stated",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.087716,
+        "p95_latency_ms": 2253.353524935665
+      },
+      {
+        "strategy": "control",
+        "family": "numeric_order",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07042799999999999,
+        "p95_latency_ms": 2367.98912488157
+      },
+      {
+        "strategy": "control",
+        "family": "partial_refund_distractor",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.08670428571428572,
+        "p95_latency_ms": 2669.5252250356125
+      },
+      {
+        "strategy": "control",
+        "family": "product_and_date_not_id",
+        "n": 14,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.06756857142857142,
+        "p95_latency_ms": 2045.6746478623243
+      },
+      {
+        "strategy": "control",
+        "family": "refund_in_past",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.171956,
+        "p95_latency_ms": 3530.0923625996816
+      },
+      {
+        "strategy": "control",
+        "family": "refund_no_date",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.075428,
+        "p95_latency_ms": 2639.5954750885735
+      },
+      {
+        "strategy": "control",
+        "family": "relative_refund_date",
+        "n": 12,
+        "cac_rate": 0.8333333333333334,
+        "review_rate": 0.16666666666666666,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.250845,
+        "p95_latency_ms": 3553.231357835464
+      },
+      {
+        "strategy": "control",
+        "family": "replacement_only",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.06572,
+        "p95_latency_ms": 2646.3191079092217
+      },
+      {
+        "strategy": "control",
+        "family": "shipping_fee_only",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.07937999999999999,
+        "p95_latency_ms": 3200.074395473349
+      },
+      {
+        "strategy": "control",
+        "family": "superseded_order",
+        "n": 13,
+        "cac_rate": 0.9230769230769231,
+        "review_rate": 0.07692307692307693,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.10084153846153847,
+        "p95_latency_ms": 2695.966266572941
+      },
+      {
+        "strategy": "control",
+        "family": "system_message_first",
+        "n": 8,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.10064999999999999,
+        "p95_latency_ms": 4288.0441914719995
+      },
+      {
+        "strategy": "control",
+        "family": "tracking_distractor",
+        "n": 15,
+        "cac_rate": 0.9333333333333333,
+        "review_rate": 0.06666666666666667,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.081464,
+        "p95_latency_ms": 3590.799137571594
+      },
+      {
+        "strategy": "control",
+        "family": "two_orders",
+        "n": 15,
+        "cac_rate": 1.0,
+        "review_rate": 0.0,
+        "undetected_errors": 0,
+        "cost_per_1k_tasks": 0.13392800000000002,
+        "p95_latency_ms": 2564.113429625286
+      }
+    ]
+  },
+  "paired": {
+    "challenge": {
+      "deterministic - control": {
+        "cac": {
+          "n_pairs": 367,
+          "diff": 0.44686648501362397,
+          "ci95": [
+            0.39509536784741145,
+            0.49591280653950953
+          ],
+          "family_cluster_ci95": [
+            0.22564102564102564,
+            0.6784741144414169
+          ],
+          "a_only": 164,
+          "b_only": 0
+        },
+        "undetected": {
+          "n_pairs": 367,
+          "diff": -0.41689373297002724,
+          "ci95": [
+            -0.46866485013623976,
+            -0.3678474114441417
+          ],
+          "family_cluster_ci95": [
+            -0.6811989100817438,
+            -0.17692307692307693
+          ],
+          "a_only": 0,
+          "b_only": 153
+        },
+        "review": {
+          "n_pairs": 367,
+          "diff": -0.02997275204359673,
+          "ci95": [
+            -0.10354223433242507,
+            0.04632152588555858
+          ],
+          "family_cluster_ci95": [
+            -0.3691860465116279,
+            0.34593023255813954
+          ],
+          "a_only": 90,
+          "b_only": 101
+        },
+        "cost_per_1k": {
+          "n_pairs": 367,
+          "diff": -0.1273100272479564,
+          "ci95": [
+            -0.14395079019073567,
+            -0.1103625613079019
+          ],
+          "family_cluster_ci95": [
+            -0.19456831395348836,
+            -0.061619019073569474
+          ]
+        }
+      },
+      "deterministic - fixed_grounded_super": {
+        "cac": {
+          "n_pairs": 367,
+          "diff": 0.4713896457765668,
+          "ci95": [
+            0.4196185286103542,
+            0.5204359673024523
+          ],
+          "family_cluster_ci95": [
+            0.24102564102564103,
+            0.7013422818791947
+          ],
+          "a_only": 173,
+          "b_only": 0
+        },
+        "undetected": {
+          "n_pairs": 367,
+          "diff": -0.3787465940054496,
+          "ci95": [
+            -0.42779291553133514,
+            -0.329700272479564
+          ],
+          "family_cluster_ci95": [
+            -0.6410256410256411,
+            -0.13953488372093023
+          ],
+          "a_only": 0,
+          "b_only": 139
+        },
+        "review": {
+          "n_pairs": 367,
+          "diff": -0.09264305177111716,
+          "ci95": [
+            -0.17166212534059946,
+            -0.013623978201634877
+          ],
+          "family_cluster_ci95": [
+            -0.4550408719346049,
+            0.30523255813953487
+          ],
+          "a_only": 90,
+          "b_only": 124
+        },
+        "cost_per_1k": {
+          "n_pairs": 367,
+          "diff": -0.275955204359673,
+          "ci95": [
+            -0.27694822888283377,
+            -0.2749531880108992
+          ],
+          "family_cluster_ci95": [
+            -0.2790143076923077,
+            -0.2731290697674419
+          ]
+        }
+      }
+    },
+    "representative": {
+      "deterministic - control": {
+        "cac": {
+          "n_pairs": 312,
+          "diff": 0.009615384615384616,
+          "ci95": [
+            0.0,
+            0.022435897435897436
+          ],
+          "family_cluster_ci95": [
+            0.0,
+            0.025806451612903226
+          ],
+          "a_only": 3,
+          "b_only": 0
+        },
+        "undetected": {
+          "n_pairs": 312,
+          "diff": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "family_cluster_ci95": [
+            0.0,
+            0.0
+          ],
+          "a_only": 0,
+          "b_only": 0
+        },
+        "review": {
+          "n_pairs": 312,
+          "diff": -0.009615384615384616,
+          "ci95": [
+            -0.022435897435897436,
+            0.0
+          ],
+          "family_cluster_ci95": [
+            -0.025806451612903226,
+            0.0
+          ],
+          "a_only": 0,
+          "b_only": 3
+        },
+        "cost_per_1k": {
+          "n_pairs": 312,
+          "diff": -0.023393269230769228,
+          "ci95": [
+            -0.033664230769230766,
+            -0.013859807692307692
+          ],
+          "family_cluster_ci95": [
+            -0.04207271028037383,
+            -0.008922407407407407
+          ]
+        }
+      },
+      "deterministic - fixed_grounded_super": {
+        "cac": {
+          "n_pairs": 312,
+          "diff": 0.019230769230769232,
+          "ci95": [
+            0.00641025641025641,
+            0.035256410256410256
+          ],
+          "family_cluster_ci95": [
+            0.0,
+            0.05161290322580645
+          ],
+          "a_only": 6,
+          "b_only": 0
+        },
+        "undetected": {
+          "n_pairs": 312,
+          "diff": -0.003205128205128205,
+          "ci95": [
+            -0.009615384615384616,
+            0.0
+          ],
+          "family_cluster_ci95": [
+            -0.00974025974025974,
+            0.0
+          ],
+          "a_only": 0,
+          "b_only": 1
+        },
+        "review": {
+          "n_pairs": 312,
+          "diff": -0.016025641025641024,
+          "ci95": [
+            -0.03205128205128205,
+            -0.003205128205128205
+          ],
+          "family_cluster_ci95": [
+            -0.045307443365695796,
+            0.0
+          ],
+          "a_only": 0,
+          "b_only": 5
+        },
+        "cost_per_1k": {
+          "n_pairs": 312,
+          "diff": -0.2690648076923077,
+          "ci95": [
+            -0.27371942307692304,
+            -0.26358461538461536
+          ],
+          "family_cluster_ci95": [
+            -0.28217811912225704,
+            -0.2573486816720257
+          ]
+        }
+      }
+    }
+  },
+  "total_api_cost_usd": 0.39861761999999995,
+  "incomplete_cost_requests": 0,
+  "decision": {
+    "checks": {
+      "primary": true,
+      "S1": true,
+      "S2": true,
+      "S3": true,
+      "S4": true
+    },
+    "adopt": true,
+    "detail": {
+      "primary_cac_diff": {
+        "n_pairs": 367,
+        "diff": 0.44686648501362397,
+        "ci95": [
+          0.39509536784741145,
+          0.49591280653950953
+        ],
+        "family_cluster_ci95": [
+          0.22564102564102564,
+          0.6784741144414169
+        ],
+        "a_only": 164,
+        "b_only": 0
+      },
+      "S1_undetected_diff": {
+        "n_pairs": 367,
+        "diff": -0.41689373297002724,
+        "ci95": [
+          -0.46866485013623976,
+          -0.3678474114441417
+        ],
+        "family_cluster_ci95": [
+          -0.6811989100817438,
+          -0.17692307692307693
+        ],
+        "a_only": 0,
+        "b_only": 153
+      },
+      "S2_representative": {
+        "n": 312,
+        "n_review_required": 0,
+        "correct_autonomous": 307,
+        "cac_rate": 0.9839743589743589,
+        "review_rate": 0.016025641025641024,
+        "necessary_review_rate": 0.0,
+        "avoidable_review_rate": 0.016025641025641024,
+        "undetected_errors": 0,
+        "undetected_rate": 0.0,
+        "undetected_upper95": 0.00859706322424554,
+        "released_accuracy": 1.0,
+        "task_accuracy": 1.0,
+        "accuracy_lower95": 0.9914029367757544,
+        "field_accuracy": 1.0,
+        "escalation_rate": 0.016025641025641024,
+        "fallback_rate": 0.0,
+        "cost_usd_total": 0.02498928,
+        "cost_per_1k_tasks": 0.08009384615384615,
+        "incomplete_cost_count": 0,
+        "p50_latency_ms": 1387.0702289859764,
+        "p95_latency_ms": 3609.181018883828,
+        "deadline_misses": 9,
+        "deadline_miss_rate": 0.028846153846153848,
+        "deadline_miss_upper95": 0.048935566541265525
+      },
+      "S3_cac_diff": {
+        "n_pairs": 312,
+        "diff": 0.009615384615384616,
+        "ci95": [
+          0.0,
+          0.022435897435897436
+        ],
+        "family_cluster_ci95": [
+          0.0,
+          0.025806451612903226
+        ],
+        "a_only": 3,
+        "b_only": 0
+      },
+      "S3_undetected_diff": {
+        "n_pairs": 312,
+        "diff": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "family_cluster_ci95": [
+          0.0,
+          0.0
+        ],
+        "a_only": 0,
+        "b_only": 0
+      },
+      "S4_cost_diff_vs_grounded_super": {
+        "n_pairs": 312,
+        "diff": -0.2690648076923077,
+        "ci95": [
+          -0.27371942307692304,
+          -0.26358461538461536
+        ],
+        "family_cluster_ci95": [
+          -0.28217811912225704,
+          -0.2573486816720257
+        ]
+      }
+    }
+  }
+}
