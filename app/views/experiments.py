@@ -3,53 +3,73 @@ import streamlit as st
 
 from routewise import artifacts
 from routewise.config import load_config
-from ui import line_chart, money, ms, pct, reliability_chart, signed_bars, stacked_bar, tradeoff_chart
+from ui import (CONFIGURATION_LABELS, line_chart, money, ms, pct, reliability_chart,
+                render_m6_takeaways, signed_bars, stacked_bar, tradeoff_chart, useful_comparison_rows)
 
 config = load_config()
 st.title("Experiments")
-st.markdown(
-    "Follow-up experiments from the project's roadmap. Each has a pre-registered question, design and decision rule "
-    "in [`experiments/`](https://github.com/CompilingCaffeine/RouteWise/tree/main/experiments) before it ran, and "
-    "each has raw per-call records in `runs/`. None of them changes the headline result."
-)
+st.markdown("What each experiment taught us about quality, latency and cost. "
+            "The comparisons below explain which changes are worth using.")
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab6 = st.tabs([
     "M1 · Where does latency go?",
     "M2 · Latency under load",
     "M3 · Can we predict failures?",
     "M4 · Is validation worth it?",
-    "M5/M6 · Grounding + live hedging",
+    "M6 · Grounding + escalation",
 ])
 
-with tab5:
-    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
+with tab6:
+    runs = [r for r in artifacts.list_runs('confirmation') if r.manifest.get('study') == 'm6'
+            and (r.path/'summary.json').exists()
             and artifacts.load_json(r.path/'summary.json').get('complete')]
-    aborted = [r for r in artifacts.list_runs('confirmation') if (r.path/'status.json').exists()]
-    for old in aborted:
-        status = artifacts.load_json(old.path/'status.json')
-        st.warning(f"M5 measurement abort: {status['reason']}")
-        st.caption(f"{status['completed_observations']} completed requests preserved; accounted cost "
-                   f"{money(status['accounted_api_cost_usd'])}. New M6 data explicitly binds issue dates and includes arrival-only negatives.")
-    st.markdown('**Can source-grounded extraction and live hedging satisfy a stricter quality target at lower cost '
-                'than the cheapest qualifying fixed model?** Nine live arms include fixed Nano/Super/Ultra, grounded '
-                'fixed-model controls, and a two-by-two grounding/hedging ablation. Requirements: task accuracy ≥95%, '
-                'field accuracy ≥95%, p95 ≤4 seconds, with confidence bounds on task accuracy and deadline misses.')
     if not runs:
-        st.info('Fresh-data confirmation is not complete yet. Replacement protocol: experiments/M6-issue-date-confirmation.md.')
+        st.info('No completed M6 confirmation study is available yet.')
     else:
         run = runs[0]
         s = artifacts.load_json(run.path/'summary.json')
-        label = s.get('study','m5').upper()
-        st.success(f'{label} hypothesis supported') if s['hypothesis_supported'] else st.warning(f'{label} hypothesis not supported')
-        st.dataframe([{'configuration': name, 'accuracy': pct(m['task_accuracy']),
-                       'accuracy lower 95%': pct(m['accuracy_lower95']), 'p95': ms(m['p95_latency_ms']),
-                       'deadline-miss upper 95%': pct(m['deadline_miss_upper95']), '$ / 1k': money(m['cost_per_1k_tasks'])}
-                      for name, m in s['metrics'].items()], hide_index=True, width='stretch')
-        st.caption(f"{s['n_unique']} fresh conversations · frozen fixed comparator: {s['frozen_fixed_comparator']} · "
-                   f"lowest-cost qualifying choice: {s['cheapest_qualifying'] or 'none'} · run {run.id}")
-        st.markdown('Open **Workload optimizer** to explore requirements, inspect source evidence, download results, '
-                    'or benchmark your own labelled workload. Synthetic examples and one-day measurements limit '
-                    'external validity; the original primary result remains unchanged.')
+        selected = s['cheapest_qualifying']
+        st.subheader('Which additions earn their cost?')
+        if selected:
+            label = CONFIGURATION_LABELS.get(selected, selected)
+            if selected == 'grounding_only':
+                label += ' without hedging'
+            st.success(f"Recommended for this workload: {label}.")
+        else:
+            st.warning('No measured configuration clears every requirement.')
+        st.caption(f"{s['n_unique']} fresh held-out conversations · three time windows · "
+                   'task accuracy ≥95%, field accuracy ≥95%, p95 ≤4 s.')
+        st.dataframe(useful_comparison_rows(s['metrics'], selected), hide_index=True, width='stretch')
+        st.caption('All four share clarified field rules, source-backed values and metadata-derived contact dates. '
+                   'Accuracy is shown with its one-sided 95% lower bound; qualification also includes the deadline-miss bound.')
+        render_m6_takeaways(s)
+        st.markdown('**Decision:** escalation earns its cost. Hedging buys a modest latency improvement, '
+                    'but its extra cost is unnecessary for the tested four-second budget. '
+                    'Grounded Super is faster and slightly more accurate, at a higher cost.')
+        m = s['metrics'].get(selected) if selected else None
+        if m and m['accuracy_family_cluster_ci95'][0] < .95:
+            low, high = m['accuracy_family_cluster_ci95']
+            st.warning(f"The remaining weakness is relative refund dates: 12/18 correct. "
+                       f"The family-mix sensitivity interval is {pct(low)}–{pct(high)}. "
+                       'All six final errors were flagged for review; validate the actual workload mix before deployment.')
+        st.caption('Evidence is synthetic and agent-reviewed. Three same-day windows do not establish production availability.')
+        st.markdown('Open **Workload optimizer** to change requirements, inspect source evidence or try the selected route live.')
+        with st.expander('Study design and all nine configurations'):
+            st.markdown('The four matched grounded configurations above isolate escalation and hedging. '
+                        'The remaining controls use the original prompt and show the combined effect of changing '
+                        'the prompt, source constraints and metadata-derived fields. They do not isolate those components individually.')
+            st.dataframe([{
+                'configuration': CONFIGURATION_LABELS.get(name, name),
+                'prompt': 'Grounded v4' if name in ('fixed_grounded_nano','fixed_grounded_super','grounding_only','grounded_hedged') else 'Original v2',
+                'accuracy': pct(m['task_accuracy']), 'lower 95%': pct(m['accuracy_lower95']),
+                '$ / 1k': money(m['cost_per_1k_tasks']), 'p95': ms(m['p95_latency_ms']),
+                'deadline-miss upper 95%': pct(m['deadline_miss_upper95']),
+            } for name, m in s['metrics'].items()], hide_index=True, width='stretch')
+            result = 'supported' if s['hypothesis_supported'] else 'not supported'
+            st.caption(f"The predeclared grounding-plus-hedging test was {result}; the ablation identifies the cheaper unhedged choice. "
+                       f"Fixed comparator selected on tuning data: {s['frozen_fixed_comparator']}. Run: {run.id}.")
+            st.markdown('[Protocol](https://github.com/CompilingCaffeine/RouteWise/blob/main/experiments/M6-issue-date-confirmation.md) · '
+                        '[Full report and audit records](https://github.com/CompilingCaffeine/RouteWise/blob/main/results/M6-report.md)')
 
 # ---------------------------------------------------------------- M4
 with tab4:

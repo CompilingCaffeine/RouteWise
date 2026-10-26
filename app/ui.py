@@ -29,6 +29,15 @@ STRATEGY_LABELS = {
     "routewise_hedged": "RouteWise + hedging",
 }
 MAX_LIVE_ROUTES = 15
+CONFIGURATION_LABELS = {
+    'fixed_nano': 'Nano (original prompt)', 'fixed_super': 'Super (original prompt)',
+    'fixed_ultra': 'Ultra (original prompt)', 'fixed_grounded_nano': 'Grounded Nano',
+    'fixed_grounded_super': 'Grounded Super', 'current': 'Nano → Super (original)',
+    'grounding_only': 'Grounded Nano → Super',
+    'hedging_only': 'Nano → Super + hedge (original)',
+    'grounded_hedged': 'Grounded Nano → Super + hedge',
+}
+USEFUL_COMPARISONS = ('fixed_grounded_nano', 'grounding_only', 'grounded_hedged', 'fixed_grounded_super')
 
 
 def mode() -> str:
@@ -59,6 +68,49 @@ def pct(v: float | None, digits: int = 1) -> str:
 
 def ms(v: float | None) -> str:
     return "–" if v is None else f"{v:,.0f} ms"
+
+
+def useful_comparison_rows(metrics: dict, selected: str | None, *, accuracy: float = .95,
+                           field_accuracy: float = .95, deadline_ms: float = 4000) -> list[dict]:
+    """Matched controls isolate escalation, hedging and the fixed stronger model."""
+    from routewise.statistics import cheapest_qualifying
+    names = [n for n in USEFUL_COMPARISONS if n in metrics]
+    if selected and selected not in names:
+        names.append(selected)
+    rows = []
+    for name in names:
+        m = metrics[name]
+        qualifies = cheapest_qualifying({name: m}, accuracy=accuracy, field_accuracy=field_accuracy,
+                                        deadline_ms=deadline_ms) is not None
+        rows.append({
+            'configuration': CONFIGURATION_LABELS.get(name, name),
+            'accuracy (lower 95%)': f"{pct(m['task_accuracy'])} ({pct(m['accuracy_lower95'])})",
+            '$ / 1k tasks': money(m['cost_per_1k_tasks'], 3),
+            'p95': f"{m['p95_latency_ms']/1000:.2f} s",
+            'requirements': '✓ selected' if name == selected else 'meets' if qualifies else 'does not meet',
+        })
+    return rows
+
+
+def render_m6_takeaways(summary: dict) -> None:
+    """Translate the four matched configurations into the deployment tradeoffs."""
+    m = summary['metrics']
+    if not all(n in m for n in USEFUL_COMPARISONS):
+        return
+    nano, route, hedge, strong = (m[n] for n in USEFUL_COMPARISONS)
+    gain = (route['task_accuracy']-nano['task_accuracy'])*100
+    saving = 1-route['cost_per_1k_tasks']/strong['cost_per_1k_tasks']
+    premium = hedge['cost_per_1k_tasks']/route['cost_per_1k_tasks']-1
+    cols = st.columns(3)
+    cols[0].metric('Escalation closes the quality gap', f'+{gain:.1f} pts')
+    cols[0].caption(f"Grounded Nano alone: {pct(nano['task_accuracy'])}. With Super escalation: "
+                    f"{pct(route['task_accuracy'])}.")
+    cols[1].metric('Routing saves vs grounded Super', pct(saving))
+    cols[1].caption(f"Accuracy: {pct(route['task_accuracy'])} vs {pct(strong['task_accuracy'])}. "
+                    f"p95: {route['p95_latency_ms']/1000:.2f} s vs {strong['p95_latency_ms']/1000:.2f} s.")
+    cols[2].metric('Hedging adds cost', f'+{pct(premium)}')
+    cols[2].caption(f"Accuracy: {pct(hedge['task_accuracy'])} vs {pct(route['task_accuracy'])}. "
+                    f"p95 improves to {hedge['p95_latency_ms']/1000:.2f} s; both routes meet the 4 s deadline.")
 
 
 def tradeoff_chart(

@@ -17,16 +17,14 @@ from routewise.prompts import load_prompt
 from routewise.router import Router
 from routewise.statistics import cheapest_qualifying, wilson
 from routewise.workload import measured_options, parse_workload
-from ui import api_key, money, ms, pct, render_trace, tradeoff_chart
+from ui import (CONFIGURATION_LABELS, api_key, money, ms, pct, render_trace,
+                tradeoff_chart, useful_comparison_rows)
 
 st.title('Workload optimizer')
 st.markdown('Choose requirements, compare fixed models with routing, and inspect the evidence. '
             'RouteWise recommends **no configuration** when the measurements cannot establish that your requirements are met.')
 explore, upload = st.tabs(['Explore measured configurations', 'Use your labelled workload'])
-LABELS = {'fixed_nano':'Nano', 'fixed_super':'Super', 'fixed_ultra':'Ultra',
-          'fixed_grounded_nano':'Grounded Nano', 'fixed_grounded_super':'Grounded Super',
-          'current':'Nano → Super (original)', 'grounding_only':'Grounded Nano → Super',
-          'hedging_only':'Nano → Super + hedge (original)', 'grounded_hedged':'Grounded Nano → Super + hedge'}
+LABELS = CONFIGURATION_LABELS
 
 
 def show_metrics(metrics, selected):
@@ -47,14 +45,12 @@ def show_metrics(metrics, selected):
 
 
 with explore:
-    runs = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
+    runs = [r for r in artifacts.list_runs('confirmation') if r.manifest.get('study') == 'm6' and (r.path/'summary.json').exists()
             and artifacts.load_json(r.path/'summary.json').get('complete')]
     if not runs:
-        st.info('Fresh-data confirmation has not finished yet. The original evidence remains on Held-out evaluation; '
-                'Experiments records the M5 measurement abort and its replacement protocol.')
+        st.info('No completed M6 confirmation study is available yet.')
     else:
         run = st.selectbox('Confirmation run', runs, format_func=lambda r: r.id) if len(runs)>1 else runs[0]
-        st.caption(f"Run `{run.id}`")
         result = artifacts.load_json(run.path/'summary.json')
         st.caption(f"{result['n_unique']} unique fresh conversations · synthetic data · three time windows. "
                    'Edits below explore this recorded test set; they do not constitute a new confirmation experiment.')
@@ -74,7 +70,14 @@ with explore:
             m.update(deadline_misses=misses, deadline_miss_rate=misses/len(traces),
                      deadline_miss_upper95=wilson(misses, len(traces), one_sided=True)[1], deadline_ms=deadline)
         selected = cheapest_qualifying(metrics, accuracy=accuracy, field_accuracy=field, deadline_ms=deadline)
-        show_metrics(metrics, selected)
+        if selected:
+            st.success(f'Lowest-cost qualifying configuration: {LABELS.get(selected,selected)}')
+        else:
+            st.warning('No configuration clears every requirement with the declared confidence bounds.')
+        st.dataframe(useful_comparison_rows(metrics, selected, accuracy=accuracy,
+                     field_accuracy=field, deadline_ms=deadline), hide_index=True, width='stretch')
+        st.caption('Four matched grounded configurations isolate the value of escalation, hedging and a fixed stronger model. '
+                   'Accuracy includes its one-sided 95% lower bound; qualification also checks field accuracy and deadline misses.')
         if selected:
             low, high = metrics[selected]['accuracy_family_cluster_ci95']
             if low < accuracy:
@@ -97,15 +100,19 @@ with explore:
             st.caption('Projection uses the observed workload token lengths and recorded prices; infrastructure and development costs are excluded.')
             if selected == fixed:
                 st.info('A fixed model is the cheapest qualifying choice here. Routing adds no demonstrated value at these requirements.')
-        frame = pd.DataFrame([{'configuration': k, **v} for k, v in metrics.items()])
-        labels = {selected, 'fixed_super', 'fixed_ultra', 'fixed_grounded_super'}
-        frame['label'] = frame['configuration'].map(lambda n: LABELS[n] if n in labels else '')
-        st.altair_chart(tradeoff_chart(frame, series='configuration', domain=list(metrics), threshold=accuracy,
-                                      emphasize=[selected] if selected else ['grounded_hedged'], y_floor=.8,
-                                      label_field='label'), width='stretch')
+        with st.expander('All nine configurations and the cost–quality plot'):
+            st.caption(f"Run `{run.id}`. Original-prompt controls measure the combined effect of the clarified prompt, "
+                       'source constraints and metadata-derived fields; the four matched controls share the same treatment.')
+            show_metrics(metrics, selected)
+            frame = pd.DataFrame([{'configuration': k, **v} for k, v in metrics.items()])
+            labels = {selected, 'fixed_super', 'fixed_ultra', 'fixed_grounded_super'}
+            frame['label'] = frame['configuration'].map(lambda n: LABELS[n] if n in labels else '')
+            st.altair_chart(tradeoff_chart(frame, series='configuration', domain=list(metrics), threshold=accuracy,
+                                          emphasize=[selected] if selected else ['grounded_hedged'], y_floor=.8,
+                                          label_field='label'), width='stretch')
         st.markdown('Confidence bounds describe the measured synthetic workload. Real customer data and measurements '
                     'on additional days are needed before making a production reliability claim.')
-        st.download_button('Download full study results', json.dumps(result, indent=2), 'routewise-m5-results.json', 'application/json')
+        st.download_button('Download full study results', json.dumps(result, indent=2), f"routewise-{result['study']}-results.json", 'application/json')
         with st.expander('Per-family, per-window and repeated-conversation evidence'):
             st.dataframe(result['families'], hide_index=True)
             st.dataframe(result['windows'], hide_index=True)

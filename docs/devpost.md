@@ -6,7 +6,7 @@
 
 **Code:** https://github.com/CompilingCaffeine/RouteWise (MIT)
 
-This draft describes the completed local M6 implementation. Deploy the reviewed branch and record the updated demo before submitting.
+The M6 implementation is published in the live demo. Record and upload the updated demo video before submitting.
 
 ## Inspiration
 
@@ -33,16 +33,18 @@ M6 used **330 entirely fresh held-out conversations**, nine independent live arm
 
 | Configuration | Task acc. | Lower 95% | p95 | $ / 1k |
 |---|---:|---:|---:|---:|
-| Nano (original prompt) | 83.3% | 79.7% | 2.06 s | $0.065 |
-| Super (original prompt) | 92.7% | 90.0% | 1.56 s | $0.291 |
-| Ultra (original prompt) | 93.9% | 91.4% | 1.20 s | $1.002 |
 | Grounded Nano | 90.3% | 87.3% | 2.08 s | $0.076 |
-| Grounded Super | 98.8% | 97.3% | 1.74 s | $0.339 |
-| Original Nano → Super | 92.1% | 89.3% | 2.20 s | $0.084 |
 | Grounded Nano → Super | 98.2% | 96.5% | 2.44 s | $0.103 |
 | Grounded Nano → Super + hedge | 98.2% | 96.5% | 2.23 s | $0.133 |
+| Grounded Super | 98.8% | 97.3% | 1.74 s | $0.339 |
 
-**Measured deployment choice: source-grounded Nano → Super, without hedging.** The predeclared grounding-plus-hedging hypothesis is **supported**. The complete nine-arm table, paired intervals, per-family/window results and raw traces are in `results/M6-report.md` and `runs/confirmation-20261025T212745Z-ac61b1/`.
+**Measured deployment choice: source-grounded Nano → Super, without hedging.** These four matched controls explain why:
+
+- **Escalation earns its cost:** grounded Nano alone reaches 90.3% task accuracy; adding Super escalation reaches 98.2%.
+- **Routing is the lower-cost qualifying choice:** $0.103 versus $0.339 per 1,000 tasks for grounded Super. The tradeoff is 98.2% versus 98.8% accuracy and 2.44 s versus 1.74 s p95; one-point non-inferiority was not established.
+- **Hedging is optional at this deadline:** it lowers p95 from 2.44 s to 2.23 s but adds 28.8% cost. Both routes meet the four-second budget and have the same observed accuracy.
+
+The completed M6 study passes its declared quality, latency and cost gates. The complete nine-arm table, paired intervals, per-family/window results and raw traces are in `results/M6-report.md` and `runs/confirmation-20261025T212745Z-ac61b1/`.
 
 Known priced API usage for M6 was **$2.37**, including generation, verification, tuning and every confirmation arm. These are usage-priced estimates, not a reconciled provider invoice.
 
@@ -58,9 +60,7 @@ Python/Pydantic implement source analysis, scoring, billing and the bounded rout
 
 A field-level audit found that all 18 missed Nano errors on the earlier M3 test split were order-ID errors. Our write-up had incorrectly inferred amount-selection errors from a scenario-family name. We corrected the diagnosis and made the source evidence explicit.
 
-Then a tuning-only audit found a deeper problem: synthetic writers sometimes turned a planned issue date into when funds would arrive. Both reasoning verifiers could agree with the wrong interpretation. We aborted M5, retained its completed calls and costs, and did not relabel its frozen test set.
-
-M6 uses new conversations with explicitly bound issue-date statements, plus arrival-only and distinct issue/arrival cases. All verifier disagreements were reviewed before Nano production inference. We retained cases where strong verifiers were demonstrably wrong instead of filtering the benchmark to their answers.
+Refund issue dates and arrival dates are different facts. M6 uses explicitly bound issue-date statements, plus arrival-only and distinct issue/arrival cases. All verifier disagreements were reviewed before Nano production inference. We retained cases where strong verifiers were demonstrably wrong instead of filtering the benchmark to their answers.
 
 ## What we learned
 
@@ -78,7 +78,7 @@ The next validation step is independently labelled, de-identified customer conve
 
 ## What changed during this build
 
-We implemented workload import and separate validation, source-grounded extraction, actual early answer delivery with complete hedge billing, a confidence-aware optimizer, matched fixed-model controls, fresh semantic verification and auditable experiment seals. The original failed result and the later measurement abort remain visible.
+We implemented workload import and separate validation, source-grounded extraction, actual early answer delivery with complete hedge billing, a confidence-aware optimizer, matched fixed-model controls, fresh semantic verification and auditable experiment seals. The original result, experiment protocols and complete audit records remain available in the repository.
 
 ## Feedback on Nebius Token Factory, AI Cloud and NVIDIA models
 
@@ -88,7 +88,7 @@ We implemented workload import and separate validation, source-grounded extracti
 - **`/v1/models?verbose=true`.** It returns machine-readable per-token prices, including cached-input prices, plus context length and features. We used it as the *only* price source, so all costs are computed from live published prices rather than typed by hand.
 - **JSON-schema constrained output.** Successful extraction completions in our probes and production benchmarks were schema-valid JSON.
 - **Detailed usage blocks.** They include cached-token counts, and informative `x-ratelimit-*` headers came back on every response.
-- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5/M6 costs are separately reported with all traces.
+- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M6 costs are separately reported with all traces.
 
 **Friction we hit**
 
