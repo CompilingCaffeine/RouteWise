@@ -1,4 +1,4 @@
-# M6: fresh-data inference confirmation
+# M5: fresh-data inference confirmation
 
 **Deployment choice: source-grounded Nano → Super, without hedging.** Predeclared grounding-plus-hedging hypothesis: **supported**.
 
@@ -33,13 +33,13 @@ All six primary errors from the selected route are refund-date errors in the rel
 
 422/440 writer outputs passed deterministic verification; one was subsequently dropped in blinded label review. Labels were never edited to match model answers. Order references and issue dates are explicitly bound in the source. Arrival-only cases have null issue dates; distinct issue/arrival cases test their separation.
 
-M6 reviews every verifier disagreement before Nano production inference. Explicit issue statements and arrival-only negatives test the event distinction rather than treating every date as interchangeable.
+M5 reviews every verifier disagreement before Nano production inference. Explicit issue statements and arrival-only negatives test the event distinction rather than treating every date as interchangeable.
 
 The prose is model-written, and the reviewer is a coding agent. Explicit fact statements improve label defensibility but reduce linguistic diversity. Human/domain review, real customer data and multi-day serving measurements remain outstanding external-validation work. Three same-day windows do not establish production availability.
 
 ## Serving and accounting
 
-Priced API usage for M6: **$2.372**, including generation/verification ($1.382), tuning ($0.163) and every confirmation arm ($0.827). Original verifier transport failures: 7; unresolved after bounded retries: 0. Failed 529 responses have no reported token usage; known priced usage is not a reconciled provider invoice. Production requests with incomplete usage: 0.
+Priced API usage for M5: **$2.372**, including generation/verification ($1.382), tuning ($0.163) and every confirmation arm ($0.827). Original verifier transport failures: 7; unresolved after bounded retries: 0. Failed 529 responses have no reported token usage; known priced usage is not a reconciled provider invoice. Production requests with incomplete usage: 0.
 
 Response time is observed at the answer callback, before unused hedge calls finish. All completed calls are included in cost; accounting-completion latency is separately recorded. Every unique request is included, including provider failures. No completed production outcome was replaced.
 
@@ -91,11 +91,13 @@ The original-prompt controls measure the combined effect of prompt clarification
 <details>
 <summary>Audit history and complete follow-up spend</summary>
 
-The earlier M5 run was stopped for invalid date labels. Its records are retained in [the audit report](M5-report.md) and the run registry. M6 uses new conversations rather than relabelled M5 test data.
+The completed confirmation is displayed as **M5** in the product and submission. Its original preregistered study key is `m6`; protocol filenames, raw run IDs and reproducibility commands retain that identity. The earlier aborted study has the original key `m5` and is not the completed milestone.
+
+The earlier `m5` run was stopped for invalid date labels. Its records are retained in [the audit report](M5-report.md) and the run registry. The completed `m6` study uses new conversations rather than relabelled test data from the aborted study.
 
 ## Full follow-up spend
 
-M5, including its aborted run, used $2.228. M6 used $2.372. Total new known priced API usage: **$4.600**. The earlier experiments used approximately $6, accounted separately. Failed overload responses lack token usage; these are published-price estimates, not reconciled invoices.
+The aborted study (`m5`) used $2.228. The completed confirmation (`m6`, displayed as M5) used $2.372. Total new known priced API usage: **$4.600**. The earlier experiments used approximately $6, accounted separately. Failed overload responses lack token usage; these are published-price estimates, not reconciled invoices.
 
 
 </details>

@@ -1,4 +1,4 @@
-# M6 extraction profile. Original config/routewise.yaml preserves the v1 experiment.
+# Completed M5 extraction profile (original study key: m6). Original config/routewise.yaml preserves the v1 experiment.
 # Validated on a synthetic workload; relative-date failures still require review.
 base_url: https://api.tokenfactory.nebius.com/v1/
 prices_snapshot: config/grounded-prices.snapshot.json

@@ -48,7 +48,7 @@ with explore:
     runs = [r for r in artifacts.list_runs('confirmation') if r.manifest.get('study') == 'm6' and (r.path/'summary.json').exists()
             and artifacts.load_json(r.path/'summary.json').get('complete')]
     if not runs:
-        st.info('No completed M6 confirmation study is available yet.')
+        st.info('No completed M5 confirmation study is available yet.')
     else:
         run = st.selectbox('Confirmation run', runs, format_func=lambda r: r.id) if len(runs)>1 else runs[0]
         result = artifacts.load_json(run.path/'summary.json')
@@ -112,7 +112,7 @@ with explore:
                                           label_field='label'), width='stretch')
         st.markdown('Confidence bounds describe the measured synthetic workload. Real customer data and measurements '
                     'on additional days are needed before making a production reliability claim.')
-        st.download_button('Download full study results', json.dumps(result, indent=2), f"routewise-{result['study']}-results.json", 'application/json')
+        st.download_button('Download full study results', json.dumps(result, indent=2), 'routewise-m5-confirmation-results.json', 'application/json')
         with st.expander('Per-family, per-window and repeated-conversation evidence'):
             st.dataframe(result['families'], hide_index=True)
             st.dataframe(result['windows'], hide_index=True)

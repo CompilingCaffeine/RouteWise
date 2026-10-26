@@ -92,7 +92,7 @@ def useful_comparison_rows(metrics: dict, selected: str | None, *, accuracy: flo
     return rows
 
 
-def render_m6_takeaways(summary: dict) -> None:
+def render_confirmation_takeaways(summary: dict) -> None:
     """Translate the four matched configurations into the deployment tradeoffs."""
     m = summary['metrics']
     if not all(n in m for n in USEFUL_COMPARISONS):

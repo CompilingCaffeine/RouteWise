@@ -31,6 +31,7 @@ confirmation_studies:
       A new seed and dataset were used for M6 instead of relabelling this frozen set.
   - run: confirmation-20261025T212745Z-ac61b1
     role: M6 preregistered replacement confirmation
+    display_milestone: M5  # Presentation label; original study identity is unchanged.
     note: >-
       330 unique held-out conversations, nine live configurations and three time windows,
       plus 24 repeated sentinel conversations. The source-grounded Nano-to-Super route

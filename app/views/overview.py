@@ -22,7 +22,7 @@ with st.container(border=True):
     st.markdown(
         "**Hypothesis under test** — for a structured information-extraction workload, RouteWise reduces total "
     "inference cost while meeting a stated quality target. The original experiment used smallest/strongest "
-    "baselines; M6 adds Super and grounded fixed-model controls on fresh data."
+    "baselines; M5 adds Super and grounded fixed-model controls on fresh data."
     )
 
 confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()

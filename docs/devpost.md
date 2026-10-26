@@ -6,7 +6,7 @@
 
 **Code:** https://github.com/CompilingCaffeine/RouteWise (MIT)
 
-The M6 implementation is published in the live demo. Record and upload the updated demo video before submitting.
+The M5 implementation is published in the live demo. Record and upload the updated demo video before submitting.
 
 ## Inspiration
 
@@ -29,7 +29,7 @@ The Workload optimizer shows the lowest-cost qualifying configuration, every fix
 
 The original preregistered v1 experiment remains unchanged: on 62 held-out tasks, RouteWise achieved 95.2% overall accuracy at 91% lower cost than Ultra but missed its four-second extraction p95 deadline. We report that hypothesis as not supported.
 
-M6 used **330 entirely fresh held-out conversations**, nine independent live arms and three randomized time windows, plus repeated sentinel conversations. Requirements were frozen at task accuracy ≥95%, field accuracy ≥95% and p95 ≤4 seconds. Task accuracy and deadline misses have one-sided 95% confidence gates. The fixed comparator was selected on tuning data before any held-out answer.
+M5 used **330 entirely fresh held-out conversations**, nine independent live arms and three randomized time windows, plus repeated sentinel conversations. Requirements were frozen at task accuracy ≥95%, field accuracy ≥95% and p95 ≤4 seconds. Task accuracy and deadline misses have one-sided 95% confidence gates. The fixed comparator was selected on tuning data before any held-out answer.
 
 | Configuration | Task acc. | Lower 95% | p95 | $ / 1k |
 |---|---:|---:|---:|---:|
@@ -44,9 +44,9 @@ M6 used **330 entirely fresh held-out conversations**, nine independent live arm
 - **Routing is the lower-cost qualifying choice:** $0.103 versus $0.339 per 1,000 tasks for grounded Super. The tradeoff is 98.2% versus 98.8% accuracy and 2.44 s versus 1.74 s p95; one-point non-inferiority was not established.
 - **Hedging is optional at this deadline:** it lowers p95 from 2.44 s to 2.23 s but adds 28.8% cost. Both routes meet the four-second budget and have the same observed accuracy.
 
-The completed M6 study passes its declared quality, latency and cost gates. The complete nine-arm table, paired intervals, per-family/window results and raw traces are in `results/M6-report.md` and `runs/confirmation-20261025T212745Z-ac61b1/`.
+The completed M5 study passes its declared quality, latency and cost gates. The complete nine-arm table, paired intervals, per-family/window results and raw traces are in `results/M6-report.md` and `runs/confirmation-20261025T212745Z-ac61b1/`.
 
-Known priced API usage for M6 was **$2.37**, including generation, verification, tuning and every confirmation arm. These are usage-priced estimates, not a reconciled provider invoice.
+Known priced API usage for M5 was **$2.37**, including generation, verification, tuning and every confirmation arm. These are usage-priced estimates, not a reconciled provider invoice.
 
 The selected route used $0.103 per 1,000 tasks versus $0.339 for the qualifying matched grounded-Super control: about 70% less, with observed accuracy of 98.2% versus 98.8%. This does not establish one-point non-inferiority. Hedging added about 29% cost while both routes met the deadline.
 
@@ -60,7 +60,7 @@ Python/Pydantic implement source analysis, scoring, billing and the bounded rout
 
 A field-level audit found that all 18 missed Nano errors on the earlier M3 test split were order-ID errors. Our write-up had incorrectly inferred amount-selection errors from a scenario-family name. We corrected the diagnosis and made the source evidence explicit.
 
-Refund issue dates and arrival dates are different facts. M6 uses explicitly bound issue-date statements, plus arrival-only and distinct issue/arrival cases. All verifier disagreements were reviewed before Nano production inference. We retained cases where strong verifiers were demonstrably wrong instead of filtering the benchmark to their answers.
+Refund issue dates and arrival dates are different facts. M5 uses explicitly bound issue-date statements, plus arrival-only and distinct issue/arrival cases. All verifier disagreements were reviewed before Nano production inference. We retained cases where strong verifiers were demonstrably wrong instead of filtering the benchmark to their answers.
 
 ## What we learned
 
@@ -88,7 +88,7 @@ We implemented workload import and separate validation, source-grounded extracti
 - **`/v1/models?verbose=true`.** It returns machine-readable per-token prices, including cached-input prices, plus context length and features. We used it as the *only* price source, so all costs are computed from live published prices rather than typed by hand.
 - **JSON-schema constrained output.** Successful extraction completions in our probes and production benchmarks were schema-valid JSON.
 - **Detailed usage blocks.** They include cached-token counts, and informative `x-ratelimit-*` headers came back on every response.
-- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M6 costs are separately reported with all traces.
+- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5 costs are separately reported with all traces.
 
 **Friction we hit**
 

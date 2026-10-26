@@ -4,27 +4,27 @@ import streamlit as st
 from routewise import artifacts
 from routewise.config import load_config
 from ui import (CONFIGURATION_LABELS, line_chart, money, ms, pct, reliability_chart,
-                render_m6_takeaways, signed_bars, stacked_bar, tradeoff_chart, useful_comparison_rows)
+                render_confirmation_takeaways, signed_bars, stacked_bar, tradeoff_chart, useful_comparison_rows)
 
 config = load_config()
 st.title("Experiments")
 st.markdown("What each experiment taught us about quality, latency and cost. "
             "The comparisons below explain which changes are worth using.")
 
-tab1, tab2, tab3, tab4, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "M1 · Where does latency go?",
     "M2 · Latency under load",
     "M3 · Can we predict failures?",
     "M4 · Is validation worth it?",
-    "M6 · Grounding + escalation",
+    "M5 · Grounding + escalation",
 ])
 
-with tab6:
+with tab5:
     runs = [r for r in artifacts.list_runs('confirmation') if r.manifest.get('study') == 'm6'
             and (r.path/'summary.json').exists()
             and artifacts.load_json(r.path/'summary.json').get('complete')]
     if not runs:
-        st.info('No completed M6 confirmation study is available yet.')
+        st.info('No completed M5 confirmation study is available yet.')
     else:
         run = runs[0]
         s = artifacts.load_json(run.path/'summary.json')
@@ -42,7 +42,7 @@ with tab6:
         st.dataframe(useful_comparison_rows(s['metrics'], selected), hide_index=True, width='stretch')
         st.caption('All four share clarified field rules, source-backed values and metadata-derived contact dates. '
                    'Accuracy is shown with its one-sided 95% lower bound; qualification also includes the deadline-miss bound.')
-        render_m6_takeaways(s)
+        render_confirmation_takeaways(s)
         st.markdown('**Decision:** escalation earns its cost. Hedging buys a modest latency improvement, '
                     'but its extra cost is unnecessary for the tested four-second budget. '
                     'Grounded Super is faster and slightly more accurate, at a higher cost.')

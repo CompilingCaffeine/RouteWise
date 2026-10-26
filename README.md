@@ -14,7 +14,7 @@ The dashboard includes the original benchmark and held-out evidence, live routin
 
 ## Results
 
-**Latest confirmation:** source-grounded Nano → Super achieved **98.2% task accuracy** (lower 95% bound **96.5%**), **2.44 s p95**, and **$0.103 / 1k tasks**—about **70% below the qualifying grounded-Super control**. The original v1 result remains below; see [M6 details](results/M6-report.md).
+**Latest confirmation:** source-grounded Nano → Super achieved **98.2% task accuracy** (lower 95% bound **96.5%**), **2.44 s p95**, and **$0.103 / 1k tasks**—about **70% below the qualifying grounded-Super control**. The original v1 result remains below; see [M5 details](results/M6-report.md).
 
 All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
 
@@ -39,7 +39,7 @@ All numbers below are measured on held-out data and committed with raw per-reque
 
 ### Evidence trail
 
-Every v1 held-out run is listed here. M6 is summarized below; the complete experiment registry is retained. The roles are recorded in `results/runs.yaml`.
+Every v1 held-out run is listed here. M5 is summarized below; the complete experiment registry is retained. The roles are recorded in `results/runs.yaml`.
 
 | Run | Role | Strategy | Extraction acc. | Extraction p95 | Cost vs always-Ultra | Meets thresholds |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -96,9 +96,9 @@ Each experiment was pre-registered in [`experiments/`](experiments/), with its q
 - **Classification is too easy:** every model scored 100% on the classification tuning items, so they don't separate the models.
 - **Synthetic labels:** most extraction items come from templates, with labels correct by construction. 10 items are hand-written.
 - **Single-day measurements:** latency was measured on one day against shared serverless endpoints.
-- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). The original experiments and v2 workload used approximately **$6.00** for 10,843 model calls. M6 used **$2.37** of known priced API usage; the complete follow-up cost ledger is retained in the [report appendix](results/M6-report.md).
+- **Total API spend:** $0.36 for the main experiment (benchmarks, policy, three held-out runs). The original experiments and v2 workload used approximately **$6.00** for 10,843 model calls. M5 used **$2.37** of known priced API usage; the complete follow-up cost ledger is retained in the [report appendix](results/M6-report.md).
 
-### Fresh-data confirmation: M6 (`confirmation-20261025T212745Z-ac61b1`)
+### Fresh-data confirmation: M5 (`confirmation-20261025T212745Z-ac61b1`)
 
 On **330 fresh held-out conversations**, with nine live arms across three time windows, the confidence-aware optimizer selects **source-grounded Nano → Super, without hedging**. Requirements: task accuracy ≥95% using a one-sided confidence bound, field accuracy ≥95%, and p95 ≤4 seconds using a bound on deadline misses. The predeclared grounding-plus-hedging hypothesis is **supported**.
 
@@ -113,9 +113,11 @@ On **330 fresh held-out conversations**, with nine live arms across three time w
 - **Routing is the lower-cost qualifying choice:** $0.103 versus $0.339 per 1,000 tasks for grounded Super. The tradeoff is 98.2% versus 98.8% accuracy and 2.44 s versus 1.74 s p95; one-point non-inferiority was not established.
 - **Hedging is optional at this deadline:** it lowers p95 from 2.44 s to 2.23 s but adds 28.8% cost. Both routes meet the four-second budget and have the same observed accuracy.
 
-The four comparisons share clarified field rules, source constraints and metadata-derived contact dates. They isolate the value of escalation, hedging and a fixed stronger model. M6 uses explicit issue-date statements and arrival-only negatives. The data is synthetic and agent-reviewed, not human/customer validation. M6 added $2.37 of known priced API usage. All six selected-route errors were flagged relative-date failures; the family-cluster sensitivity interval is **94.2–100%**, so the result depends on this workload mix.
+The four comparisons share clarified field rules, source constraints and metadata-derived contact dates. They isolate the value of escalation, hedging and a fixed stronger model. M5 uses explicit issue-date statements and arrival-only negatives. The data is synthetic and agent-reviewed, not human/customer validation. M5 added $2.37 of known priced API usage. All six selected-route errors were flagged relative-date failures; the family-cluster sensitivity interval is **94.2–100%**, so the result depends on this workload mix.
 
-See the [full M6 report](results/M6-report.md), [protocol](experiments/M6-issue-date-confirmation.md), and **Workload optimizer** in the dashboard for all nine arms, qualification gates, paired intervals, per-family/window results and source evidence.
+See the [full M5 report](results/M6-report.md), [protocol](experiments/M6-issue-date-confirmation.md), and **Workload optimizer** in the dashboard for all nine arms, qualification gates, paired intervals, per-family/window results and source evidence.
+
+[Recommended next experiments](docs/next-experiments.md): relative-date recovery, independent workload labels, then multi-day latency validation.
 
 ## Why not just use a generic router?
 
@@ -193,14 +195,14 @@ echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
 
 ## Use the measured extraction route
 
-The original default config/policies preserve v1. The M6 extraction profile uses prompt v4, source grounding, a 95% task target and Nano → Super escalation without hedging:
+The original default config/policies preserve v1. The M5 extraction profile uses prompt v4, source grounding, a 95% task target and Nano → Super escalation without hedging:
 
 ```bash
 routewise --config config/grounded.yaml route --policy policies/deployment/m6-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345.
 [2026-04-01 10:00] Agent: A refund of USD 25 will be issued on 2026-04-03.' --json
 ```
 
-Check `final_valid`; a failed final answer needs review. This profile is workload-specific, with the family-mix limits documented in the [M6 report](results/M6-report.md). The dashboard's Workload optimizer offers the same measured configuration and supports importing a new labelled workload.
+Check `final_valid`; a failed final answer needs review. This profile is workload-specific, with the family-mix limits documented in the [M5 report](results/M6-report.md). The dashboard's Workload optimizer offers the same measured configuration and supports importing a new labelled workload.
 
 ## Reproduce
 
