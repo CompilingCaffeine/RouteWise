@@ -25,12 +25,16 @@ except (FileNotFoundError, ValueError, KeyError) as exc:
 representative = evidence['summary']['metrics']['representative']
 adopted, super_model = representative['deterministic'], representative['fixed_grounded_super']
 saving = 1 - adopted['cost_per_1k_tasks'] / super_model['cost_per_1k_tasks']
+
+st.subheader('Project your monthly savings')
+volume = st.number_input('Monthly extraction volume', 1000, 100_000_000, 1_000_000, 100_000)
+cost_projection = st.container()
+
 st.subheader('Measured results · adopted refund-extraction profile')
 hero = st.columns(3)
 hero[0].metric('Lower inference cost vs grounded Super', pct(saving))
 hero[1].metric('Correct without human review', pct(adopted['cac_rate']))
 hero[2].metric('Wrong answers released', adopted['undetected_errors'])
-st.markdown(r'**At 1 million requests/month: \$80 RouteWise vs \$349 grounded Super — \$269 projected savings.**')
 st.caption('312 representative synthetic conversations. Independent human validation completed for this dataset. '
            'Recorded inference usage costs; hosting and human review excluded. The 4-second deadline gate '
            'passed in this confirmation; the later noise study missed it. These are measured results, not production guarantees.')
@@ -68,16 +72,19 @@ st.altair_chart(tradeoff_chart(frame, series='configuration', domain=list(frame[
                               threshold=accuracy, emphasize=[ARM_LABELS[selected]] if selected else None,
                               y_floor=.95, label_field='label', height=220), width='stretch')
 
-volume = st.number_input('Monthly extraction volume', 1000, 100_000_000, 1_000_000, 100_000)
-if selected:
-    m, fixed = metrics[selected], metrics['fixed_grounded_super']
-    cols = st.columns(3)
-    cols[0].metric('Projected selected inference cost / month', money(m['cost_per_1k_tasks'] * volume / 1000, 2))
-    cols[1].metric('Grounded Super inference cost / month', money(fixed['cost_per_1k_tasks'] * volume / 1000, 2))
-    cols[2].metric('Projected inference saving / month', money(
-        (fixed['cost_per_1k_tasks'] - m['cost_per_1k_tasks']) * volume / 1000, 2))
-    st.caption('Projection at recorded token lengths and prices; excludes hosting, labeling, development and human review. '
-               'The Super reference may not qualify under edited requirements.')
+with cost_projection:
+    if selected:
+        m, fixed = metrics[selected], metrics['fixed_grounded_super']
+        cols = st.columns(3)
+        cols[0].metric('Projected selected inference cost / month', money(m['cost_per_1k_tasks'] * volume / 1000, 2))
+        cols[1].metric('Grounded Super inference cost / month', money(fixed['cost_per_1k_tasks'] * volume / 1000, 2))
+        cols[2].metric('Projected inference saving / month', money(
+            (fixed['cost_per_1k_tasks'] - m['cost_per_1k_tasks']) * volume / 1000, 2))
+        st.caption('Projection for the configuration selected by your requirements below, at recorded token lengths '
+                   'and prices; excludes hosting, labeling, development and human review. '
+                   'The Super reference may not qualify under edited requirements.')
+    else:
+        st.info('No configuration qualifies for the requirements below, so no deployment cost is projected.')
 st.caption('The adopted route had 98.4% correct autonomous completions and zero observed wrong releases on this '
            'synthetic representative set. Its 4-second deadline gate passed narrowly. These are not production guarantees.')
 
