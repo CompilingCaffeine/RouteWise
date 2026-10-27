@@ -1,0 +1,707 @@
+{
+ "kind": "routewise-noise-profile",
+ "version": 1,
+ "conversations": 1386,
+ "thresholds": {
+  "min_letters": 4,
+  "table_min_conversations": 5,
+  "right_min_count": 10,
+  "right_to_wrong": 10,
+  "run_on_words": 20,
+  "split_within_minutes": 5.0
+ },
+ "roles": {
+  "Customer": {
+   "messages": 5735,
+   "words": 164711,
+   "words_per_message": {
+    "p10": 2,
+    "p50": 13,
+    "p90": 69
+   },
+   "features": {
+    "misspelling": {
+     "k": 185,
+     "n": 81320,
+     "rate": 0.002274963108706345,
+     "writer_var": 3.61615876929633e-05,
+     "writers": 1380
+    },
+    "apostrophe_drop": {
+     "k": 247,
+     "n": 1971,
+     "rate": 0.12531709791983764,
+     "writer_var": 0.024412508850331964,
+     "writers": 743
+    },
+    "abbreviation": {
+     "k": 35,
+     "n": 7053,
+     "rate": 0.0049624273358854385,
+     "writer_var": 0.0014607049387203805,
+     "writers": 1171
+    },
+    "confusion": {
+     "k": 6,
+     "n": 167,
+     "rate": 0.03592814371257485,
+     "writer_var": 0.009013282320704299,
+     "writers": 125
+    },
+    "repeated_word": {
+     "k": 121,
+     "n": 150334,
+     "rate": 0.0008048744794923304,
+     "writer_var": 3.211010309884566e-06,
+     "writers": 1379
+    },
+    "pronoun_i_lowercase": {
+     "k": 312,
+     "n": 9864,
+     "rate": 0.031630170316301706,
+     "writer_var": 0.008092043465295082,
+     "writers": 1307
+    },
+    "message_all_lowercase": {
+     "k": 842,
+     "n": 5735,
+     "rate": 0.14681778552746294,
+     "writer_var": 0.02303384900725129,
+     "writers": 1386
+    },
+    "message_lowercase_start": {
+     "k": 405,
+     "n": 3589,
+     "rate": 0.11284480356645304,
+     "writer_var": 0.026905110805736085,
+     "writers": 1293
+    },
+    "sentence_lowercase_start": {
+     "k": 119,
+     "n": 4302,
+     "rate": 0.027661552766155277,
+     "writer_var": 0.007595864305698993,
+     "writers": 1075
+    },
+    "no_terminal_punctuation": {
+     "k": 3651,
+     "n": 5723,
+     "rate": 0.6379521230124061,
+     "writer_var": 0.04932793831291434,
+     "writers": 1386
+    },
+    "repeated_punctuation": {
+     "k": 48,
+     "n": 1772,
+     "rate": 0.02708803611738149,
+     "writer_var": 0.0004347801339031825,
+     "writers": 861
+    },
+    "comma_no_space": {
+     "k": 15,
+     "n": 5073,
+     "rate": 0.0029568302779420462,
+     "writer_var": 0.0006602390918703085,
+     "writers": 1102
+    },
+    "run_on": {
+     "k": 265,
+     "n": 2276,
+     "rate": 0.11643233743409491,
+     "writer_var": 0.01038580164990195,
+     "writers": 1180
+    },
+    "split_message": {
+     "k": 745,
+     "n": 5735,
+     "rate": 0.12990409764603314,
+     "writer_var": 0.002716927799476488,
+     "writers": 1386
+    },
+    "straight_apostrophe": {
+     "k": 1091,
+     "n": 2143,
+     "rate": 0.5090993933737751,
+     "writer_var": 0.113443352630424,
+     "writers": 774
+    },
+    "spaced_hyphen": {
+     "k": 196,
+     "n": 292,
+     "rate": 0.6712328767123288,
+     "writer_var": 0.06584027651582149,
+     "writers": 119
+    },
+    "emoticon": {
+     "k": 243,
+     "n": 5735,
+     "rate": 0.042371403661726245,
+     "writer_var": 0.0,
+     "writers": 1386
+    }
+   },
+   "misspelling_by_length": {
+    "4-5": {
+     "k": 65,
+     "n": 41731
+    },
+    "6-7": {
+     "k": 47,
+     "n": 22151
+    },
+    "8+": {
+     "k": 73,
+     "n": 17438
+    }
+   },
+   "typo_kinds": {
+    "deletion": 39,
+    "insertion_double": 15,
+    "insertion_other": 20,
+    "substitution_adjacent": 33,
+    "substitution_other": 35,
+    "transposition": 43
+   },
+   "typo_positions": {
+    "first": 23,
+    "interior": 134,
+    "last": 28
+   },
+   "abbreviations": {
+    "thank you": {
+     "k": 2,
+     "n": 1080
+    },
+    "tomorrow": {
+     "k": 0,
+     "n": 54
+    },
+    "because": {
+     "k": 7,
+     "n": 265
+    },
+    "message": {
+     "k": 0,
+     "n": 115
+    },
+    "people": {
+     "k": 0,
+     "n": 14
+    },
+    "please": {
+     "k": 10,
+     "n": 806
+    },
+    "thanks": {
+     "k": 0,
+     "n": 256
+    },
+    "though": {
+     "k": 1,
+     "n": 45
+    },
+    "your": {
+     "k": 0,
+     "n": 894
+    },
+    "with": {
+     "k": 2,
+     "n": 1046
+    },
+    "you": {
+     "k": 13,
+     "n": 2478
+    }
+   },
+   "confusions": {
+    "could have": {
+     "k": 0,
+     "n": 7
+    },
+    "would have": {
+     "k": 0,
+     "n": 20
+    },
+    "should have": {
+     "k": 0,
+     "n": 18
+    },
+    "a lot": {
+     "k": 4,
+     "n": 49
+    },
+    "you're welcome": {
+     "k": 1,
+     "n": 1
+    },
+    "rather than": {
+     "k": 1,
+     "n": 25
+    },
+    "more than": {
+     "k": 0,
+     "n": 34
+    },
+    "less than": {
+     "k": 0,
+     "n": 8
+    },
+    "better than": {
+     "k": 0,
+     "n": 1
+    },
+    "other than": {
+     "k": 0,
+     "n": 4
+    }
+   },
+   "contractions": {
+    "don't": {
+     "k": 66,
+     "n": 283
+    },
+    "didn't": {
+     "k": 15,
+     "n": 117
+    },
+    "doesn't": {
+     "k": 11,
+     "n": 51
+    },
+    "isn't": {
+     "k": 4,
+     "n": 25
+    },
+    "wasn't": {
+     "k": 3,
+     "n": 46
+    },
+    "weren't": {
+     "k": 0,
+     "n": 2
+    },
+    "aren't": {
+     "k": 3,
+     "n": 7
+    },
+    "haven't": {
+     "k": 8,
+     "n": 74
+    },
+    "hasn't": {
+     "k": 0,
+     "n": 6
+    },
+    "couldn't": {
+     "k": 2,
+     "n": 25
+    },
+    "wouldn't": {
+     "k": 0,
+     "n": 10
+    },
+    "shouldn't": {
+     "k": 1,
+     "n": 5
+    },
+    "can't": {
+     "k": 24,
+     "n": 123
+    },
+    "won't": {
+     "k": 23,
+     "n": 85
+    },
+    "i'm": {
+     "k": 58,
+     "n": 769
+    },
+    "i've": {
+     "k": 11,
+     "n": 159
+    },
+    "you're": {
+     "k": 1,
+     "n": 66
+    },
+    "they're": {
+     "k": 1,
+     "n": 6
+    },
+    "that's": {
+     "k": 11,
+     "n": 62
+    },
+    "what's": {
+     "k": 4,
+     "n": 10
+    },
+    "there's": {
+     "k": 1,
+     "n": 40
+    }
+   },
+   "editable": {
+    "split_message": 0.44376634699215345,
+    "no_terminal_punctuation": 0.23679163034001743,
+    "comma_no_space": 0.8499406880189798,
+    "message_lowercase_start": 0.7400390080802451
+   }
+  },
+  "Agent": {
+   "messages": 6044,
+   "words": 288767,
+   "words_per_message": {
+    "p10": 8,
+    "p50": 31,
+    "p90": 100
+   },
+   "features": {
+    "misspelling": {
+     "k": 84,
+     "n": 153266,
+     "rate": 0.0005480667597510211,
+     "writer_var": 6.301160001934602e-07,
+     "writers": 1359
+    },
+    "apostrophe_drop": {
+     "k": 2,
+     "n": 2231,
+     "rate": 0.0008964589870013447,
+     "writer_var": 0.00022516666275039502,
+     "writers": 742
+    },
+    "abbreviation": {
+     "k": 0,
+     "n": 24375,
+     "rate": 0.0,
+     "writer_var": 0.0,
+     "writers": 1357
+    },
+    "confusion": {
+     "k": 0,
+     "n": 226,
+     "rate": 0.0,
+     "writer_var": 0.0,
+     "writers": 184
+    },
+    "repeated_word": {
+     "k": 40,
+     "n": 267344,
+     "rate": 0.00014961996528816806,
+     "writer_var": 0.0,
+     "writers": 1359
+    },
+    "pronoun_i_lowercase": {
+     "k": 22,
+     "n": 5534,
+     "rate": 0.003975424647632815,
+     "writer_var": 0.0002793100818710044,
+     "writers": 1176
+    },
+    "message_all_lowercase": {
+     "k": 27,
+     "n": 6044,
+     "rate": 0.004467240238252812,
+     "writer_var": 9.357948003022577e-05,
+     "writers": 1360
+    },
+    "message_lowercase_start": {
+     "k": 9,
+     "n": 5554,
+     "rate": 0.0016204537270435723,
+     "writer_var": 0.0,
+     "writers": 1357
+    },
+    "sentence_lowercase_start": {
+     "k": 24,
+     "n": 10603,
+     "rate": 0.0022635103272658683,
+     "writer_var": 0.0,
+     "writers": 1347
+    },
+    "no_terminal_punctuation": {
+     "k": 3753,
+     "n": 6043,
+     "rate": 0.6210491477742843,
+     "writer_var": 0.008104524120921684,
+     "writers": 1360
+    },
+    "repeated_punctuation": {
+     "k": 66,
+     "n": 4034,
+     "rate": 0.01636093207734259,
+     "writer_var": 0.0002862854688307022,
+     "writers": 1327
+    },
+    "comma_no_space": {
+     "k": 2,
+     "n": 9612,
+     "rate": 0.00020807324178110696,
+     "writer_var": 0.0,
+     "writers": 1314
+    },
+    "run_on": {
+     "k": 209,
+     "n": 4480,
+     "rate": 0.046651785714285715,
+     "writer_var": 0.0032660194512987464,
+     "writers": 1331
+    },
+    "split_message": {
+     "k": 983,
+     "n": 6044,
+     "rate": 0.1626406353408339,
+     "writer_var": 0.0,
+     "writers": 1360
+    },
+    "straight_apostrophe": {
+     "k": 1776,
+     "n": 4964,
+     "rate": 0.3577759871071716,
+     "writer_var": 0.07541167785946701,
+     "writers": 1179
+    },
+    "spaced_hyphen": {
+     "k": 754,
+     "n": 1351,
+     "rate": 0.5581051073279053,
+     "writer_var": 0.09446877124686177,
+     "writers": 459
+    },
+    "emoticon": {
+     "k": 774,
+     "n": 6044,
+     "rate": 0.12806088682991396,
+     "writer_var": 0.0,
+     "writers": 1360
+    }
+   },
+   "misspelling_by_length": {
+    "4-5": {
+     "k": 25,
+     "n": 77925
+    },
+    "6-7": {
+     "k": 23,
+     "n": 38946
+    },
+    "8+": {
+     "k": 36,
+     "n": 36395
+    }
+   },
+   "typo_kinds": {
+    "deletion": 20,
+    "insertion_double": 6,
+    "insertion_other": 18,
+    "substitution_adjacent": 15,
+    "substitution_other": 6,
+    "transposition": 19
+   },
+   "typo_positions": {
+    "first": 5,
+    "interior": 64,
+    "last": 15
+   },
+   "abbreviations": {
+    "thank you": {
+     "k": 0,
+     "n": 558
+    },
+    "tomorrow": {
+     "k": 0,
+     "n": 37
+    },
+    "because": {
+     "k": 0,
+     "n": 132
+    },
+    "message": {
+     "k": 0,
+     "n": 237
+    },
+    "people": {
+     "k": 0,
+     "n": 1
+    },
+    "please": {
+     "k": 0,
+     "n": 1222
+    },
+    "thanks": {
+     "k": 0,
+     "n": 1336
+    },
+    "though": {
+     "k": 0,
+     "n": 102
+    },
+    "your": {
+     "k": 0,
+     "n": 6994
+    },
+    "with": {
+     "k": 0,
+     "n": 3075
+    },
+    "you": {
+     "k": 0,
+     "n": 10681
+    }
+   },
+   "confusions": {
+    "could have": {
+     "k": 0,
+     "n": 4
+    },
+    "would have": {
+     "k": 0,
+     "n": 14
+    },
+    "should have": {
+     "k": 0,
+     "n": 26
+    },
+    "a lot": {
+     "k": 0,
+     "n": 34
+    },
+    "you're welcome": {
+     "k": 0,
+     "n": 33
+    },
+    "rather than": {
+     "k": 0,
+     "n": 57
+    },
+    "more than": {
+     "k": 0,
+     "n": 55
+    },
+    "less than": {
+     "k": 0,
+     "n": 1
+    },
+    "better than": {
+     "k": 0,
+     "n": 0
+    },
+    "other than": {
+     "k": 0,
+     "n": 2
+    }
+   },
+   "contractions": {
+    "don't": {
+     "k": 2,
+     "n": 573
+    },
+    "didn't": {
+     "k": 0,
+     "n": 130
+    },
+    "doesn't": {
+     "k": 0,
+     "n": 78
+    },
+    "isn't": {
+     "k": 0,
+     "n": 105
+    },
+    "wasn't": {
+     "k": 0,
+     "n": 41
+    },
+    "weren't": {
+     "k": 0,
+     "n": 19
+    },
+    "aren't": {
+     "k": 0,
+     "n": 99
+    },
+    "haven't": {
+     "k": 0,
+     "n": 53
+    },
+    "hasn't": {
+     "k": 0,
+     "n": 6
+    },
+    "couldn't": {
+     "k": 0,
+     "n": 3
+    },
+    "wouldn't": {
+     "k": 0,
+     "n": 4
+    },
+    "shouldn't": {
+     "k": 0,
+     "n": 1
+    },
+    "can't": {
+     "k": 0,
+     "n": 50
+    },
+    "won't": {
+     "k": 0,
+     "n": 36
+    },
+    "i'm": {
+     "k": 0,
+     "n": 504
+    },
+    "i've": {
+     "k": 0,
+     "n": 77
+    },
+    "you're": {
+     "k": 0,
+     "n": 252
+    },
+    "they're": {
+     "k": 0,
+     "n": 35
+    },
+    "that's": {
+     "k": 0,
+     "n": 50
+    },
+    "what's": {
+     "k": 0,
+     "n": 28
+    },
+    "there's": {
+     "k": 0,
+     "n": 87
+    }
+   },
+   "editable": {
+    "split_message": 0.785572468563865,
+    "no_terminal_punctuation": 0.307577763070814,
+    "comma_no_space": 0.7396462018730489,
+    "message_lowercase_start": 0.8917897011163126
+   }
+  }
+ },
+ "misspellings": [
+  [
+   "recieved",
+   "received",
+   8
+  ]
+ ],
+ "source": {
+  "frame": "every eligible conversation of the private Intercom mailbox, de-identified locally with the rules of `routewise mailbox prepare`",
+  "author_roles_confirmed": false,
+  "store_timezone_confirmed": false,
+  "dictionary_sha256": "be41ad97963bf8dabedd5871d5d691596175269d540956b0f9965a885c2bbab9"
+ },
+ "publication": {
+  "private_sha256": "4253b48a9e2fc95a0e05ae51dfe3fe354da3012e88150f916235e92bb279669a",
+  "reviewer": "Lazare Herzi",
+  "approved_at": "2026-10-27T02:09:49.468564+00:00"
+ }
+}
