@@ -8,3 +8,7 @@ __pycache__/
 # Backstop only: validation data belongs outside the repository, and private mode refuses this path
 # (docs/workload-validation.md)
 private/
+# Raw mailbox exports stay outside Git; keep this backstop while relocating the archive.
+*.mbox
+*.mbox.gz
+*.mbox.zip

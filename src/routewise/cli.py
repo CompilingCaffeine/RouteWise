@@ -155,6 +155,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     val.add_argument('--wrong-release-margin', type=float,
                      help='wrong-release non-inferiority margin vs the previous profile (default 0.01)')
 
+    mb = sub.add_parser('mailbox', help='offline: prepare a private Intercom MBOX as an unapproved de-identified batch',
+                        description='Runs locally; sends nothing anywhere. Reads <private-root>/raw/ and writes only '
+                                    'under the private root. See docs/private-mbox-agent-command.md.')
+    mb.add_argument('stage', choices=('prepare',))
+    mb.add_argument('--mbox', type=Path, required=True, help='the archive, inside <private-root>/raw/')
+    mb.add_argument('--private-root', type=Path, required=True, help='private root outside every git repository')
+    mb.add_argument('--size', type=int, default=20, help='conversations in the batch (1-20)')
+    mb.add_argument('--refund-share', type=float, default=0.75, help='share drawn from the refund-keyword stratum')
+    mb.add_argument('--seed', type=int, help='sampling seed (default: random, recorded privately)')
+
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     load_dotenv(config.path.parent.parent / ".env")
@@ -178,6 +188,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "confirmation": cmd_confirmation,
         "recovery": cmd_recovery,
         "validation": cmd_validation,
+        "mailbox": cmd_mailbox,
     }
     try:
         return commands[args.command](config, args)
@@ -223,6 +234,20 @@ def cmd_validation(config: Config, args: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     except Exception as exc:  # outside the private session (no output directory yet): never show the message
+        print(f"error: {type(exc).__name__} (message withheld: it may quote private data)", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_mailbox(config: Config, args: argparse.Namespace) -> int:
+    from routewise import mailbox_prep
+    from routewise.private_mode import SafeError
+    try:
+        mailbox_prep.main(args)
+    except SafeError as exc:  # written to hold no mailbox data
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # before the private session exists: never show the message
         print(f"error: {type(exc).__name__} (message withheld: it may quote private data)", file=sys.stderr)
         return 1
     return 0
