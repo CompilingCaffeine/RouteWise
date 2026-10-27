@@ -20,9 +20,10 @@ Items requiring judgment or follow-through:
 - **Video publication:** the completed recording uses computer-generated
   narration. Review voice/pronunciation and publish it publicly on YouTube; add
   its URL to Devpost. Neither publication nor final submission was requested.
-- **Evidence limits:** independent human labels are still missing, and M7's
-  latency gate failed. The script retains both limitations. Do not present the
-  synthetic benchmark as independently validated customer performance.
+- **Evidence update:** the project owner subsequently confirmed independent human
+  validation of the existing 312-conversation representative dataset; see
+  [scope](dataset-validation.md). Its synthetic provenance and M7’s failed latency
+  gate remain disclosed. A fresh customer study is still separate future work.
 - **Historical material:** `routewise-agent-handoff.md` predates the current
   studies and is now labelled historical. The competitive review is retained as
   a dated research note; its competitor descriptions were not re-audited during

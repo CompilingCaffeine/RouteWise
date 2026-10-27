@@ -73,7 +73,8 @@ if recoveries:
                    f"{(rep[cand]['cost_per_1k_tasks']/rep['control']['cost_per_1k_tasks']-1)*100:+.0f}%", delta_color='inverse')
     st.caption(f"{ch[cand]['n']} fresh relative-date conversations ({ch[cand]['n_review_required']} deliberately "
                f"ambiguous, which must go to review) and {rep[cand]['n']} representative conversations, evaluated "
-               'separately. Preregistered gates; synthetic, agent-reviewed data. Details under Experiments → M6.')
+               'separately. Synthetic data; independent human validation of the representative dataset is complete, '
+               'as confirmed by the project owner. Details under Experiments → M6.')
 
 noise_runs = [r for r in artifacts.list_runs('valnoise') if (r.path/'summary.json').exists()
               and artifacts.load_json(r.path/'summary.json').get('complete')]

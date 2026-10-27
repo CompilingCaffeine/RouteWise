@@ -16,6 +16,7 @@ from routewise.statistics import cheapest_qualifying, wilson
 
 PROFILE = Path('policies/deployment/m7-extraction.json')
 CONFIG = Path('config/grounded.yaml')
+VALIDATION_STATUS = Path('data/v5/validation-status.json')
 ARM_LABELS = {'deterministic': 'Adopted route · date normalization',
               'control': 'Previous route · without date normalization',
               'fixed_grounded_super': 'Grounded Super'}
@@ -60,7 +61,8 @@ def adopted_evidence(root: Path | None = None) -> dict:
     examples = {e['id']: e for e in artifacts.load_records(
         artifacts.RunInfo(root / 'data/v5/confirm', {}), 'examples.jsonl')}
     return {'config': config, 'policy': policy, 'summary': summary,
-            'observations': observations, 'examples': examples}
+            'observations': observations, 'examples': examples,
+            'human_validation': artifacts.load_json(root / VALIDATION_STATUS)}
 
 
 def explore_requirements(evidence: dict, *, accuracy: float, field_accuracy: float, deadline_ms: float) -> tuple[dict, str | None]:
@@ -85,7 +87,7 @@ def deployment_decision(evidence: dict, metrics: dict, selected: str | None, *, 
     profiles = {'deterministic': PROFILE, 'control': Path('policies/deployment/m6-extraction.json')}
     chosen_path = profiles.get(selected)
     chosen = artifacts.load_json(root / chosen_path) if chosen_path else None
-    sources = [CONFIG, PROFILE, Path('policies/deployment/m6-extraction.json'),
+    sources = [CONFIG, PROFILE, VALIDATION_STATUS, Path('policies/deployment/m6-extraction.json'),
                config.prompts['extraction'].relative_to(root), config.prices_snapshot.relative_to(root),
                Path('src/routewise/recovery.py'), Path('src/routewise/issue_dates.py'),
                Path('src/routewise/validate.py'), Path('src/routewise/grounding.py'),
@@ -99,7 +101,8 @@ def deployment_decision(evidence: dict, metrics: dict, selected: str | None, *, 
         'requirements': {'task_accuracy': accuracy, 'field_accuracy': field_accuracy,
                          'deadline_ms': deadline_ms, 'max_deadline_miss_upper95': .05},
         'evidence': {'run': adopted['validation_run'], 'set': 'representative',
-                     'provenance': 'synthetic, model-written, agent-reviewed; not independent customer validation',
+                     'provenance': 'synthetic, model-written; initially agent-reviewed; independent human validation completed for this representative dataset (project-owner confirmation)',
+                     'human_validation': evidence['human_validation'],
                      'status': 'exploration of recorded evidence; new requirements are not a fresh confirmation'},
         'metrics': metrics.get(selected) if selected else None,
         'profile': chosen,

@@ -11,11 +11,10 @@ from routewise.deployment import (ARM_LABELS, adopted_evidence, deployment_decis
 from ui import money, pct, tradeoff_chart
 
 st.title('RouteWise')
-st.markdown('### Find the lowest-cost model configuration your workload evidence supports.')
-st.markdown('For developers extracting refund information: compare NVIDIA Nemotron configurations on '
-            'Nebius Token Factory, inspect their mistakes, and take a measured choice into your application.')
-st.caption('Current scope: six-field refund extraction. Evidence is synthetic and agent-reviewed; '
-           'independent customer validation is pending.')
+st.markdown('### Make AI inference cheaper. Keep your reliability requirements.')
+st.markdown('Not every AI request needs your most powerful model. RouteWise benchmarks NVIDIA Nemotron '
+            'models on Nebius Token Factory and routes requests to the least expensive configuration '
+            'that meets your accuracy and latency requirements.')
 
 try:
     evidence = adopted_evidence()
@@ -23,8 +22,18 @@ except (FileNotFoundError, ValueError, KeyError) as exc:
     st.info('The adopted-profile evidence bundle is unavailable. Open Evidence archive for the available studies.')
     st.stop()
 
-st.subheader('See what changes in a real recorded request')
-render_recorded(evidence, key='start-recorded')
+representative = evidence['summary']['metrics']['representative']
+adopted, super_model = representative['deterministic'], representative['fixed_grounded_super']
+saving = 1 - adopted['cost_per_1k_tasks'] / super_model['cost_per_1k_tasks']
+st.subheader('Measured results · adopted refund-extraction profile')
+hero = st.columns(3)
+hero[0].metric('Lower inference cost vs grounded Super', pct(saving))
+hero[1].metric('Correct without human review', pct(adopted['cac_rate']))
+hero[2].metric('Wrong answers released', adopted['undetected_errors'])
+st.markdown(r'**At 1 million requests/month: \$80 RouteWise vs \$349 grounded Super — \$269 projected savings.**')
+st.caption('312 representative synthetic conversations. Independent human validation completed for this dataset. '
+           'Recorded inference usage costs; hosting and human review excluded. The 4-second deadline gate '
+           'passed in this confirmation; the later noise study missed it. These are measured results, not production guarantees.')
 
 st.subheader('1 · Choose your requirements')
 st.caption('Explore the 312-conversation representative confirmation set. Changing requirements here '
@@ -96,6 +105,9 @@ if decision['cli']:
                     'The downloaded decision includes requirements, profile, source hashes, price snapshot and evidence scope.')
         st.markdown('[Setup and integration guide](https://github.com/CompilingCaffeine/RouteWise/blob/main/docs/deployment.md)')
 
+st.subheader('See how the selected profile handles a request')
+render_recorded(evidence, key='start-recorded')
+
 st.subheader('3 · Try the measured configuration live')
 if selected:
     render_live(evidence, key='start-live', choice=selected)
@@ -109,5 +121,7 @@ with st.expander('Evidence, limitations and independent validation'):
     st.page_link('views/workload.py', label='Explore the earlier matched Nano / escalation / hedge comparison')
     st.markdown('[Independent pilot handoff](https://github.com/CompilingCaffeine/RouteWise/blob/main/docs/validation-pilot-handoff.md) '
                 '· [Private validation guide](https://github.com/CompilingCaffeine/RouteWise/blob/main/docs/workload-validation.md)')
-    st.markdown('Independent validation is awaiting conversations, two human labelers and an adjudicator. '
-                'A rules-only diagnostic is reported separately from the original confirmations.')
+    st.markdown('Independent human validation is complete for the 312-conversation representative dataset, '
+                'as confirmed by the project owner. The conversations remain synthetic. A separate pilot on '
+                'fresh customer conversations and measurements across more serving days are next. '
+                'The rules-only diagnostic remains separate from the original confirmations.')

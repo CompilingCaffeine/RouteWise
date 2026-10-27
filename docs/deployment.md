@@ -1,6 +1,6 @@
 # Use the measured refund-extraction profile
 
-RouteWise currently supports a specific six-field refund-extraction contract. The adopted profile uses grounded Nemotron Nano, one Super escalation when validation fails, and deterministic issue-date normalization. It was confirmed on synthetic, agent-reviewed conversations; validate independent conversations before production use.
+RouteWise currently supports a specific six-field refund-extraction contract. The adopted profile uses grounded Nemotron Nano, one Super escalation when validation fails, and deterministic issue-date normalization. It was confirmed on synthetic conversations. Independent human validation is now complete for the existing 312-conversation representative dataset, as confirmed by the project owner ([scope](dataset-validation.md)); a separate fresh customer study remains the next generalization step.
 
 ## Try it in one minute
 

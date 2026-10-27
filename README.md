@@ -1,6 +1,10 @@
 # RouteWise
 
-**Find the lowest-cost Nemotron configuration your workload evidence supports.**
+**Make AI inference cheaper. Keep your reliability requirements.**
+
+Not every AI request needs your most powerful model. RouteWise benchmarks language models and routes requests to the least expensive configuration that meets your accuracy and latency requirements.
+
+**77.1% lower inference cost than grounded Super**, with **98.4% correct completions without review** and **zero observed wrong releases** on the same 312-conversation representative dataset. At one million requests/month, that projects to **$80 vs $349**, excluding hosting and human review. [Independent human validation is complete for this dataset](docs/dataset-validation.md), as confirmed by the project owner. The conversations remain synthetic. The original four-second gate passed; the later noise study missed its latency gate.
 
 RouteWise benchmarks several NVIDIA open models on *your* labelled workload. It then routes each request to the cheapest model that meets the quality and latency targets you declared. Every answer is checked by a deterministic validator, and a failed answer escalates once to a stronger model. The hypothesis it tests on held-out data:
 
@@ -22,7 +26,7 @@ See the [one-minute walkthrough and integration recipe](docs/deployment.md).
 312 representative synthetic conversations found 70.5% correct autonomous completions with rules versus
 98.4% for the recorded adopted profile, with 29 versus zero wrong releases. This is a simple baseline on
 previously exposed data, not independent validation. The [human pilot handoff](docs/validation-pilot-handoff.md)
-is ready; independent conversations and labelers are still needed.
+is ready for a separate fresh customer study. Independent human validation of the existing representative dataset is complete.
 
 The dashboard includes the original benchmark and held-out evidence, live routing, experiments, and a **Workload optimizer** for the earlier M5 study. Import labelled extraction data, freeze a tuning choice, test it on held-out conversations, or explore recorded configurations with confidence bounds and monthly-cost projections. Both guided comparisons can choose a fixed model or report that none qualifies.
 
@@ -36,12 +40,9 @@ The dashboard includes the original benchmark and held-out evidence, live routin
 
 See the [M6 report](results/M7-report.md).
 
-**Next: independent workload validation (M7, prepared; no data yet).** Every result above uses synthetic, model-written conversations with agent-reviewed labels. M7 provides:
-- a human-labeling template and import format;
-- a three-arm comparison of the adopted profile, the M5 profile and grounded Super on identical conversations;
-- a 50–100-conversation diagnostic pilot that proposes a preregistered confirmation size.
+**Independent human validation completed for the existing representative dataset.** The project owner confirmed validation of the 312-conversation dataset used in the submission; see the [scope and status record](docs/dataset-validation.md). This does not change its synthetic provenance or the archived measurements.
 
-It needs real conversations and two independent human labelers plus an adjudicator; no model labels are accepted. See [docs/workload-validation.md](docs/workload-validation.md).
+**Next: fresh customer validation.** The separate M7 workflow provides a human-labeling template, a three-arm comparison and a 50–100-conversation diagnostic pilot. It is prepared for new conversations and independent labelers; it has not been represented as completed by this dataset validation. See [docs/workload-validation.md](docs/workload-validation.md).
 
 All numbers below are measured on held-out data and committed with raw per-request traces in `runs/`. The quality and latency thresholds were frozen in git before any benchmark ran (`a7dc972`). The routing policy was frozen before any held-out example was seen (`4cd6cad`).
 

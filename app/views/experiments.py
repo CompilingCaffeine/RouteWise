@@ -152,8 +152,9 @@ with tab7:
                 right.markdown('**With measured noise**')
                 right.code(example[1], language=None, wrap_lines=True)
                 st.caption('Edits: ' + ', '.join(k.replace('_', ' ') for k in example[2]) + '. Same label for both.')
-        st.caption(f"Synthetic conversations with agent-reviewed labels; only the noise comes from real writing. This is "
-                   f"not evidence about real conversations; the human-labelled M7 pilot is still to come. Run {s['run']}; "
+        st.caption(f"Synthetic conversations with originally agent-reviewed labels; only the noise comes from real writing. "
+                   f"Independent human validation of the clean representative dataset is now complete (owner-confirmed); "
+                   f"a separate fresh-customer pilot is still to come. Run {s['run']}; "
                    "internal study key m8.")
         st.markdown('[Protocol amendment](https://github.com/CompilingCaffeine/RouteWise/blob/main/experiments/M8-workload-validation.md#amendments) · '
                     '[Full report](https://github.com/CompilingCaffeine/RouteWise/blob/main/results/M8-noise-report.md)')

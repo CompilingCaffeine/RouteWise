@@ -1,6 +1,6 @@
 # Independent validation pilot: coordinator handoff
 
-**Status: ready for people and data; no independent pilot has been run.** The app, sample conversations, synthetic benchmark and rules-only diagnostic do not substitute for human validation.
+**Status: independent human validation completed for the existing representative dataset; the separate fresh-customer pilot remains ready for people and data.** The project owner confirmed the former on October 26; see the [validation scope](dataset-validation.md). This handoff describes a new workload study, which is not claimed to have run as part of that existing-dataset check.
 
 This handoff uses the existing [private validation workflow](workload-validation.md), [field contract and templates](../data/validation-template/README.md), and [three-arm protocol](../experiments/M8-workload-validation.md). It does not alter that protocol or add an arm after the fact.
 

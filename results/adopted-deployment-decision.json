@@ -11,7 +11,26 @@
   "evidence": {
     "run": "datesconfirm-20261026T133902Z-ab36f4",
     "set": "representative",
-    "provenance": "synthetic, model-written, agent-reviewed; not independent customer validation",
+    "provenance": "synthetic, model-written; initially agent-reviewed; independent human validation completed for this representative dataset (project-owner confirmation)",
+    "human_validation": {
+      "schema_version": "routewise.dataset-validation.v1",
+      "status": "completed",
+      "type": "independent human validation of existing dataset",
+      "confirmation_source": "project owner, direct user confirmation",
+      "confirmation_recorded_date": "2026-10-26",
+      "dataset": {
+        "path": "data/v5/confirm",
+        "split": "representative",
+        "n": 312,
+        "source_run": "datesconfirm-20261026T133902Z-ab36f4",
+        "provenance": "synthetic, model-written"
+      },
+      "source_sha256": {
+        "data/v5/confirm/examples.jsonl": "14ed3d556b45db2c0cc83d79115691369b86c8fc1d87bbd73a847728627c22d3",
+        "data/v5/confirm/splits.json": "fe9125a8c12ea25ac16555d3b5fe6e6a3aa6d1b9ca6df64cf47c3144fd6aa189"
+      },
+      "scope_note": "Applies to the existing representative dataset; does not claim a fresh customer pilot, challenge-set validation, new labels or a new inference benchmark."
+    },
     "status": "exploration of recorded evidence; new requirements are not a fresh confirmation"
   },
   "metrics": {
@@ -79,6 +98,7 @@
   "source_sha256": {
     "config/grounded.yaml": "843f71ca945d99519c9e16789e38b77376fa5be150ab50ce14c95954f94587d8",
     "policies/deployment/m7-extraction.json": "2fabd9a1ecce403bd95668c624f59fdd58811fa5084f57b1e33b962f4b4c8876",
+    "data/v5/validation-status.json": "e2261de1903e91a7a5caa1ce60d11cad7c316b933419dca0bcd659fad72ec3cb",
     "policies/deployment/m6-extraction.json": "40127078efa531be4c7ab368a74db17a1158d171521630ff8b7e9936dc2a4a14",
     "prompts/extraction_v4.txt": "dccc7e223d24b820242600da4a53b1317c02e13ed386665b55d6b64221307708",
     "config/grounded-prices.snapshot.json": "f62f2030916d6cc4191b99bae530981e59fb00ea2583b0316762e853b8837777",
@@ -86,7 +106,7 @@
     "src/routewise/issue_dates.py": "dd8cf6fb4180323bcbba48c2d4e091aeaf24d72d44ca435a42a6da2ef9902383",
     "src/routewise/validate.py": "24d84531a02c0a93fd9fba16e403e6acd792bc4210731e1eb796135d44fc7abd",
     "src/routewise/grounding.py": "7cd5c737f8081df41c4a2315f1da4bf1ce636fc92c95619660f79594082e97b7",
-    "src/routewise/deployment.py": "66b9cf46d00f609670969cd6ee87833f25940b5f515574d862031e32f189ba0c",
+    "src/routewise/deployment.py": "e754fa2c7012efb084a72201b04a049ee9823c72144ad6f89d459688b9278125",
     "src/routewise/evaluation.py": "70b42a63153a06f0a572851ba0b017d9c32215a7ec522dbda45058ae0244271d",
     "src/routewise/router.py": "3e24b533159b30b35fc1c6d7cf0550c9f571c6924484f04590ff8fe6717f9be3",
     "src/routewise/execution.py": "9114ceec182ea52b35e921c66f47cb8d18ac7c73b4cb0e0f56ada96c2f346f4e",

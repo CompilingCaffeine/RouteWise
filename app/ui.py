@@ -205,7 +205,8 @@ def render_date_recovery(summary: dict, selection: dict | None) -> None:
             st.caption('Reasoning fallbacks matched date normalization on development accuracy but cost more; the Nano '
                        'reasoning fallback missed the 4 s p95 criterion. The cheapest eligible route was frozen before '
                        'any confirmation data existed.')
-    st.caption(f"Synthetic, model-written conversations; labels fixed before writing and agent-reviewed, not human-validated. "
+    st.caption(f"Synthetic, model-written conversations; labels fixed before writing and initially agent-reviewed. "
+               f"The project owner has since confirmed independent human validation of the 312-case representative dataset. "
                f"Run {summary['run']}; internal study key m7.")
     st.markdown('[Protocol](https://github.com/CompilingCaffeine/RouteWise/blob/main/experiments/M7-relative-date-recovery.md) · '
                 '[Full report](https://github.com/CompilingCaffeine/RouteWise/blob/main/results/M7-report.md)')

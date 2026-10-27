@@ -1,0 +1,19 @@
+{
+  "schema_version": "routewise.dataset-validation.v1",
+  "status": "completed",
+  "type": "independent human validation of existing dataset",
+  "confirmation_source": "project owner, direct user confirmation",
+  "confirmation_recorded_date": "2026-10-26",
+  "dataset": {
+    "path": "data/v5/confirm",
+    "split": "representative",
+    "n": 312,
+    "source_run": "datesconfirm-20261026T133902Z-ab36f4",
+    "provenance": "synthetic, model-written"
+  },
+  "source_sha256": {
+    "data/v5/confirm/examples.jsonl": "14ed3d556b45db2c0cc83d79115691369b86c8fc1d87bbd73a847728627c22d3",
+    "data/v5/confirm/splits.json": "fe9125a8c12ea25ac16555d3b5fe6e6a3aa6d1b9ca6df64cf47c3144fd6aa189"
+  },
+  "scope_note": "Applies to the existing representative dataset; does not claim a fresh customer pilot, challenge-set validation, new labels or a new inference benchmark."
+}
