@@ -1,0 +1,212 @@
+{
+  "study": "m8",
+  "component": "noise",
+  "display_milestone": "M7",
+  "seed": 3387733479,
+  "n_conversations": 679,
+  "by_split": {
+    "challenge": 367,
+    "representative": 312
+  },
+  "with_label_word_edit": 9,
+  "split_messages": 322,
+  "edits_by_kind": {
+    "no_terminal_punctuation": 1210,
+    "message_all_lowercase": 330,
+    "split_message": 322,
+    "emoticon": 197,
+    "spaced_hyphen": 114,
+    "message_lowercase_start": 46,
+    "straight_apostrophe": 29,
+    "pronoun_i_lowercase": 16,
+    "misspelling": 13,
+    "repeated_word": 13,
+    "apostrophe_drop": 9,
+    "repeated_punctuation": 7,
+    "sentence_lowercase_start": 3,
+    "abbreviation": 3,
+    "run_on": 1
+  },
+  "edits_by_role": {
+    "Agent": 1068,
+    "Customer": 1245
+  },
+  "calibration": {
+    "Customer": {
+      "misspelling": {
+        "workload": 0.002274963108706345,
+        "clean": 0.0008008237043816497,
+        "noisy": 0.0020550291129124328
+      },
+      "apostrophe_drop": {
+        "workload": 0.12531709791983764,
+        "clean": 0.07272727272727272,
+        "noisy": 0.15454545454545454
+      },
+      "abbreviation": {
+        "workload": 0.0049624273358854385,
+        "clean": 0.014201183431952662,
+        "noisy": 0.017793594306049824
+      },
+      "confusion": {
+        "workload": 0.03592814371257485,
+        "clean": 0.0,
+        "noisy": 0.0
+      },
+      "repeated_word": {
+        "workload": 0.0008048744794923304,
+        "clean": 6.913716814159292e-05,
+        "noisy": 0.0006983240223463687
+      },
+      "pronoun_i_lowercase": {
+        "workload": 0.031630170316301706,
+        "clean": 0.0136986301369863,
+        "noisy": 0.030949839914621132
+      },
+      "message_all_lowercase": {
+        "workload": 0.14681778552746294,
+        "clean": 0.00966183574879227,
+        "noisy": 0.13655640373197625
+      },
+      "message_lowercase_start": {
+        "workload": 0.11284480356645304,
+        "clean": 0.009433962264150943,
+        "noisy": 0.12058212058212059
+      },
+      "sentence_lowercase_start": {
+        "workload": 0.027661552766155277,
+        "clean": 0.006024096385542169,
+        "noisy": 0.021739130434782608
+      },
+      "no_terminal_punctuation": {
+        "workload": 0.6379521230124061,
+        "clean": 0.06280193236714976,
+        "noisy": 0.5351993214588634
+      },
+      "repeated_punctuation": {
+        "workload": 0.02708803611738149,
+        "clean": 0.0,
+        "noisy": 0.058823529411764705
+      },
+      "comma_no_space": {
+        "workload": 0.0029568302779420462,
+        "clean": 0.0,
+        "noisy": 0.0
+      },
+      "run_on": {
+        "workload": 0.11643233743409491,
+        "clean": 0.5222929936305732,
+        "noisy": 0.7607843137254902
+      },
+      "split_message": {
+        "workload": 0.12990409764603314,
+        "clean": 0.0,
+        "noisy": 0.12213740458015267
+      },
+      "straight_apostrophe": {
+        "workload": 0.5090993933737751,
+        "clean": 0.6896551724137931,
+        "noisy": 0.7319587628865979
+      },
+      "spaced_hyphen": {
+        "workload": 0.6712328767123288,
+        "clean": 0.04597701149425287,
+        "noisy": 0.6781609195402298
+      },
+      "emoticon": {
+        "workload": 0.042371403661726245,
+        "clean": 0.0,
+        "noisy": 0.03986429177268872
+      }
+    },
+    "Agent": {
+      "misspelling": {
+        "workload": 0.0005480667597510211,
+        "clean": 0.00033311125916055963,
+        "noisy": 0.000555123792605751
+      },
+      "apostrophe_drop": {
+        "workload": 0.0008964589870013447,
+        "clean": 0.02857142857142857,
+        "noisy": 0.02857142857142857
+      },
+      "abbreviation": {
+        "workload": 0.0,
+        "clean": 0.0,
+        "noisy": 0.0
+      },
+      "confusion": {
+        "workload": 0.0,
+        "clean": 0.0,
+        "noisy": 0.0
+      },
+      "repeated_word": {
+        "workload": 0.00014961996528816806,
+        "clean": 0.0,
+        "noisy": 0.00026123301985370953
+      },
+      "pronoun_i_lowercase": {
+        "workload": 0.003975424647632815,
+        "clean": 0.008902077151335312,
+        "noisy": 0.005952380952380952
+      },
+      "message_all_lowercase": {
+        "workload": 0.004467240238252812,
+        "clean": 0.004123711340206186,
+        "noisy": 0.008710801393728223
+      },
+      "message_lowercase_start": {
+        "workload": 0.0016204537270435723,
+        "clean": 0.008663366336633664,
+        "noisy": 0.007216494845360825
+      },
+      "sentence_lowercase_start": {
+        "workload": 0.0022635103272658683,
+        "clean": 0.0,
+        "noisy": 0.0041841004184100415
+      },
+      "no_terminal_punctuation": {
+        "workload": 0.6210491477742843,
+        "clean": 0.08041237113402062,
+        "noisy": 0.6289198606271778
+      },
+      "repeated_punctuation": {
+        "workload": 0.01636093207734259,
+        "clean": 0.0,
+        "noisy": 0.0
+      },
+      "comma_no_space": {
+        "workload": 0.00020807324178110696,
+        "clean": 0.0,
+        "noisy": 0.0
+      },
+      "run_on": {
+        "workload": 0.046651785714285715,
+        "clean": 0.1981981981981982,
+        "noisy": 0.26693227091633465
+      },
+      "split_message": {
+        "workload": 0.1626406353408339,
+        "clean": 0.012371134020618556,
+        "noisy": 0.16637630662020905
+      },
+      "straight_apostrophe": {
+        "workload": 0.3577759871071716,
+        "clean": 0.570694087403599,
+        "noisy": 0.6195372750642674
+      },
+      "spaced_hyphen": {
+        "workload": 0.5581051073279053,
+        "clean": 0.024,
+        "noisy": 0.496
+      },
+      "emoticon": {
+        "workload": 0.12806088682991396,
+        "clean": 0.0,
+        "noisy": 0.13066202090592335
+      }
+    }
+  },
+  "dataset_sha256": "c2a85e9ed9184d50d90dd0e89e823061f853dc0d360f56719f9ea2a2b671dc21",
+  "source": "M6 confirmation conversations (synthetic, model-written, fact-sheet labels) rewritten by a seeded noise channel calibrated to the aggregate profile of the user's de-identified mailbox"
+}

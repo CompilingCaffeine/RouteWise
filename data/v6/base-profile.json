@@ -1,0 +1,690 @@
+{
+  "kind": "routewise-noise-profile",
+  "version": 1,
+  "conversations": 679,
+  "thresholds": {
+    "min_letters": 4,
+    "table_min_conversations": 5,
+    "right_min_count": 10,
+    "right_to_wrong": 10,
+    "run_on_words": 20,
+    "split_within_minutes": 5.0
+  },
+  "roles": {
+    "Customer": {
+      "messages": 1035,
+      "words": 16580,
+      "words_per_message": {
+        "p10": 4,
+        "p50": 17,
+        "p90": 29
+      },
+      "features": {
+        "misspelling": {
+          "k": 7,
+          "n": 8741,
+          "rate": 0.0008008237043816497,
+          "writer_var": 0.0,
+          "writers": 679
+        },
+        "apostrophe_drop": {
+          "k": 8,
+          "n": 110,
+          "rate": 0.07272727272727272,
+          "writer_var": 0.004955365276006554,
+          "writers": 103
+        },
+        "abbreviation": {
+          "k": 12,
+          "n": 845,
+          "rate": 0.014201183431952662,
+          "writer_var": 0.0015712680075229493,
+          "writers": 430
+        },
+        "confusion": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 3
+        },
+        "repeated_word": {
+          "k": 1,
+          "n": 14464,
+          "rate": 6.913716814159292e-05,
+          "writer_var": 0.0,
+          "writers": 679
+        },
+        "pronoun_i_lowercase": {
+          "k": 15,
+          "n": 1095,
+          "rate": 0.0136986301369863,
+          "writer_var": 0.0052412428768737135,
+          "writers": 672
+        },
+        "message_all_lowercase": {
+          "k": 10,
+          "n": 1035,
+          "rate": 0.00966183574879227,
+          "writer_var": 0.0026607849144743437,
+          "writers": 679
+        },
+        "message_lowercase_start": {
+          "k": 4,
+          "n": 424,
+          "rate": 0.009433962264150943,
+          "writer_var": 0.001525529402921058,
+          "writers": 356
+        },
+        "sentence_lowercase_start": {
+          "k": 1,
+          "n": 166,
+          "rate": 0.006024096385542169,
+          "writer_var": 0.0007996003319993448,
+          "writers": 145
+        },
+        "no_terminal_punctuation": {
+          "k": 65,
+          "n": 1035,
+          "rate": 0.06280193236714976,
+          "writer_var": 0.01694854534723392,
+          "writers": 679
+        },
+        "repeated_punctuation": {
+          "k": 0,
+          "n": 153,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 136
+        },
+        "comma_no_space": {
+          "k": 0,
+          "n": 354,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 246
+        },
+        "run_on": {
+          "k": 164,
+          "n": 314,
+          "rate": 0.5222929936305732,
+          "writer_var": 0.0007971342569807636,
+          "writers": 314
+        },
+        "split_message": {
+          "k": 0,
+          "n": 1035,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 679
+        },
+        "straight_apostrophe": {
+          "k": 140,
+          "n": 203,
+          "rate": 0.6896551724137931,
+          "writer_var": 0.03964573154900992,
+          "writers": 162
+        },
+        "spaced_hyphen": {
+          "k": 4,
+          "n": 87,
+          "rate": 0.04597701149425287,
+          "writer_var": 0.0025529113955197963,
+          "writers": 83
+        },
+        "emoticon": {
+          "k": 0,
+          "n": 1035,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 679
+        }
+      },
+      "misspelling_by_length": {
+        "4-5": {
+          "k": 2,
+          "n": 4820
+        },
+        "6-7": {
+          "k": 3,
+          "n": 2372
+        },
+        "8+": {
+          "k": 2,
+          "n": 1549
+        }
+      },
+      "typo_kinds": {
+        "deletion": 2,
+        "insertion_double": 0,
+        "insertion_other": 2,
+        "substitution_adjacent": 0,
+        "substitution_other": 0,
+        "transposition": 3
+      },
+      "typo_positions": {
+        "first": 0,
+        "interior": 5,
+        "last": 2
+      },
+      "abbreviations": {
+        "thank you": {
+          "k": 0,
+          "n": 172
+        },
+        "tomorrow": {
+          "k": 0,
+          "n": 0
+        },
+        "because": {
+          "k": 0,
+          "n": 4
+        },
+        "message": {
+          "k": 0,
+          "n": 1
+        },
+        "people": {
+          "k": 0,
+          "n": 0
+        },
+        "please": {
+          "k": 11,
+          "n": 124
+        },
+        "thanks": {
+          "k": 0,
+          "n": 127
+        },
+        "though": {
+          "k": 0,
+          "n": 3
+        },
+        "your": {
+          "k": 0,
+          "n": 98
+        },
+        "with": {
+          "k": 0,
+          "n": 95
+        },
+        "you": {
+          "k": 1,
+          "n": 221
+        }
+      },
+      "confusions": {
+        "could have": {
+          "k": 0,
+          "n": 0
+        },
+        "would have": {
+          "k": 0,
+          "n": 0
+        },
+        "should have": {
+          "k": 0,
+          "n": 2
+        },
+        "a lot": {
+          "k": 0,
+          "n": 0
+        },
+        "you're welcome": {
+          "k": 0,
+          "n": 0
+        },
+        "rather than": {
+          "k": 0,
+          "n": 1
+        },
+        "more than": {
+          "k": 0,
+          "n": 0
+        },
+        "less than": {
+          "k": 0,
+          "n": 0
+        },
+        "better than": {
+          "k": 0,
+          "n": 0
+        },
+        "other than": {
+          "k": 0,
+          "n": 0
+        }
+      },
+      "contractions": {
+        "don't": {
+          "k": 0,
+          "n": 19
+        },
+        "didn't": {
+          "k": 0,
+          "n": 0
+        },
+        "doesn't": {
+          "k": 2,
+          "n": 10
+        },
+        "isn't": {
+          "k": 3,
+          "n": 10
+        },
+        "wasn't": {
+          "k": 0,
+          "n": 1
+        },
+        "weren't": {
+          "k": 0,
+          "n": 0
+        },
+        "aren't": {
+          "k": 0,
+          "n": 0
+        },
+        "haven't": {
+          "k": 0,
+          "n": 8
+        },
+        "hasn't": {
+          "k": 0,
+          "n": 10
+        },
+        "couldn't": {
+          "k": 0,
+          "n": 0
+        },
+        "wouldn't": {
+          "k": 0,
+          "n": 0
+        },
+        "shouldn't": {
+          "k": 0,
+          "n": 0
+        },
+        "can't": {
+          "k": 0,
+          "n": 0
+        },
+        "won't": {
+          "k": 0,
+          "n": 0
+        },
+        "i'm": {
+          "k": 1,
+          "n": 37
+        },
+        "i've": {
+          "k": 2,
+          "n": 10
+        },
+        "you're": {
+          "k": 0,
+          "n": 0
+        },
+        "they're": {
+          "k": 0,
+          "n": 2
+        },
+        "that's": {
+          "k": 0,
+          "n": 1
+        },
+        "what's": {
+          "k": 0,
+          "n": 0
+        },
+        "there's": {
+          "k": 0,
+          "n": 2
+        }
+      },
+      "editable": {
+        "split_message": 0.19227053140096617,
+        "no_terminal_punctuation": 0.5362318840579711,
+        "comma_no_space": 0.5536723163841808,
+        "message_lowercase_start": 0.4009433962264151
+      }
+    },
+    "Agent": {
+      "messages": 970,
+      "words": 16980,
+      "words_per_message": {
+        "p10": 11,
+        "p50": 18,
+        "p90": 24
+      },
+      "features": {
+        "misspelling": {
+          "k": 3,
+          "n": 9006,
+          "rate": 0.00033311125916055963,
+          "writer_var": 6.5157761529498766e-06,
+          "writers": 679
+        },
+        "apostrophe_drop": {
+          "k": 6,
+          "n": 210,
+          "rate": 0.02857142857142857,
+          "writer_var": 0.007323998825026925,
+          "writers": 156
+        },
+        "abbreviation": {
+          "k": 0,
+          "n": 1066,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 513
+        },
+        "confusion": {
+          "k": 0,
+          "n": 2,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 2
+        },
+        "repeated_word": {
+          "k": 0,
+          "n": 15486,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 679
+        },
+        "pronoun_i_lowercase": {
+          "k": 3,
+          "n": 337,
+          "rate": 0.008902077151335312,
+          "writer_var": 0.0,
+          "writers": 247
+        },
+        "message_all_lowercase": {
+          "k": 4,
+          "n": 970,
+          "rate": 0.004123711340206186,
+          "writer_var": 0.0,
+          "writers": 679
+        },
+        "message_lowercase_start": {
+          "k": 7,
+          "n": 808,
+          "rate": 0.008663366336633664,
+          "writer_var": 0.002097885036418881,
+          "writers": 612
+        },
+        "sentence_lowercase_start": {
+          "k": 0,
+          "n": 649,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 526
+        },
+        "no_terminal_punctuation": {
+          "k": 78,
+          "n": 970,
+          "rate": 0.08041237113402062,
+          "writer_var": 0.016790477211307858,
+          "writers": 679
+        },
+        "repeated_punctuation": {
+          "k": 0,
+          "n": 7,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 7
+        },
+        "comma_no_space": {
+          "k": 0,
+          "n": 126,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 115
+        },
+        "run_on": {
+          "k": 66,
+          "n": 333,
+          "rate": 0.1981981981981982,
+          "writer_var": 0.0,
+          "writers": 307
+        },
+        "split_message": {
+          "k": 12,
+          "n": 970,
+          "rate": 0.012371134020618556,
+          "writer_var": 0.0,
+          "writers": 679
+        },
+        "straight_apostrophe": {
+          "k": 222,
+          "n": 389,
+          "rate": 0.570694087403599,
+          "writer_var": 0.05989943246853158,
+          "writers": 281
+        },
+        "spaced_hyphen": {
+          "k": 3,
+          "n": 125,
+          "rate": 0.024,
+          "writer_var": 0.0013233471074380139,
+          "writers": 119
+        },
+        "emoticon": {
+          "k": 0,
+          "n": 970,
+          "rate": 0.0,
+          "writer_var": 0.0,
+          "writers": 679
+        }
+      },
+      "misspelling_by_length": {
+        "4-5": {
+          "k": 2,
+          "n": 3748
+        },
+        "6-7": {
+          "k": 0,
+          "n": 3857
+        },
+        "8+": {
+          "k": 1,
+          "n": 1401
+        }
+      },
+      "typo_kinds": {
+        "deletion": 0,
+        "insertion_double": 0,
+        "insertion_other": 0,
+        "substitution_adjacent": 2,
+        "substitution_other": 0,
+        "transposition": 1
+      },
+      "typo_positions": {
+        "first": 0,
+        "interior": 3,
+        "last": 0
+      },
+      "abbreviations": {
+        "thank you": {
+          "k": 0,
+          "n": 103
+        },
+        "tomorrow": {
+          "k": 0,
+          "n": 77
+        },
+        "because": {
+          "k": 0,
+          "n": 0
+        },
+        "message": {
+          "k": 0,
+          "n": 27
+        },
+        "people": {
+          "k": 0,
+          "n": 0
+        },
+        "please": {
+          "k": 0,
+          "n": 1
+        },
+        "thanks": {
+          "k": 0,
+          "n": 81
+        },
+        "though": {
+          "k": 0,
+          "n": 0
+        },
+        "your": {
+          "k": 0,
+          "n": 522
+        },
+        "with": {
+          "k": 0,
+          "n": 16
+        },
+        "you": {
+          "k": 0,
+          "n": 239
+        }
+      },
+      "confusions": {
+        "could have": {
+          "k": 0,
+          "n": 0
+        },
+        "would have": {
+          "k": 0,
+          "n": 0
+        },
+        "should have": {
+          "k": 0,
+          "n": 0
+        },
+        "a lot": {
+          "k": 0,
+          "n": 0
+        },
+        "you're welcome": {
+          "k": 0,
+          "n": 0
+        },
+        "rather than": {
+          "k": 0,
+          "n": 2
+        },
+        "more than": {
+          "k": 0,
+          "n": 0
+        },
+        "less than": {
+          "k": 0,
+          "n": 0
+        },
+        "better than": {
+          "k": 0,
+          "n": 0
+        },
+        "other than": {
+          "k": 0,
+          "n": 0
+        }
+      },
+      "contractions": {
+        "don't": {
+          "k": 0,
+          "n": 0
+        },
+        "didn't": {
+          "k": 0,
+          "n": 0
+        },
+        "doesn't": {
+          "k": 0,
+          "n": 0
+        },
+        "isn't": {
+          "k": 0,
+          "n": 0
+        },
+        "wasn't": {
+          "k": 0,
+          "n": 0
+        },
+        "weren't": {
+          "k": 0,
+          "n": 0
+        },
+        "aren't": {
+          "k": 0,
+          "n": 0
+        },
+        "haven't": {
+          "k": 0,
+          "n": 0
+        },
+        "hasn't": {
+          "k": 0,
+          "n": 0
+        },
+        "couldn't": {
+          "k": 0,
+          "n": 0
+        },
+        "wouldn't": {
+          "k": 0,
+          "n": 0
+        },
+        "shouldn't": {
+          "k": 0,
+          "n": 0
+        },
+        "can't": {
+          "k": 0,
+          "n": 0
+        },
+        "won't": {
+          "k": 0,
+          "n": 0
+        },
+        "i'm": {
+          "k": 4,
+          "n": 135
+        },
+        "i've": {
+          "k": 2,
+          "n": 71
+        },
+        "you're": {
+          "k": 0,
+          "n": 3
+        },
+        "they're": {
+          "k": 0,
+          "n": 0
+        },
+        "that's": {
+          "k": 0,
+          "n": 1
+        },
+        "what's": {
+          "k": 0,
+          "n": 0
+        },
+        "there's": {
+          "k": 0,
+          "n": 0
+        }
+      },
+      "editable": {
+        "split_message": 0.6020618556701031,
+        "no_terminal_punctuation": 0.6917525773195876,
+        "comma_no_space": 0.9365079365079365,
+        "message_lowercase_start": 0.8242574257425742
+      }
+    }
+  },
+  "misspellings": []
+}
