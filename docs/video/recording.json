@@ -2,7 +2,7 @@
   "recording_date_pacific": "2026-10-26",
   "environment": "Local Streamlit app, real Nebius API",
   "narration": "Microsoft Ava neural voice, computer-generated, conversational delivery at its natural rate",
-  "revision": 3,
+  "revision": 4,
   "revision_date_pacific": "2026-10-26",
   "caption_timing": "Speech-service word boundaries; original script punctuation retained",
   "editing": "CUA viewport captures at 4 fps; cuts and held frames; narration added afterward",
@@ -21,6 +21,7 @@
       "capture_groups": [
         "01-results"
       ],
+      "source_code_commit": "4069c245a0084c880db243b6a2f12f5a7599e39e",
       "narration_sha256": "c0b589e5f13d10a6c6c06b768ad8215c4c978a505f0873894b005d175258827a"
     },
     {
@@ -31,6 +32,7 @@
       "capture_groups": [
         "02-quality"
       ],
+      "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
       "narration_sha256": "a9770aa35f6a7f438813052119a80d65bbe741b74f938f549d9f14c8849c5e45"
     },
     {
@@ -41,6 +43,7 @@
       "capture_groups": [
         "03-method"
       ],
+      "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
       "narration_sha256": "be4ffc52a0320487b40225fcd36e5cbf3605cc593ab4325f5cdd5a6da0e22f7c"
     },
     {
@@ -52,6 +55,7 @@
         "04-choices",
         "04b-none"
       ],
+      "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
       "narration_sha256": "94e6507f93ac8314505fec546e9ce52abbd5931cab2b7d70d27a1a41bc69897d"
     },
     {
@@ -63,6 +67,7 @@
         "05-reliability",
         "05b-review"
       ],
+      "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
       "narration_sha256": "1f54f0dd42b0999b91a35151bc9217ad0eafc5f010b40c9d6e5bdbb583859f25"
     },
     {
@@ -75,6 +80,7 @@
         "06b-result",
         "06c-raw"
       ],
+      "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
       "narration_sha256": "f6a94689c7d78dda725e4d8b7502d40c6e9366036f29330aa28606c2fde6336c"
     },
     {
@@ -86,15 +92,22 @@
         "07-export",
         "07b-limits"
       ],
+      "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
       "narration_sha256": "297fbc4366fc1648a2f652961cd9f0752c7338db2b9ae78609372cd353d509b2"
     }
   ],
   "duration_seconds": 98.821333,
-  "sha256": "b88a5b0c6ce1e8bc00c5989492f7f261ea6c7894f35d426c57642f5d0fd56c04",
-  "bytes": 3716456,
+  "sha256": "d2e3d004434137b0f17c96b9102e0fa8fa17602140db9442960a98a3c04dff8e",
+  "bytes": 3690346,
   "file": "docs/video/routewise-devpost.mp4",
   "live_trace": "docs/video/live-trace.json",
   "audio_mastering": "Integrated loudness target -16 LUFS, true peak -1.5 dBTP",
-  "code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
-  "revision_note": "New recording of the results-first guided app with a fresh real Nebius call. Independent human validation of the existing representative dataset was confirmed by the project owner."
+  "code_commit": "4069c245a0084c880db243b6a2f12f5a7599e39e",
+  "revision_note": "Only the opening footage was replaced to show monthly extraction volume and projected savings at the top. Narration, timing, and all remaining scenes are unchanged from revision 3.",
+  "preservation_verification": {
+    "compared_against_revision": 3,
+    "later_scenes_byte_identical": true,
+    "complete_audio_byte_identical": true,
+    "aac_audio_sha256": "10718609bb3ae7d000a58230164fb45f154c5ff10683e8a5e79dbefc0dcd95a7"
+  }
 }

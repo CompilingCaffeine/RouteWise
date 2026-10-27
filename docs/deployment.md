@@ -4,9 +4,9 @@ RouteWise currently supports a specific six-field refund-extraction contract. Th
 
 ## Try it in one minute
 
-1. Open **Start here** in the dashboard. Inspect the labelled recorded example of a corrected date, a clear refund, or a request held for review.
+1. Open **Start here** in the dashboard. Set **Monthly extraction volume** at the top to compare projected inference cost and savings.
 2. Choose quality and latency requirements. The comparison uses the representative confirmation set, separately from the difficult date challenge. A fixed Super configuration or no qualifying configuration may be the result.
-3. Download the deployment decision and run a fresh synthetic conversation. The decision includes the selected profile, requirements, source run, price snapshot and source hashes. Editing requirements explores recorded evidence; it does not create a fresh confirmation.
+3. Inspect the recorded correction or review example, download the deployment decision and run a fresh synthetic conversation. The decision includes the selected profile, requirements, source run, price snapshot and source hashes. Editing requirements explores recorded evidence; it does not create a fresh confirmation.
 
 ## Install and call the adopted profile
 

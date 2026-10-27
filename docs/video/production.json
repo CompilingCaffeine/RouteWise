@@ -1,12 +1,12 @@
 {
-  "revision": 3,
+  "revision": 4,
   "revision_date_pacific": "2026-10-26",
   "voice": "en-US-AvaNeural",
   "rate": "+0%",
   "narration_description": "Microsoft Ava neural voice, computer-generated, conversational delivery at its natural rate",
   "audio_extension": ".mp3",
-  "capture_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
-  "note": "New recording of the results-first guided app with a fresh real Nebius call. Independent human validation of the existing representative dataset was confirmed by the project owner.",
+  "capture_code_commit": "4069c245a0084c880db243b6a2f12f5a7599e39e",
+  "note": "Only the opening footage was replaced to show monthly extraction volume and projected savings at the top. Narration, timing, and all remaining scenes are unchanged from revision 3.",
   "capture_groups": {
     "04-choices": [
       "04-choices",
@@ -25,5 +25,14 @@
       "07-export",
       "07b-limits"
     ]
+  },
+  "scene_code_commits": {
+    "01-results": "4069c245a0084c880db243b6a2f12f5a7599e39e",
+    "02-quality": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
+    "03-method": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
+    "04-choices": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
+    "05-reliability": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
+    "06-live": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
+    "07-export": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29"
   }
 }

@@ -1,12 +1,12 @@
 # Devpost video: savings first
 
-**Revision 3 · 1:38.82 · 1920 × 1080 · Neural narration and timed captions.**
+**Revision 4 · 1:38.82 · 1920 × 1080 · Neural narration and timed captions.**
 
 [Watch the new recording](video/routewise-devpost.mp4) · [Captions](video/captions.vtt) · [Recording details](video/README.md)
 
 The opening states the value proposition and leads with 77.1% lower inference usage cost versus grounded Super, followed by 98.4% correct completion without review and zero observed wrong releases on the same 312-conversation representative dataset. Results precede methodology. Independent human validation for this existing dataset is complete, based on the project owner’s direct confirmation; its synthetic provenance remains explicit.
 
-This is a new recording of the updated local app with a new real Nebius request. Historical study examples remain labelled RECORDED. Narration uses Microsoft Ava. The hosted app must contain this build before submission.
+Only the opening footage was replaced in revision 4: the monthly extraction volume and projected costs/savings now appear at the top. Narration, timings, and all later scenes remain unchanged from revision 3, including its genuine recorded Nebius request. Historical study examples remain labelled RECORDED. Narration uses Microsoft Ava. The hosted app must contain this build before submission.
 
 | Time | Screen | Narration |
 |---|---|---|

@@ -152,6 +152,8 @@ for scene in SCENES:
         raise RuntimeError(f"ffmpeg failed for {name}")
     manifest["scenes"].append({"id": name, "title": scene["title"], "start_seconds": elapsed,
                                "duration_seconds": duration, "capture_groups": groups,
+                               "source_code_commit": PRODUCTION.get("scene_code_commits", {}).get(
+                                   name, PRODUCTION["capture_code_commit"]),
                                "narration_sha256": hashlib.sha256(audio.read_bytes()).hexdigest()})
     elapsed += duration
     print(f"Rendered {name}: {duration:.2f}s", flush=True)
