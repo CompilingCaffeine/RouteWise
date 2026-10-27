@@ -1,42 +1,42 @@
 [
   {
     "id": "01-intro",
-    "title": "A measured model choice",
-    "narration": "For a developer extracting refunds, a plausible answer can quietly become bad data. RouteWise helps choose the lowest-cost NVIDIA Nemotron configuration that the workload evidence supports, using Nebius Token Factory."
+    "title": "A cheaper model, backed by evidence",
+    "narration": "Refund extraction looks simple, until the model picks the wrong date. RouteWise helps developers choose a cheaper model setup, backed by evidence."
   },
   {
     "id": "02-correction",
-    "title": "Recorded evidence: correct the issue date",
-    "narration": "This is a real recorded synthetic conversation. The previous route released a missing issue date. The adopted profile resolves the store’s statement from its own timestamp. It keeps the refund issue date separate from when the money arrives. The source and both outputs remain inspectable."
+    "title": "Fix the missing date",
+    "narration": "Here’s a recorded synthetic example. The old route misses the refund date. RouteWise reads “this Friday” against the store’s timestamp, and gets April twenty-fourth."
   },
   {
     "id": "03-review",
-    "title": "Ambiguity goes to review",
-    "narration": "When the conversation does not determine one calendar date, RouteWise holds the answer for human review. Every model call, raw answer, normalization, and validation check is visible. Passing a validator is not a guarantee of correctness."
+    "title": "Hold ambiguous answers for review",
+    "narration": "If the date is ambiguous, it holds the answer for review. You can inspect the source, raw response, and every check."
   },
   {
     "id": "04-evidence",
-    "title": "Compare cost, quality and review",
-    "narration": "Declare quality and latency requirements, then inspect matched alternatives. The adopted profile combines grounded Nano, selective Super escalation, and deterministic date normalization. On three hundred twelve representative synthetic conversations, it completed ninety-eight point four percent correctly without review, with zero observed wrong releases. Review and task accuracy are reported separately."
+    "title": "Set your requirements",
+    "narration": "Choose your accuracy and response-time targets. RouteWise compares NVIDIA Nemotron models on Nebius Token Factory, then picks the cheapest setup the evidence supports. On three hundred twelve synthetic conversations, this setup completed ninety-eight point four percent correctly without review, with no incorrect answers released."
   },
   {
     "id": "05-choices",
-    "title": "The answer can be Super—or no recommendation",
-    "narration": "Tighten the deadline to twenty-five hundred milliseconds, and fixed Super becomes the measured choice. Require one hundred percent accuracy with a confidence bound, and no configuration qualifies. These controls explore recorded evidence. Changing a slider does not create a fresh confirmation."
+    "title": "Let the evidence decide",
+    "narration": "Need a faster response? The recommendation switches to Super. Ask for more certainty than the data supports, and it recommends nothing."
   },
   {
     "id": "06-live",
-    "title": "Fresh inference on Nebius Token Factory",
-    "narration": "Now we run a fresh request through the adopted profile. This calls NVIDIA Nemotron on Nebius Token Factory using the same implementation as the command line. The trace shows the actual model output, final issue date, release status, latency, and usage cost across every call. Live answers can vary."
+    "title": "Inspect a real API call",
+    "narration": "This call was captured while recording. Nano leaves the date blank; RouteWise resolves it to April sixth. The trace includes the actual response time and every model-call charge."
   },
   {
     "id": "07-economics",
-    "title": "Make the tradeoff explicit",
-    "narration": "At one million requests a month, the recorded token mix projects about eighty dollars in inference cost for the adopted profile, versus three hundred forty-nine for grounded Super. Hosting and human review are excluded. A separate retrospective rules-only comparison completed seventy point five percent correctly without review, versus ninety-eight point four for the recorded adopted profile."
+    "title": "See the projected cost",
+    "narration": "At a million requests a month, recorded inference costs project to about eighty dollars, versus three hundred forty-nine for Super. Hosting and human review cost extra."
   },
   {
     "id": "08-export",
-    "title": "Take the decision into your application",
-    "narration": "Download the selected profile, requirements, price snapshot, and evidence hashes, then use the integration recipe. Release an answer only when the final-valid flag is true. The evidence is synthetic; independent human validation is still needed. The latest noise study preserved answers but failed its latency gate. RouteWise makes those limits visible alongside the decision. The code and complete evidence archive are open source."
+    "title": "Export the decision",
+    "narration": "Download the decision and integration recipe. These results use synthetic data. Independent human validation is still pending, and the latest noise test missed its response-time target. RouteWise shows those limits alongside its recommendation."
   }
 ]

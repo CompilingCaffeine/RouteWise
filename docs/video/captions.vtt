@@ -1,124 +1,103 @@
 WEBVTT
 
-00:00:00.100 --> 00:00:06.355
-For a developer extracting refunds, a plausible answer can quietly become bad data.
+00:00:00.100 --> 00:00:03.600
+Refund extraction looks simple, until the model picks the wrong
 
-00:00:06.355 --> 00:00:12.610
-RouteWise helps choose the lowest-cost NVIDIA Nemotron configuration that the workload evidence supports,
+00:00:03.612 --> 00:00:04.000
+date.
 
-00:00:12.610 --> 00:00:14.535
-using Nebius Token Factory.
+00:00:04.362 --> 00:00:08.088
+RouteWise helps developers choose a cheaper model setup, backed by
 
-00:00:15.350 --> 00:00:18.023
-This is a real recorded synthetic conversation.
+00:00:08.100 --> 00:00:08.662
+evidence.
 
-00:00:18.023 --> 00:00:21.077
-The previous route released a missing issue date.
+00:00:09.600 --> 00:00:11.638
+Here’s a recorded synthetic example.
 
-00:00:21.077 --> 00:00:25.276
-The adopted profile resolves the store’s statement from its own timestamp.
+00:00:12.000 --> 00:00:13.912
+The old route misses the refund date.
 
-00:00:25.276 --> 00:00:29.858
-It keeps the refund issue date separate from when the money arrives.
+00:00:14.275 --> 00:00:18.538
+RouteWise reads “this Friday” against the store’s timestamp, and gets
 
-00:00:29.858 --> 00:00:32.530
-The source and both outputs remain inspectable.
+00:00:18.650 --> 00:00:19.812
+April twenty-fourth.
 
-00:00:33.350 --> 00:00:38.999
-When the conversation does not determine one calendar date, RouteWise holds the answer
+00:00:20.600 --> 00:00:23.600
+If the date is ambiguous, it holds the answer for
 
-00:00:38.999 --> 00:00:40.302
-for human review.
+00:00:23.612 --> 00:00:24.088
+review.
 
-00:00:40.302 --> 00:00:45.082
-Every model call, raw answer, normalization, and validation check is visible.
+00:00:24.450 --> 00:00:27.950
+You can inspect the source, raw response, and every check.
 
-00:00:45.082 --> 00:00:48.993
-Passing a validator is not a guarantee of correctness.
+00:00:28.850 --> 00:00:31.712
+Choose your accuracy and response-time targets.
 
-00:00:49.600 --> 00:00:54.396
-Declare quality and latency requirements, then inspect matched alternatives.
+00:00:32.075 --> 00:00:36.988
+RouteWise compares NVIDIA Nemotron models on Nebius Token Factory, then
 
-00:00:54.396 --> 00:01:01.324
-The adopted profile combines grounded Nano, selective Super escalation, and deterministic date normalization.
+00:00:37.000 --> 00:00:39.612
+picks the cheapest setup the evidence supports.
 
-00:01:01.324 --> 00:01:08.252
-On three hundred twelve representative synthetic conversations, it completed ninety-eight point four percent
+00:00:39.975 --> 00:00:44.962
+On three hundred twelve synthetic conversations, this setup completed ninety-eight
 
-00:01:08.252 --> 00:01:12.515
-correctly without review, with zero observed wrong releases.
+00:00:44.975 --> 00:00:49.388
+point four percent correctly without review, with no incorrect answers
 
-00:01:12.515 --> 00:01:16.246
-Review and task accuracy are reported separately.
+00:00:49.400 --> 00:00:50.012
+released.
 
-00:01:16.850 --> 00:01:22.938
-Tighten the deadline to twenty-five hundred milliseconds, and fixed Super becomes the measured
+00:00:50.850 --> 00:00:52.338
+Need a faster response?
 
-00:01:22.938 --> 00:01:23.406
-choice.
+00:00:52.700 --> 00:00:54.975
+The recommendation switches to Super.
 
-00:01:23.406 --> 00:01:29.493
-Require one hundred percent accuracy with a confidence bound, and no configuration qualifies.
+00:00:55.338 --> 00:00:58.300
+Ask for more certainty than the data supports, and it
 
-00:01:29.493 --> 00:01:31.835
-These controls explore recorded evidence.
+00:00:58.312 --> 00:00:59.362
+recommends nothing.
 
-00:01:31.835 --> 00:01:36.049
-Changing a slider does not create a fresh confirmation.
+00:01:00.100 --> 00:01:02.162
+This call was captured while recording.
 
-00:01:36.850 --> 00:01:41.069
-Now we run a fresh request through the adopted profile.
+00:01:02.525 --> 00:01:06.475
+Nano leaves the date blank; RouteWise resolves it to April
 
-00:01:41.069 --> 00:01:46.553
-This calls NVIDIA Nemotron on Nebius Token Factory using the same implementation as
+00:01:06.488 --> 00:01:07.062
+sixth.
 
-00:01:46.553 --> 00:01:47.819
-the command line.
+00:01:07.425 --> 00:01:11.300
+The trace includes the actual response time and every model-call
 
-00:01:47.819 --> 00:01:53.303
-The trace shows the actual model output, final issue date, release status, latency,
+00:01:11.312 --> 00:01:11.825
+charge.
 
-00:01:53.303 --> 00:01:55.834
-and usage cost across every call.
+00:01:12.600 --> 00:01:16.550
+At a million requests a month, recorded inference costs project
 
-00:01:55.834 --> 00:01:57.522
-Live answers can vary.
+00:01:16.562 --> 00:01:20.638
+to about eighty dollars, versus three hundred forty-nine for Super.
 
-00:01:58.350 --> 00:02:04.130
-At one million requests a month, the recorded token mix projects about eighty
+00:01:21.000 --> 00:01:23.350
+Hosting and human review cost extra.
 
-00:02:04.130 --> 00:02:09.909
-dollars in inference cost for the adopted profile, versus three hundred forty-nine for
+00:01:24.100 --> 00:01:26.800
+Download the decision and integration recipe.
 
-00:02:09.909 --> 00:02:10.799
-grounded Super.
+00:01:27.162 --> 00:01:29.112
+These results use synthetic data.
 
-00:02:10.799 --> 00:02:13.466
-Hosting and human review are excluded.
+00:01:29.475 --> 00:01:33.350
+Independent human validation is still pending, and the latest noise
 
-00:02:13.466 --> 00:02:19.246
-A separate retrospective rules-only comparison completed seventy point five percent correctly without review,
+00:01:33.362 --> 00:01:35.625
+test missed its response-time target.
 
-00:02:19.246 --> 00:02:23.247
-versus ninety-eight point four for the recorded adopted profile.
-
-00:02:23.850 --> 00:02:29.632
-Download the selected profile, requirements, price snapshot, and evidence hashes, then use the
-
-00:02:29.632 --> 00:02:30.521
-integration recipe.
-
-00:02:30.521 --> 00:02:34.969
-Release an answer only when the final-valid flag is true.
-
-00:02:34.969 --> 00:02:39.417
-The evidence is synthetic; independent human validation is still needed.
-
-00:02:39.417 --> 00:02:44.309
-The latest noise study preserved answers but failed its latency gate.
-
-00:02:44.309 --> 00:02:47.867
-RouteWise makes those limits visible alongside the decision.
-
-00:02:47.867 --> 00:02:51.870
-The code and complete evidence archive are open source.
+00:01:35.988 --> 00:01:39.388
+RouteWise shows those limits alongside its recommendation.

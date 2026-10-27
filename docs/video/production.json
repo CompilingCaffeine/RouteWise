@@ -1,0 +1,10 @@
+{
+  "revision": 2,
+  "revision_date_pacific": "2026-10-26",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "narration_description": "Microsoft Ava neural voice, computer-generated, conversational delivery at its natural rate",
+  "audio_extension": ".mp3",
+  "capture_code_commit": "d44c6c0360ca2f163b3835db4eb989167421799b",
+  "note": "Shorter script and neural narration over the original October 26 footage; the API call is the original recorded call, not a new inference request."
+}

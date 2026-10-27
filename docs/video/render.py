@@ -21,6 +21,7 @@ CAPTURES = Path(sys.argv[1])
 OUT = ROOT / "artifacts/video"
 OUT.mkdir(parents=True, exist_ok=True)
 SCENES = json.loads((ROOT / "docs/video/narration.json").read_text())
+PRODUCTION = json.loads((ROOT / "docs/video/production.json").read_text())
 FRAMES = json.loads((CAPTURES / "frames.json").read_text())
 FONT_PATH = "/System/Library/Fonts/Supplemental/Arial.ttf"
 BOLD_PATH = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
@@ -49,22 +50,45 @@ def caption_chunks(text):
     chunks = []
     for sentence in re.split(r"(?<=[.!?])\s+", text):
         words = sentence.split()
-        for i in range(0, len(words), 13):
-            chunks.append(" ".join(words[i:i+13]))
+        for i in range(0, len(words), 10):
+            chunks.append(" ".join(words[i:i+10]))
     return chunks
 
 
+def timed_captions(text, events):
+    """Align the original punctuated script to the speech service's word times."""
+    normalize = lambda value: re.sub(r"\W", "", value).casefold()
+    if normalize(text) != normalize("".join(e["text"] for e in events)):
+        raise ValueError("Speech word metadata differs from the narration")
+    words, position = [], 0
+    for event in events:
+        length = len(normalize(event["text"]))
+        words.append((position, position+length, event))
+        position += length
+    result, position = [], 0
+    for caption in caption_chunks(text):
+        end = position + len(normalize(caption))
+        matching = [event for first, last, event in words if last > position and first < end]
+        result.append((matching[0]["offset"]/10_000_000,
+                       (matching[-1]["offset"]+matching[-1]["duration"])/10_000_000, caption))
+        position = end
+    return result
+
+
 manifest = {"recording_date_pacific": "2026-10-26", "environment": "Local Streamlit app, real Nebius API",
-            "narration": "macOS Samantha, computer-generated, 151 words/minute",
+            "narration": PRODUCTION["narration_description"],
+            "revision": PRODUCTION["revision"],
+            "revision_date_pacific": PRODUCTION["revision_date_pacific"],
+            "caption_timing": "Speech-service word boundaries; original script punctuation retained",
             "editing": "CUA viewport captures at 4 fps; cuts and held frames; narration added afterward",
             "resolution": [1920, 1080], "output_fps": 24, "published": False, "scenes": []}
 subtitle_entries, vtt_entries = [], []
 elapsed = 0.0
 for scene in SCENES:
     name = scene["id"]
-    audio = CAPTURES / (name + ".aiff")
+    audio = CAPTURES / (name + PRODUCTION["audio_extension"])
     spoken = float(probe(audio)["format"]["duration"])
-    duration = math.ceil((spoken + .5) * 4) / 4
+    duration = math.ceil((spoken + .25) * 4) / 4
     groups = GROUPS.get(name, [name])
     shots = []
     for group in groups:
@@ -78,15 +102,10 @@ for scene in SCENES:
         shots.extend(latest)
     if not shots:
         raise ValueError(f"No actual viewport captures for {name}")
-    chunks = caption_chunks(scene["narration"])
-    count = sum(len(c.split()) for c in chunks)
-    cues, at = [], .1
-    for chunk in chunks:
-        end = min(spoken, at + (spoken - .1) * len(chunk.split()) / count)
-        cues.append((at, end, chunk))
-        subtitle_entries.append(f"{len(subtitle_entries)+1}\n{timestamp(elapsed+at, ',')} --> {timestamp(elapsed+end, ',')}\n{chunk}\n")
-        vtt_entries.append(f"{timestamp(elapsed+at)} --> {timestamp(elapsed+end)}\n{chunk}\n")
-        at = end
+    cues = timed_captions(scene["narration"], json.loads((CAPTURES / (name + ".words.json")).read_text()))
+    for start, end, chunk in cues:
+        subtitle_entries.append(f"{len(subtitle_entries)+1}\n{timestamp(elapsed+start, ',')} --> {timestamp(elapsed+end, ',')}\n{chunk}\n")
+        vtt_entries.append(f"{timestamp(elapsed+start)} --> {timestamp(elapsed+end)}\n{chunk}\n")
     destination = OUT / (name + ".mp4")
     command = ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pixel_format", "rgb24",
                "-video_size", "1920x1080", "-framerate", "4", "-i", "pipe:0", "-i", str(audio),
@@ -101,7 +120,8 @@ for scene in SCENES:
         # Keep real call progress in order, then hold the last view. Other static
         # groups are spread across the spoken scene to give each view reading time.
         index = min(len(shots)-1, int(i / (duration * 4) * len(shots)))
-        frame_path = shots[index]["file"]
+        shot = shots[index]
+        frame_path = CAPTURES / shot["scene"] / Path(shot["file"]).name
         if frame_path != cached_path:
             cached_image = Image.open(frame_path).convert("RGB")
             if cached_image.size != (1600, 900):
@@ -144,7 +164,8 @@ concat = OUT / "concat.txt"
 concat.write_text("\n".join(f"file '{s['id']}.mp4'" for s in SCENES) + "\n")
 master = ROOT / "docs/video/routewise-devpost.mp4"
 subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(concat),
-                "-c", "copy", "-movflags", "+faststart", str(master)], check=True)
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
+                "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-movflags", "+faststart", str(master)], check=True)
 (OUT / "routewise-devpost.srt").write_text("\n".join(subtitle_entries))
 (ROOT / "docs/video/captions.vtt").write_text("WEBVTT\n\n" + "\n".join(vtt_entries))
 manifest["duration_seconds"] = float(probe(master)["format"]["duration"])
@@ -152,7 +173,9 @@ manifest["sha256"] = hashlib.sha256(master.read_bytes()).hexdigest()
 manifest["bytes"] = master.stat().st_size
 manifest["file"] = "docs/video/routewise-devpost.mp4"
 manifest["live_trace"] = "docs/video/live-trace.json"
-manifest["code_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+manifest["audio_mastering"] = "Integrated loudness target -16 LUFS, true peak -1.5 dBTP"
+manifest["code_commit"] = PRODUCTION["capture_code_commit"]
+manifest["revision_note"] = PRODUCTION["note"]
 (ROOT / "docs/video/recording.json").write_text(json.dumps(manifest, indent=2) + "\n")
 assert manifest["duration_seconds"] < 180
 print(f"Finished: {master} ({manifest['duration_seconds']:.2f}s)", flush=True)
