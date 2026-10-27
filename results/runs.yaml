@@ -49,3 +49,13 @@ confirmation_studies:
       with no wrong answers released (current route: 153). On 312 separate representative conversations:
       98.4% correct without review, 100% task accuracy, $0.080 per 1k (23% below the M5 route); the
       deadline gate passed narrowly (4.9% upper bound) on a slower Nano serving day. All gates passed; adopted.
+  - run: valnoise-20261027T021106Z-4ef4da
+    role: M8 noise component (preregistered amendment)
+    display_milestone: M7  # Presentation label; original study key m8.
+    note: >-
+      The 679 sealed M6 confirmation conversations, run clean and with writing noise measured in the
+      user's de-identified mailbox (mostly dropped punctuation, lowercase messages and split turns;
+      misspellings are rare there). Noise changed no adopted-profile answer on the 312 representative
+      conversations and released no wrong answer on either set. N1, N3, N4 and N5 passed. N2 failed
+      on the 4 s deadline only (upper bound 15.9% noisy, 10.9% clean), so robustness is not shown under
+      the preregistered rule. Synthetic prose; not evidence about real conversations.

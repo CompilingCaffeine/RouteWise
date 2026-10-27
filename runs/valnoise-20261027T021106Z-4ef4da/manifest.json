@@ -1,0 +1,25 @@
+{
+  "experiment_id": "valnoise-20261027T021106Z-4ef4da",
+  "created_at": "2026-10-27T02:11:06.052815+00:00",
+  "git": {
+    "sha": "0024f2089f0a094d4156b6c72551288cec2712b1",
+    "dirty": true
+  },
+  "study": "m8",
+  "component": "noise",
+  "display_milestone": "M7",
+  "seal_sha256": "5a6a02b0be9dad3f9afcfd89e0814860c614a00b8b487b21494c459e45baf767",
+  "n_conversations": 679,
+  "n_expected_requests": 4074,
+  "arms": [
+    "adopted",
+    "previous",
+    "grounded_super"
+  ],
+  "order_seed": 3387733479,
+  "load": {
+    "concurrency": 4,
+    "rpm": 90
+  },
+  "budget_usd": 5.0
+}
