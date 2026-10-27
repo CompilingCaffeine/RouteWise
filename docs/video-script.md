@@ -1,22 +1,22 @@
 # Devpost video: savings first
 
-**Revision 4 · 1:38.82 · 1920 × 1080 · Neural narration and timed captions.**
+**Revision 5 · 1:40.32 · 1920 × 1080 · Neural narration and timed captions.**
 
 [Watch the new recording](video/routewise-devpost.mp4) · [Captions](video/captions.vtt) · [Recording details](video/README.md)
 
 The opening states the value proposition and leads with 77.1% lower inference usage cost versus grounded Super, followed by 98.4% correct completion without review and zero observed wrong releases on the same 312-conversation representative dataset. Results precede methodology. Independent human validation for this existing dataset is complete, based on the project owner’s direct confirmation; its synthetic provenance remains explicit.
 
-Only the opening footage was replaced in revision 4: the monthly extraction volume and projected costs/savings now appear at the top. Narration, timings, and all later scenes remain unchanged from revision 3, including its genuine recorded Nebius request. Historical study examples remain labelled RECORDED. Narration uses Microsoft Ava. The hosted app must contain this build before submission.
+Revision 5 replaces the confusing certainty sentence with: “If the benchmark can’t show that any setup meets your requirements, RouteWise makes no recommendation.” Only that scene’s narration, captions and duration changed. All other scene files and narration source tracks are unchanged from revision 4, including the opening calculator and the genuine recorded Nebius request. Historical study examples remain labelled RECORDED. Narration uses Microsoft Ava. The hosted app must contain this build before submission.
 
 | Time | Screen | Narration |
 |---|---|---|
 | 0:00–0:17 | 77.1% lower inference cost | RouteWise makes AI inference cheaper while enforcing your reliability requirements. In our benchmark, it cut inference cost by seventy-seven percent compared with grounded Super. That’s about eighty dollars instead of three hundred forty-nine per million requests. |
 | 0:17–0:31 | 98.4% correct without review. Zero wrong releases. | On the same three hundred twelve synthetic conversations, ninety-eight point four percent were completed correctly without review, with zero wrong answers released. Independent human validation is complete for this dataset. |
 | 0:31–0:49 | Benchmark first. Then route. | Not every request needs your most powerful model. We benchmark NVIDIA Nemotron models on Nebius Token Factory, using the same workload and declared accuracy and latency targets. Nano handles the easy cases; Super handles requests that fail validation. |
-| 0:49–0:59 | Choose the cheapest qualifying setup | Tighten the response-time target, and the recommendation switches to Super. Ask for more certainty than the data supports, and RouteWise recommends nothing. |
-| 0:59–1:10 | Correct dates. Hold ambiguous answers. | Reliability also means knowing when to stop. Here, the recorded route corrects a missing refund date from the store’s timestamp. An ambiguous date goes to human review. |
-| 1:10–1:20 | Fresh NVIDIA Nemotron call on Nebius | Here’s a fresh call to Nebius Token Factory. You can inspect the model’s raw response, the final answer, the checks, and the full request cost. |
-| 1:20–1:38 | Take the decision into your application | Download the chosen setup, requirements, and evidence. These savings cover inference usage; hosting and review cost extra. The dataset is synthetic, and a later noise test missed its latency target. RouteWise makes the savings, tradeoffs, and limits visible. |
+| 0:49–1:01 | Choose the cheapest qualifying setup | Tighten the response-time target, and the recommendation switches to Super. If the benchmark can’t show that any setup meets your requirements, RouteWise makes no recommendation. |
+| 1:01–1:12 | Correct dates. Hold ambiguous answers. | Reliability also means knowing when to stop. Here, the recorded route corrects a missing refund date from the store’s timestamp. An ambiguous date goes to human review. |
+| 1:12–1:22 | Fresh NVIDIA Nemotron call on Nebius | Here’s a fresh call to Nebius Token Factory. You can inspect the model’s raw response, the final answer, the checks, and the full request cost. |
+| 1:22–1:40 | Take the decision into your application | Download the chosen setup, requirements, and evidence. These savings cover inference usage; hosting and review cost extra. The dataset is synthetic, and a later noise test missed its latency target. RouteWise makes the savings, tradeoffs, and limits visible. |
 
 Before submitting:
 

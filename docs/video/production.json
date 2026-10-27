@@ -1,12 +1,12 @@
 {
-  "revision": 4,
-  "revision_date_pacific": "2026-10-26",
+  "revision": 5,
+  "revision_date_pacific": "2026-10-27",
   "voice": "en-US-AvaNeural",
   "rate": "+0%",
   "narration_description": "Microsoft Ava neural voice, computer-generated, conversational delivery at its natural rate",
   "audio_extension": ".mp3",
   "capture_code_commit": "4069c245a0084c880db243b6a2f12f5a7599e39e",
-  "note": "Only the opening footage was replaced to show monthly extraction volume and projected savings at the top. Narration, timing, and all remaining scenes are unchanged from revision 3.",
+  "note": "Replaced the confusing certainty sentence with the approved benchmark explanation. Only scene 04 narration and its synchronized captions/timing changed; all other scene files and narration tracks are retained from revision 4.",
   "capture_groups": {
     "04-choices": [
       "04-choices",

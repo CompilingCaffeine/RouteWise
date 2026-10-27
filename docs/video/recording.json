@@ -2,8 +2,8 @@
   "recording_date_pacific": "2026-10-26",
   "environment": "Local Streamlit app, real Nebius API",
   "narration": "Microsoft Ava neural voice, computer-generated, conversational delivery at its natural rate",
-  "revision": 4,
-  "revision_date_pacific": "2026-10-26",
+  "revision": 5,
+  "revision_date_pacific": "2026-10-27",
   "caption_timing": "Speech-service word boundaries; original script punctuation retained",
   "editing": "CUA viewport captures at 4 fps; cuts and held frames; narration added afterward",
   "resolution": [
@@ -50,18 +50,18 @@
       "id": "04-choices",
       "title": "Choose the cheapest qualifying setup",
       "start_seconds": 49.5,
-      "duration_seconds": 10.0,
+      "duration_seconds": 11.5,
       "capture_groups": [
         "04-choices",
         "04b-none"
       ],
       "source_code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
-      "narration_sha256": "94e6507f93ac8314505fec546e9ce52abbd5931cab2b7d70d27a1a41bc69897d"
+      "narration_sha256": "e9278dfb961c0b0d4f2373984e6c7453acf5148c4fc2607466d3280687e7caa8"
     },
     {
       "id": "05-reliability",
       "title": "Correct dates. Hold ambiguous answers.",
-      "start_seconds": 59.5,
+      "start_seconds": 61.0,
       "duration_seconds": 11.25,
       "capture_groups": [
         "05-reliability",
@@ -73,7 +73,7 @@
     {
       "id": "06-live",
       "title": "Fresh NVIDIA Nemotron call on Nebius",
-      "start_seconds": 70.75,
+      "start_seconds": 72.25,
       "duration_seconds": 9.75,
       "capture_groups": [
         "06-live",
@@ -86,7 +86,7 @@
     {
       "id": "07-export",
       "title": "Take the decision into your application",
-      "start_seconds": 80.5,
+      "start_seconds": 82.0,
       "duration_seconds": 18.25,
       "capture_groups": [
         "07-export",
@@ -96,18 +96,25 @@
       "narration_sha256": "297fbc4366fc1648a2f652961cd9f0752c7338db2b9ae78609372cd353d509b2"
     }
   ],
-  "duration_seconds": 98.821333,
-  "sha256": "d2e3d004434137b0f17c96b9102e0fa8fa17602140db9442960a98a3c04dff8e",
-  "bytes": 3690346,
+  "duration_seconds": 100.321333,
+  "sha256": "8b230457318ec19667006d12df52fed3c34a458f6f2f3f6c02493d06754aa5a7",
+  "bytes": 3849329,
   "file": "docs/video/routewise-devpost.mp4",
   "live_trace": "docs/video/live-trace.json",
   "audio_mastering": "Integrated loudness target -16 LUFS, true peak -1.5 dBTP",
   "code_commit": "4069c245a0084c880db243b6a2f12f5a7599e39e",
-  "revision_note": "Only the opening footage was replaced to show monthly extraction volume and projected savings at the top. Narration, timing, and all remaining scenes are unchanged from revision 3.",
+  "revision_note": "Replaced the confusing certainty sentence with the approved benchmark explanation. Only scene 04 narration and its synchronized captions/timing changed; all other scene files and narration tracks are retained from revision 4.",
   "preservation_verification": {
-    "compared_against_revision": 3,
-    "later_scenes_byte_identical": true,
-    "complete_audio_byte_identical": true,
-    "aac_audio_sha256": "10718609bb3ae7d000a58230164fb45f154c5ff10683e8a5e79dbefc0dcd95a7"
+    "compared_against_revision": 4,
+    "unchanged_scene_ids": [
+      "01-results",
+      "02-quality",
+      "03-method",
+      "05-reliability",
+      "06-live",
+      "07-export"
+    ],
+    "unchanged_scenes_byte_identical": true,
+    "other_narration_source_tracks_byte_identical": true
   }
 }

@@ -3,7 +3,7 @@
 [Play the video](routewise-devpost.mp4) · [Timed script](../video-script.md) ·
 [Captions](captions.vtt) · [Recording manifest](recording.json)
 
-**Revision 4: 1:38.82, 1920 × 1080, H.264 at 24 fps with AAC audio.** Recorded
+**Revision 5: 1:40.32, 1920 × 1080, H.264 at 24 fps with AAC audio.** Recorded
 October 26, 2026 (Pacific), using the updated local Streamlit app. Microsoft Ava
 provides computer-generated neural narration. Captions are burned into the
 picture and supplied as WebVTT, aligned to the speech service’s word timings.
@@ -22,12 +22,13 @@ failed latency gate remains explicit.
 
 ## Recording evidence
 
-Revision 4 replaces only the opening footage to show **Monthly extraction
-volume** and the projected cost/savings calculator at the top. All six later
-scene files are byte-identical to revision 3, and the complete AAC narration
-track is byte-identical. Duration and captions are unchanged. The calculator
-was checked at one million and two million requests; the eight adopted-demo
-UI tests passed.
+Revision 5 replaces the confusing certainty sentence with the approved wording:
+“If the benchmark can’t show that any setup meets your requirements, RouteWise
+makes no recommendation.” Only scene 04’s narration, synchronized captions and
+reading time changed. All six other scene files and their narration source
+tracks are byte-identical to revision 4. Later caption timestamps shift by
+1.5 seconds to accommodate the new line. The monthly savings calculator remains
+at the top in the opening footage.
 
 Footage uses CUA viewport captures at four frames/second with cuts and held
 views. Historical examples remain labelled RECORDED. The live segment retains
@@ -46,7 +47,7 @@ targets -16 LUFS integrated loudness and -1.5 dBTP. The final file hash, source
 commit and per-scene narration hashes are in `recording.json`.
 
 The final video, script, trace and metadata are versioned. Local source captures,
-word timing and narration tracks are in `artifacts/video/source-captures-v4.tar.gz`
+word timing and narration tracks are in `artifacts/video/source-captures-v5.tar.gz`
 (intentionally ignored). Earlier cuts are retained in `artifacts/video/revisions/`
 and Git history. No YouTube upload or final submission has been performed.
 
@@ -55,11 +56,11 @@ and Git history. No YouTube upload or final submission has been performed.
 Restore the source archive to a writable directory, then run:
 
 ```bash
-.venv/bin/python docs/video/render.py /private/tmp/routewise-video-v4
+.venv/bin/python docs/video/render.py /private/tmp/routewise-video-v5
 ```
 
 The renderer needs Pillow, ffmpeg and ffprobe. To regenerate speech, install
 [edge-tts](https://github.com/rany2/edge-tts) in a separate authoring environment and
-run `python docs/video/synthesize.py /private/tmp/routewise-video-v4`. Voice and
+run `python docs/video/synthesize.py /private/tmp/routewise-video-v5`. Voice and
 capture-group settings are in `production.json`. Only the public narration text
 is sent to Microsoft’s speech service.

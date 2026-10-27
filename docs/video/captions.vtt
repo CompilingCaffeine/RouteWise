@@ -45,44 +45,44 @@ validation.
 00:00:49.600 --> 00:00:53.712
 Tighten the response-time target, and the recommendation switches to Super.
 
-00:00:54.075 --> 00:00:57.612
-Ask for more certainty than the data supports, and RouteWise
+00:00:54.075 --> 00:00:56.938
+If the benchmark can’t show that any setup meets your
 
-00:00:57.625 --> 00:00:58.725
-recommends nothing.
+00:00:56.950 --> 00:01:00.250
+requirements, RouteWise makes no recommendation.
 
-00:00:59.600 --> 00:01:02.050
+00:01:01.100 --> 00:01:03.550
 Reliability also means knowing when to stop.
 
-00:01:02.412 --> 00:01:05.812
+00:01:03.912 --> 00:01:07.312
 Here, the recorded route corrects a missing refund date from
 
-00:01:05.825 --> 00:01:07.025
+00:01:07.325 --> 00:01:08.525
 the store’s timestamp.
 
-00:01:07.388 --> 00:01:09.950
+00:01:08.888 --> 00:01:11.450
 An ambiguous date goes to human review.
 
-00:01:10.850 --> 00:01:13.575
+00:01:12.350 --> 00:01:15.075
 Here’s a fresh call to Nebius Token Factory.
 
-00:01:13.938 --> 00:01:17.300
+00:01:15.438 --> 00:01:18.800
 You can inspect the model’s raw response, the final answer,
 
-00:01:17.538 --> 00:01:19.812
+00:01:19.038 --> 00:01:21.312
 the checks, and the full request cost.
 
-00:01:20.600 --> 00:01:24.012
+00:01:22.100 --> 00:01:25.512
 Download the chosen setup, requirements, and evidence.
 
-00:01:24.375 --> 00:01:28.925
+00:01:25.875 --> 00:01:30.425
 These savings cover inference usage; hosting and review cost extra.
 
-00:01:29.288 --> 00:01:32.712
+00:01:30.788 --> 00:01:34.212
 The dataset is synthetic, and a later noise test missed
 
-00:01:32.725 --> 00:01:33.800
+00:01:34.225 --> 00:01:35.300
 its latency target.
 
-00:01:34.162 --> 00:01:38.000
+00:01:35.662 --> 00:01:39.500
 RouteWise makes the savings, tradeoffs, and limits visible.

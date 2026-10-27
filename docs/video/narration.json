@@ -17,7 +17,7 @@
   {
     "id": "04-choices",
     "title": "Choose the cheapest qualifying setup",
-    "narration": "Tighten the response-time target, and the recommendation switches to Super. Ask for more certainty than the data supports, and RouteWise recommends nothing."
+    "narration": "Tighten the response-time target, and the recommendation switches to Super. If the benchmark can’t show that any setup meets your requirements, RouteWise makes no recommendation."
   },
   {
     "id": "05-reliability",
