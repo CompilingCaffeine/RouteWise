@@ -22,8 +22,8 @@ with st.container(border=True):
     st.markdown(
         "**Hypothesis under test** — for a structured information-extraction workload, RouteWise reduces total "
     "inference cost while meeting a stated quality target. The original experiment used smallest/strongest "
-    "baselines; M5 adds Super and grounded fixed-model controls on fresh data, and M6 adds deterministic "
-    "relative-date recovery."
+    "baselines; M5 adds Super and grounded fixed-model controls on fresh data, M6 adds deterministic "
+    "relative-date recovery, and M7 tests the adopted profile against writing noise measured in a real support mailbox."
     )
 
 confirmations = [r for r in artifacts.list_runs('confirmation') if (r.path/'summary.json').exists()
@@ -73,6 +73,31 @@ if recoveries:
     st.caption(f"{ch[cand]['n']} fresh relative-date conversations ({ch[cand]['n_review_required']} deliberately "
                f"ambiguous, which must go to review) and {rep[cand]['n']} representative conversations, evaluated "
                'separately. Preregistered gates; synthetic, agent-reviewed data. Details under Experiments → M6.')
+
+noise_runs = [r for r in artifacts.list_runs('valnoise') if (r.path/'summary.json').exists()
+              and artifacts.load_json(r.path/'summary.json').get('complete')]
+if noise_runs:
+    nz = artifacts.load_json(noise_runs[0].path/'summary.json')
+    nrep, nch, dec = nz['metrics']['representative'], nz['metrics']['challenge'], nz['decision']
+    changed = dec['detail']['N3_cac_noisy_minus_clean']
+    latency_only = [k for k, ok in dec['checks'].items() if not ok] == ['N2'] \
+        and nrep['clean']['adopted']['deadline_miss_upper95'] > .05
+    st.subheader('Real-world writing noise · M7')
+    status_badge(dec['robust'], 'Robust to the measured noise',
+                 'Answers unchanged by noise; not shown robust (4 s deadline, also missed when clean)' if latency_only
+                 else 'Not shown robust under the preregistered rule')
+    cols = st.columns(3)
+    cols[0].metric('Answers changed by noise (representative)', changed['a_only'] + changed['b_only'],
+                   f"of {nrep['noisy']['adopted']['n']}", delta_color='off')
+    cols[1].metric('Wrong answers released with noise', nrep['noisy']['adopted']['undetected_errors']
+                   + nch['noisy']['adopted']['undetected_errors'],
+                   f"{nrep['noisy']['adopted']['n'] + nch['noisy']['adopted']['n']} conversations", delta_color='off')
+    cols[2].metric('Requests over 4 s (representative)', nrep['noisy']['adopted']['deadline_misses'],
+                   f"{nrep['noisy']['adopted']['deadline_misses'] - nrep['clean']['adopted']['deadline_misses']:+d} vs clean",
+                   delta_color='inverse')
+    st.caption('Noise rates were measured offline in a real, de-identified support mailbox (aggregates only) and '
+               'injected into the sealed M6 conversations without changing their labels. Synthetic prose; not evidence '
+               'about real conversations. Details under Experiments → M7.')
 
 if latest_eval and (latest_eval.path / "summary.json").exists():
     summary = artifacts.load_json(latest_eval.path / "summary.json")

@@ -11,14 +11,152 @@ st.title("Experiments")
 st.markdown("What each experiment taught us about quality, latency and cost. "
             "The comparisons below explain which changes are worth using.")
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "M1 · Where does latency go?",
     "M2 · Latency under load",
     "M3 · Can we predict failures?",
     "M4 · Is validation worth it?",
     "M5 · Grounding + escalation",
     "M6 · Relative-date recovery",
+    "M7 · Real-world writing noise",
 ])
+
+NOISE_ARMS = {'adopted': 'Adopted profile (M6 date normalization)', 'previous': 'Previous profile (M5 route)',
+              'grounded_super': 'Grounded Super'}
+NOISE_GATES = {
+    'N1': 'Noisy representative: wrong answers released, 95% upper bound ≤ 2%',
+    'N2': 'Noisy representative: 95% accuracy and field gates, 4 s deadline, complete cost',
+    'N3': 'Noisy − clean: no loss of correct answers (−2 pts) or rise in wrong releases (+1 pt)',
+    'N4': 'Noisy: no worse than the M5 route (−2 / +1 pts) and cheaper than grounded Super',
+    'N5': 'Noisy − clean, challenge set: wrong releases rise by at most 2 points',
+}
+NOISE_FEATURES = [  # (feature, label, unit)
+    ('no_terminal_punctuation', 'No final punctuation', 'messages'),
+    ('spaced_hyphen', '" - " instead of a dash', 'dashes'),
+    ('message_all_lowercase', 'All-lowercase message', 'messages'),
+    ('split_message', 'Message split over several turns', 'messages'),
+    ('apostrophe_drop', 'Dropped apostrophe ("dont")', 'contractions'),
+    ('emoticon', 'Emoji or emoticon', 'messages'),
+    ('misspelling', 'Misspelled word', 'words of 4+ letters'),
+]
+
+
+def noise_rows(metrics: dict) -> list[dict]:
+    rows = []
+    for arm, label in NOISE_ARMS.items():
+        c, n = metrics['clean'][arm], metrics['noisy'][arm]
+        rows.append({
+            'route': label,
+            'correct, no review': f"{pct(c['cac_rate'])} → {pct(n['cac_rate'])}",
+            'wrong answers released': f"{c['undetected_errors']} → {n['undetected_errors']}",
+            'task accuracy': f"{pct(c['task_accuracy'])} → {pct(n['task_accuracy'])}",
+            '$ / 1k': f"{money(c['cost_per_1k_tasks'], 3)} → {money(n['cost_per_1k_tasks'], 3)}",
+            '> 4 s': f"{c['deadline_misses']} → {n['deadline_misses']}",
+        })
+    return rows
+
+
+def noise_example(root) -> tuple[str, str, list[str]] | None:
+    """The representative conversation whose rewrite shows the most kinds of noise (synthetic text only)."""
+    import json
+    data, base = root/'data/v6', root/'data/v5/confirm'
+    if not (data/'edits.jsonl').exists():
+        return None
+    kinds: dict[str, set] = {}
+    for line in (data/'edits.jsonl').read_text().splitlines():
+        e = json.loads(line)
+        if e['id'].startswith('v5r-'):
+            kinds.setdefault(e['id'], set()).add(e['kind'])
+    if not kinds:
+        return None
+    best = min(kinds, key=lambda i: (-len(kinds[i]), i))
+    clean = next(json.loads(x) for x in (base/'examples.jsonl').read_text().splitlines() if f'"{best}"' in x)
+    noisy = next(json.loads(x) for x in (data/'examples.jsonl').read_text().splitlines() if f'"{best}~noisy"' in x)
+    return clean['input'], noisy['input'], sorted(kinds[best])
+
+
+with tab7:
+    root = artifacts.artifacts_root()
+    runs = [r for r in artifacts.list_runs('valnoise') if r.manifest.get('study') == 'm8'
+            and (r.path/'summary.json').exists()]
+    if not runs or not (root/'data/v6/MANIFEST.json').exists():
+        st.info('The M7 noise run has not been completed yet.')
+    else:
+        s = artifacts.load_json(runs[0].path/'summary.json')
+        manifest = artifacts.load_json(root/'data/v6/MANIFEST.json')
+        profile = artifacts.load_json(root/'data/v6/noise-profile.json')
+        rep, ch = s['metrics']['representative'], s['metrics']['challenge']
+        d = s['decision']
+        clean = rep['clean']['adopted']
+        latency_only = bool(d) and [k for k, ok in d['checks'].items() if not ok] == ['N2'] \
+            and clean['deadline_miss_upper95'] > .05 and clean['accuracy_lower95'] >= .95
+        st.subheader('Does real-world writing noise change the adopted profile\'s answers?')
+        st.markdown(f"We measured how people actually write in a real support mailbox ({profile['conversations']:,} "
+                    "conversations, de-identified and analyzed offline; only aggregate rates left the machine). Then we "
+                    f"rewrote the {manifest['n_conversations']} sealed M6 test conversations at those rates and ran every route "
+                    "on both copies. Labels are unchanged: amounts, codes, dates written with digits and timestamps are never edited.")
+        if d and d['robust']:
+            st.success('Robust to the measured noise: every preregistered check passed.')
+        elif d:
+            failed = [k for k, ok in d['checks'].items() if not ok]
+            if latency_only:
+                st.warning("Noise changed none of the adopted profile's representative answers, but robustness is not "
+                           "shown under the preregistered rule: N2 failed on the 4-second deadline, which the clean "
+                           "copies also missed on the same run.")
+            else:
+                st.warning('Robustness is not shown under the preregistered rule: ' + ', '.join(failed) + ' failed.')
+        paired = d['detail']['N3_cac_noisy_minus_clean'] if d else None
+        cols = st.columns(3)
+        cols[0].metric('Answers changed by noise, representative', paired['a_only'] + paired['b_only'] if paired else '–',
+                       f"of {rep['noisy']['adopted']['n']}", delta_color='off')
+        cols[1].metric('Wrong answers released, noisy', rep['noisy']['adopted']['undetected_errors'] +
+                       ch['noisy']['adopted']['undetected_errors'],
+                       f"{rep['noisy']['adopted']['n'] + ch['noisy']['adopted']['n']} conversations", delta_color='off')
+        cols[2].metric('Requests over 4 s, representative', rep['noisy']['adopted']['deadline_misses'],
+                       f"{rep['noisy']['adopted']['deadline_misses'] - rep['clean']['adopted']['deadline_misses']:+d} vs clean",
+                       delta_color='inverse')
+        st.markdown('**What real writing looks like** · rate in the mailbox vs. the model-written test text')
+        cal = manifest['calibration']
+        st.dataframe([{
+            'feature': label, 'customers': pct(cal['Customer'][f]['workload'], 2 if f == 'misspelling' else 1),
+            'agents': pct(cal['Agent'][f]['workload'], 2 if f == 'misspelling' else 1),
+            'clean test text (customers)': pct(cal['Customer'][f]['clean'], 2 if f == 'misspelling' else 1),
+            'noisy test text (customers)': pct(cal['Customer'][f]['noisy'], 2 if f == 'misspelling' else 1),
+            'share of': unit} for f, label, unit in NOISE_FEATURES], hide_index=True, width='stretch')
+        st.caption(f"{sum(manifest['edits_by_kind'].values()):,} edits in total. Real writing is mostly structural noise: "
+                   "missing punctuation, lowercase messages and fragmented turns. Misspellings are rare in this mailbox, so "
+                   f"only {manifest['edits_by_kind'].get('misspelling', 0)} were injected; heavy misspelling is not tested here.")
+        st.markdown(f"**Representative workload** · {rep['clean']['adopted']['n']} conversations · clean → noisy")
+        st.dataframe(noise_rows(rep), hide_index=True, width='stretch')
+        st.markdown(f"**Relative-date challenge set** · {ch['clean']['adopted']['n']} conversations "
+                    f"({ch['clean']['adopted']['n_review_required']} require review) · clean → noisy")
+        st.dataframe(noise_rows(ch), hide_index=True, width='stretch')
+        if d:
+            st.dataframe([{'preregistered check': NOISE_GATES[k], 'result': '✓ pass' if ok else '✗ fail'}
+                          for k, ok in d['checks'].items()], hide_index=True, width='stretch')
+        agree = s['issue_date_analyzer']
+        n_agree = sum(agree[sp]['noisy'].get('agree', 0) for sp in agree)
+        n_all = sum(sum(agree[sp]['noisy'].values()) for sp in agree)
+        st.markdown(f"- **Date reading held.** The deterministic issue-date analyzer agreed with the label on {n_agree} of "
+                    f"{n_all} noisy conversations.\n"
+                    "- **The model-only routes moved a little in both directions**, within sampling variation; the adopted "
+                    "profile was the most stable." + (
+                        "\n- **The failed check is latency, not noise.** Nano served slowly on the run day; the clean "
+                        "copies also exceeded the 5% bound for requests over 4 seconds." if latency_only else ""))
+        example = noise_example(root)
+        if example:
+            with st.expander('See one conversation before and after'):
+                left, right = st.columns(2)
+                left.markdown('**Clean (model-written)**')
+                left.code(example[0], language=None, wrap_lines=True)
+                right.markdown('**With measured noise**')
+                right.code(example[1], language=None, wrap_lines=True)
+                st.caption('Edits: ' + ', '.join(k.replace('_', ' ') for k in example[2]) + '. Same label for both.')
+        st.caption(f"Synthetic conversations with agent-reviewed labels; only the noise comes from real writing. This is "
+                   f"not evidence about real conversations; the human-labelled M7 pilot is still to come. Run {s['run']}; "
+                   "internal study key m8.")
+        st.markdown('[Protocol amendment](https://github.com/CompilingCaffeine/RouteWise/blob/main/experiments/M8-workload-validation.md#amendments) · '
+                    '[Full report](https://github.com/CompilingCaffeine/RouteWise/blob/main/results/M8-noise-report.md)')
 
 with tab6:
     runs = [r for r in artifacts.list_runs('datesconfirm') if r.manifest.get('study') == 'm7'

@@ -70,6 +70,26 @@ On development data both reached the same accuracy, but the fallback cost 1.5–
 
 The primary improvement was +44.7 points (95% CI 39.5–49.6, preregistered threshold +10). All four safety gates passed, and normalization is now the deployed extraction profile. Every one of its challenge-set reviews was a deliberately ambiguous case, and it answered all 277 answerable challenge conversations correctly. The 4-second deadline gate passed narrowly on a day when Nano served more slowly than during M5. M6 used $5.48 of known priced API usage. Full results: `results/M7-report.md`.
 
+### M7: real-world writing noise
+
+Model-written test conversations are cleaner than real support chat. To measure the gap without exposing customer data, we profiled every eligible conversation in a real support mailbox (1,386 conversations) offline, after local de-identification. Only aggregate rates per speaker role left the machine, after a person approved them by hash. No mailbox text was sent to any model.
+
+Real writing turned out to be mostly structural noise. Customers left 64% of messages without final punctuation, wrote 15% entirely in lowercase, dropped the apostrophe in 12.5% of contractions, and split 13% of messages across several turns. Misspellings were rare: 0.23% of words.
+
+A seeded channel rewrote the 679 sealed M6 conversations at those rates. It never edits amounts, codes, digits, timestamps or speaker roles, so every label stays exact. All three routes ran on both copies: 4,074 requests, costing $0.79. The checks were preregistered before any noisy text existed.
+
+| Representative (312), clean → noisy | Correct, no review | Wrong answers released | Requests over 4 s |
+|---|---:|---:|---:|
+| **Adopted profile** | **98.4% → 98.4%** | **0 → 0** | 25 → 39 |
+| M5 route | 96.8% → 96.8% | 0 → 0 | 30 → 40 |
+| Grounded Super | 96.5% → 96.2% | 0 → 1 | 7 → 7 |
+
+- **Answers held.** Noise changed none of the adopted profile's 312 representative answers. It released no wrong answer on the 367 date-challenge conversations either, and the deterministic date analyzer read all 679 noisy conversations correctly.
+- **Four of five preregistered checks passed.** The fifth failed on the 4-second deadline. Nano served slowly that day, and the clean copies failed the same bound. Under the preregistered rule, robustness is therefore not shown.
+- **Heavy misspelling is untested**, because this mailbox rarely misspells.
+
+Full results: `results/M8-noise-report.md`.
+
 ## How we built it
 
 All model inference, synthetic writing and reasoning verification run on Nebius Token Factory with NVIDIA Nemotron 3 Nano, Super and Ultra. The OpenAI-compatible Python SDK handles requests; no OpenAI model inference is used. Structured JSON output, model-specific reasoning controls, cached-token usage and live published prices are recorded.
@@ -91,16 +111,17 @@ Refund issue dates and arrival dates are different facts. M5 uses explicitly bou
 - The best configuration may be a fixed model. The product should recommend the measured choice and expose uncertainty.
 - Count reviews and wrong releases separately. The M5 route's validator released null for "in 3 business days" and "this Friday", wrong answers it could not see. Measuring correct autonomous completions per incoming request kept "send more to review" from looking like an improvement.
 - When a deterministic check already knows the answer, use it. A reasoning fallback matched normalization's development accuracy at several times the cost and latency.
+- Measure real noise before simulating it. In one support mailbox, missing punctuation, lowercase writing and fragmented turns were common, while misspellings were rare. At those rates, the deterministic date reader did not change a single answer.
 
 ## Limits and next steps
 
-The benchmark prose is synthetic and model-written. Labels come from fact sheets and source checks; adjudication was done by a coding agent, not a human domain expert. Explicit fact statements improve label defensibility but narrow language diversity. All six errors from the M5 route were relative-date failures flagged by validation. That family scored 12/18 correct, and the family-cluster sensitivity interval is 94.2–100%, crossing the target. M6 addresses that family on a separate challenge set. However, the study author fixed its expression inventory, and the one family with writer-chosen wording kept only 7 conversations, so arbitrary customer phrasing is still untested. Three same-day time windows are not multi-day availability evidence.
+The benchmark prose is synthetic and model-written. Labels come from fact sheets and source checks; adjudication was done by a coding agent, not a human domain expert. Explicit fact statements improve label defensibility but narrow language diversity. All six errors from the M5 route were relative-date failures flagged by validation. That family scored 12/18 correct, and the family-cluster sensitivity interval is 94.2–100%, crossing the target. M6 addresses that family on a separate challenge set. However, the study author fixed its expression inventory, and the one family with writer-chosen wording kept only 7 conversations, so arbitrary customer phrasing is still untested. Three same-day time windows are not multi-day availability evidence. M7 adds writing noise measured in a real mailbox, but the conversations remain synthetic, so it is not evidence about real customer language or human labels. The 4-second deadline also remains open: it passed narrowly in M6 and failed on a slow serving day in M7, for clean and noisy copies alike.
 
 The next validation step is independently labelled, de-identified customer conversations, followed by multi-day measurements at realistic arrival rates. The import workflow is built so a team can perform that evaluation on its own workload.
 
 ## What changed during this build
 
-We implemented workload import and separate validation, source-grounded extraction, actual early answer delivery with complete hedge billing, a confidence-aware optimizer, matched fixed-model controls, fresh semantic verification and auditable experiment seals. The original result, experiment protocols and complete audit records remain available in the repository.
+We implemented workload import and separate validation, offline noise profiling of a private mailbox (aggregates only), source-grounded extraction, actual early answer delivery with complete hedge billing, a confidence-aware optimizer, matched fixed-model controls, fresh semantic verification and auditable experiment seals. The original result, experiment protocols and complete audit records remain available in the repository.
 
 ## Feedback on Nebius Token Factory, AI Cloud and NVIDIA models
 
@@ -110,7 +131,7 @@ We implemented workload import and separate validation, source-grounded extracti
 - **`/v1/models?verbose=true`.** It returns machine-readable per-token prices, including cached-input prices, plus context length and features. We used it as the *only* price source, so all costs are computed from live published prices rather than typed by hand.
 - **JSON-schema constrained output.** Successful extraction completions in our probes and production benchmarks were schema-valid JSON.
 - **Detailed usage blocks.** They include cached-token counts, and informative `x-ratelimit-*` headers came back on every response.
-- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5 and M6 costs are separately reported with all traces.
+- **Low cost.** Nemotron 3 Nano at $0.06 / $0.24 per million input/output tokens kept the original 10,843 calls behind v1/M1–M4 at about $6. M5, M6 and M7 costs are separately reported with all traces.
 
 **Friction we hit**
 
