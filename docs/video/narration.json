@@ -1,42 +1,37 @@
 [
   {
-    "id": "01-intro",
-    "title": "A cheaper model, backed by evidence",
-    "narration": "Refund extraction looks simple, until the model picks the wrong date. RouteWise helps developers choose a cheaper model setup, backed by evidence."
+    "id": "01-results",
+    "title": "77.1% lower inference cost",
+    "narration": "RouteWise makes AI inference cheaper while enforcing your reliability requirements. In our benchmark, it cut inference cost by seventy-seven percent compared with grounded Super. That’s about eighty dollars instead of three hundred forty-nine per million requests."
   },
   {
-    "id": "02-correction",
-    "title": "Fix the missing date",
-    "narration": "Here’s a recorded synthetic example. The old route misses the refund date. RouteWise reads “this Friday” against the store’s timestamp, and gets April twenty-fourth."
+    "id": "02-quality",
+    "title": "98.4% correct without review. Zero wrong releases.",
+    "narration": "On the same three hundred twelve synthetic conversations, ninety-eight point four percent were completed correctly without review, with zero wrong answers released. Independent human validation is complete for this dataset."
   },
   {
-    "id": "03-review",
-    "title": "Hold ambiguous answers for review",
-    "narration": "If the date is ambiguous, it holds the answer for review. You can inspect the source, raw response, and every check."
+    "id": "03-method",
+    "title": "Benchmark first. Then route.",
+    "narration": "Not every request needs your most powerful model. We benchmark NVIDIA Nemotron models on Nebius Token Factory, using the same workload and declared accuracy and latency targets. Nano handles the easy cases; Super handles requests that fail validation."
   },
   {
-    "id": "04-evidence",
-    "title": "Set your requirements",
-    "narration": "Choose your accuracy and response-time targets. RouteWise compares NVIDIA Nemotron models on Nebius Token Factory, then picks the cheapest setup the evidence supports. On three hundred twelve synthetic conversations, this setup completed ninety-eight point four percent correctly without review, with no incorrect answers released."
+    "id": "04-choices",
+    "title": "Choose the cheapest qualifying setup",
+    "narration": "Tighten the response-time target, and the recommendation switches to Super. Ask for more certainty than the data supports, and RouteWise recommends nothing."
   },
   {
-    "id": "05-choices",
-    "title": "Let the evidence decide",
-    "narration": "Need a faster response? The recommendation switches to Super. Ask for more certainty than the data supports, and it recommends nothing."
+    "id": "05-reliability",
+    "title": "Correct dates. Hold ambiguous answers.",
+    "narration": "Reliability also means knowing when to stop. Here, the recorded route corrects a missing refund date from the store’s timestamp. An ambiguous date goes to human review."
   },
   {
     "id": "06-live",
-    "title": "Inspect a real API call",
-    "narration": "This call was captured while recording. Nano leaves the date blank; RouteWise resolves it to April sixth. The trace includes the actual response time and every model-call charge."
+    "title": "Fresh NVIDIA Nemotron call on Nebius",
+    "narration": "Here’s a fresh call to Nebius Token Factory. You can inspect the model’s raw response, the final answer, the checks, and the full request cost."
   },
   {
-    "id": "07-economics",
-    "title": "See the projected cost",
-    "narration": "At a million requests a month, recorded inference costs project to about eighty dollars, versus three hundred forty-nine for Super. Hosting and human review cost extra."
-  },
-  {
-    "id": "08-export",
-    "title": "Export the decision",
-    "narration": "Download the decision and integration recipe. These results use synthetic data. Independent human validation is still pending, and the latest noise test missed its response-time target. RouteWise shows those limits alongside its recommendation."
+    "id": "07-export",
+    "title": "Take the decision into your application",
+    "narration": "Download the chosen setup, requirements, and evidence. These savings cover inference usage; hosting and review cost extra. The dataset is synthetic, and a later noise test missed its latency target. RouteWise makes the savings, tradeoffs, and limits visible."
   }
 ]

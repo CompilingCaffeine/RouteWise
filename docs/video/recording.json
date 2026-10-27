@@ -2,7 +2,7 @@
   "recording_date_pacific": "2026-10-26",
   "environment": "Local Streamlit app, real Nebius API",
   "narration": "Microsoft Ava neural voice, computer-generated, conversational delivery at its natural rate",
-  "revision": 2,
+  "revision": 3,
   "revision_date_pacific": "2026-10-26",
   "caption_timing": "Speech-service word boundaries; original script punctuation retained",
   "editing": "CUA viewport captures at 4 fps; cuts and held frames; narration added afterward",
@@ -14,96 +14,87 @@
   "published": false,
   "scenes": [
     {
-      "id": "01-intro",
-      "title": "A cheaper model, backed by evidence",
+      "id": "01-results",
+      "title": "77.1% lower inference cost",
       "start_seconds": 0.0,
-      "duration_seconds": 9.5,
+      "duration_seconds": 17.0,
       "capture_groups": [
-        "01-intro"
+        "01-results"
       ],
-      "narration_sha256": "47f2850914ee42b2c6580366b739febdea101d379a984800f917b00a35d8a4f4"
+      "narration_sha256": "c0b589e5f13d10a6c6c06b768ad8215c4c978a505f0873894b005d175258827a"
     },
     {
-      "id": "02-correction",
-      "title": "Fix the missing date",
-      "start_seconds": 9.5,
-      "duration_seconds": 11.0,
+      "id": "02-quality",
+      "title": "98.4% correct without review. Zero wrong releases.",
+      "start_seconds": 17.0,
+      "duration_seconds": 14.25,
       "capture_groups": [
-        "02-correction"
+        "02-quality"
       ],
-      "narration_sha256": "ee1686c7b74cc9b69c88f413343b4cc0f6c847160653ed74c3497a58cf302036"
+      "narration_sha256": "a9770aa35f6a7f438813052119a80d65bbe741b74f938f549d9f14c8849c5e45"
     },
     {
-      "id": "03-review",
-      "title": "Hold ambiguous answers for review",
-      "start_seconds": 20.5,
-      "duration_seconds": 8.25,
+      "id": "03-method",
+      "title": "Benchmark first. Then route.",
+      "start_seconds": 31.25,
+      "duration_seconds": 18.25,
       "capture_groups": [
-        "03-review"
+        "03-method"
       ],
-      "narration_sha256": "2aad3330f4337178768316b4cb2d00f2277806efcfa80aaabd96a86aa554096a"
+      "narration_sha256": "be4ffc52a0320487b40225fcd36e5cbf3605cc593ab4325f5cdd5a6da0e22f7c"
     },
     {
-      "id": "04-evidence",
-      "title": "Set your requirements",
-      "start_seconds": 28.75,
-      "duration_seconds": 22.0,
+      "id": "04-choices",
+      "title": "Choose the cheapest qualifying setup",
+      "start_seconds": 49.5,
+      "duration_seconds": 10.0,
       "capture_groups": [
-        "04-evidence"
+        "04-choices",
+        "04b-none"
       ],
-      "narration_sha256": "6baac2c0bcd4948551062a8268aba9540bc73250527a3b3d2cf45744d8fad59b"
+      "narration_sha256": "94e6507f93ac8314505fec546e9ce52abbd5931cab2b7d70d27a1a41bc69897d"
     },
     {
-      "id": "05-choices",
-      "title": "Let the evidence decide",
-      "start_seconds": 50.75,
-      "duration_seconds": 9.25,
+      "id": "05-reliability",
+      "title": "Correct dates. Hold ambiguous answers.",
+      "start_seconds": 59.5,
+      "duration_seconds": 11.25,
       "capture_groups": [
-        "05-choices",
-        "05b-none"
+        "05-reliability",
+        "05b-review"
       ],
-      "narration_sha256": "a42e9737d8b8e2c41335c048c4af3ba88f62f1ac4ebdb9c65115d7d5c82f728f"
+      "narration_sha256": "1f54f0dd42b0999b91a35151bc9217ad0eafc5f010b40c9d6e5bdbb583859f25"
     },
     {
       "id": "06-live",
-      "title": "Inspect a real API call",
-      "start_seconds": 60.0,
-      "duration_seconds": 12.5,
+      "title": "Fresh NVIDIA Nemotron call on Nebius",
+      "start_seconds": 70.75,
+      "duration_seconds": 9.75,
       "capture_groups": [
         "06-live",
-        "06c-live-final",
-        "06b-live-result"
+        "06b-result",
+        "06c-raw"
       ],
-      "narration_sha256": "a2a6851bf220f8505cae1e63891ac568081f4a6c5a775b1d0ac8549c284232dd"
+      "narration_sha256": "f6a94689c7d78dda725e4d8b7502d40c6e9366036f29330aa28606c2fde6336c"
     },
     {
-      "id": "07-economics",
-      "title": "See the projected cost",
-      "start_seconds": 72.5,
-      "duration_seconds": 11.5,
+      "id": "07-export",
+      "title": "Take the decision into your application",
+      "start_seconds": 80.5,
+      "duration_seconds": 18.25,
       "capture_groups": [
-        "07-economics"
+        "07-export",
+        "07b-limits"
       ],
-      "narration_sha256": "f3cad7d416a7397721c23b062613711ccfbbba2b71d45e3e05c7c27bc14efb7a"
-    },
-    {
-      "id": "08-export",
-      "title": "Export the decision",
-      "start_seconds": 84.0,
-      "duration_seconds": 16.25,
-      "capture_groups": [
-        "08-export",
-        "08b-limits"
-      ],
-      "narration_sha256": "30b8bf3ebee5feb5fae18771ae3823957ba479ed037d8b58ca23bb49e7296ce1"
+      "narration_sha256": "297fbc4366fc1648a2f652961cd9f0752c7338db2b9ae78609372cd353d509b2"
     }
   ],
-  "duration_seconds": 100.321333,
-  "sha256": "88850ed261d3923d3db85d35c1d99a389a678320aecea32ab4d11aaab12f1d7c",
-  "bytes": 3708371,
+  "duration_seconds": 98.821333,
+  "sha256": "b88a5b0c6ce1e8bc00c5989492f7f261ea6c7894f35d426c57642f5d0fd56c04",
+  "bytes": 3716456,
   "file": "docs/video/routewise-devpost.mp4",
   "live_trace": "docs/video/live-trace.json",
   "audio_mastering": "Integrated loudness target -16 LUFS, true peak -1.5 dBTP",
-  "code_commit": "d44c6c0360ca2f163b3835db4eb989167421799b",
-  "revision_note": "Shorter script and neural narration over the original October 26 footage; the API call is the original recorded call, not a new inference request."
+  "code_commit": "ac27992ce5e41b64ecb430f8a0a3c02cb2e78d29",
+  "revision_note": "New recording of the results-first guided app with a fresh real Nebius call. Independent human validation of the existing representative dataset was confirmed by the project owner."
 }

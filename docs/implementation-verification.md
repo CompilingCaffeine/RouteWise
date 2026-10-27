@@ -30,4 +30,4 @@ The offline [rules-only diagnostic](../results/rules-only-report.md) used all 67
 
 The project owner subsequently confirmed independent human validation of the existing 312-conversation representative dataset; see the [validation status](dataset-validation.md). A separate fresh-customer pilot still needs de-identified conversations, independent labelers and an adjudicator. No new pilot outcome is claimed. Use the [pilot handoff](validation-pilot-handoff.md).
 
-The subsequent October 26 git/video cleanup produced the [1:40 recording](video/routewise-devpost.mp4) and [updated script](video-script.md). Deploy the reviewed changes, verify the public app in a fresh session, and upload the recording publicly to YouTube. No public deployment, external Devpost edit or video publication has been performed.
+The subsequent October 26 git/video cleanup produced the [1:39 recording](video/routewise-devpost.mp4) and [updated script](video-script.md). Deploy the reviewed changes, verify the public app in a fresh session, and upload the recording publicly to YouTube. No public deployment, external Devpost edit or video publication has been performed.

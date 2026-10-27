@@ -3,67 +3,58 @@
 [Play the video](routewise-devpost.mp4) · [Timed script](../video-script.md) ·
 [Captions](captions.vtt) · [Recording manifest](recording.json)
 
-Recorded October 26, 2026 (Pacific). Duration **100.32 seconds**, 1920 × 1080,
-H.264 video at 24 fps with AAC audio. Captions are burned into the picture and
-also provided as WebVTT. Narration uses Microsoft’s Ava neural voice at its natural speaking rate. It is
-computer-generated, not a recording of the project author.
-There is no music.
+**Revision 3: 1:38.82, 1920 × 1080, H.264 at 24 fps with AAC audio.** Recorded
+October 26, 2026 (Pacific), using the updated local Streamlit app. Microsoft Ava
+provides computer-generated neural narration. Captions are burned into the
+picture and supplied as WebVTT, aligned to the speech service’s word timings.
 
-The actual local app was captured through CUA at four viewport frames/second.
-The edit uses cuts and held views, with narration added afterward. Recorded study
-examples remain labelled RECORDED. The live section shows a genuine Nebius Token
-Factory request made while capturing the demo; no answers or API responses were
-substituted. The source captures and narration tracks are retained locally in
-`artifacts/video/source-captures-v2.tar.gz` (intentionally ignored by Git).
-The original 2:52 cut is retained locally in `artifacts/video/revisions/`.
-Revision 2 uses a shorter, more conversational script over the same footage;
-the API call is the original recorded call, not a new inference request.
+The opening makes the value proposition explicit and leads with **77.1% lower
+inference cost versus grounded Super**, **98.4% correct completion without
+review**, and **zero observed wrong releases**, all from the same 312-conversation
+representative dataset. The comparison method follows the results. At one million
+requests/month, recorded usage costs project to $80 versus $349, excluding hosting
+and human review. The separate original v1 91% saving is not mixed into this claim.
 
-## Live call
+[Independent human validation is complete for this dataset](../dataset-validation.md),
+as confirmed by the project owner. The conversations remain synthetic. This does
+not claim that the separate fresh-customer pilot has run. The later noise study’s
+failed latency gate remains explicit.
 
-[Full synthetic-input trace](live-trace.json): request
-`92f5fcf03b2e458bb2aff70a41022480`, October 26, 2026, 8:16 p.m. Pacific
-(`2026-10-27T03:16:45.640086+00:00`). Nano returned a null refund issue date;
-normalization resolved April 2 plus four days to April 6. The April 10 arrival
-date remained separate. The final output passed checks: one call, 3,194.4 ms,
-$0.00006852 estimated usage cost with complete billing. This demonstrates the
-functionality on one illustrative synthetic input, not benchmark performance.
+## Recording evidence
 
-## Checks and remaining steps
+All footage was recaptured from the updated app through CUA at four viewport
+frames/second. The edit uses cuts and held views, with narration added afterward.
+Historical examples remain labelled RECORDED. The live segment contains a new
+real Nebius Token Factory request captured for this revision; no output or model
+response was substituted.
 
-The entire final MP4 decoded without errors. Its duration is below three minutes.
-Scene previews were visually inspected, including the source-backed correction,
-review warning, fixed Super selection, abstention, actual live output, comparison,
-and deployment recipe. Audio analysis confirmed a nonempty track (mean -16.7 dB,
-peak -1.5 dB). Captions use the speech service’s word timing, with the original script’s
-punctuation retained. Audio is normalized to a -16 LUFS target. Review the
-voice and pronunciation before publishing.
+[Full live trace](live-trace.json): `ba2990267734491683a55c63339cd4c6`, October 26, 2026,
+8:51 p.m. Pacific (`2026-10-27T03:51:26.541071+00:00`). Nano returned a null issue
+date; normalization resolved April 2 plus four days to April 6 and kept the
+April 10 arrival date separate. One call, 1,488.2 ms,
+$0.00006852 estimated usage cost, complete billing, and a released
+final answer. This is one functionality check, not a new benchmark.
 
-The public app still showed the older navigation in a fresh browser check. Deploy
-the committed guided build and verify it before submission. Upload the video
-publicly to YouTube, verify signed-out playback, and put its URL in Devpost.
-No upload, public deployment or final submission has been performed.
+The complete final MP4 decoded without errors. Scene previews were visually
+inspected. Audio analysis found mean volume -16.7 dB and peak -1.4 dB; mastering
+targets -16 LUFS integrated loudness and -1.5 dBTP. The final file hash, source
+commit and per-scene narration hashes are in `recording.json`.
+
+The final video, script, trace and metadata are versioned. Local source captures,
+word timing and narration tracks are in `artifacts/video/source-captures-v3.tar.gz`
+(intentionally ignored). Earlier cuts are retained in `artifacts/video/revisions/`
+and Git history. No YouTube upload or final submission has been performed.
 
 ## Re-render
 
-The renderer expects the actual CUA captures (`frames.json` and per-scene PNGs)
-and eight matching MP3 narration tracks plus `.words.json` timing files. Restore the local source archive to a
-writable directory, then run:
+Restore the source archive to a writable directory, then run:
 
 ```bash
-.venv/bin/python docs/video/render.py /private/tmp/routewise-video-v2
+.venv/bin/python docs/video/render.py /private/tmp/routewise-video-v3
 ```
 
-Pillow, ffmpeg and ffprobe are required. The renderer reads
-[`narration.json`](narration.json), keeps the latest capture take per scene,
-adds titles/captions outside the app pixels, renders the final MP4, and updates
-the recording manifest and caption file. The original UI evidence is preserved.
-
-To regenerate the neural narration, install [edge-tts](https://github.com/rany2/edge-tts)
-in a separate authoring environment and run
-`python docs/video/synthesize.py /private/tmp/routewise-video-v2`. Voice settings
-are in `production.json`. Only the public narration text is sent to Microsoft’s
-speech service; no customer input, credentials or model trace is sent.
-
-Revision 2 reduces the narration from 370 to 219 words and the running time from
-172.52 to 100.32 seconds (42% shorter). Neural synthesis used edge-tts 7.3.1.
+The renderer needs Pillow, ffmpeg and ffprobe. To regenerate speech, install
+[edge-tts](https://github.com/rany2/edge-tts) in a separate authoring environment and
+run `python docs/video/synthesize.py /private/tmp/routewise-video-v3`. Voice and
+capture-group settings are in `production.json`. Only the public narration text
+is sent to Microsoft’s speech service.

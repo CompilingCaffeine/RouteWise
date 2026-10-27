@@ -1,103 +1,88 @@
 WEBVTT
 
-00:00:00.100 --> 00:00:03.600
-Refund extraction looks simple, until the model picks the wrong
+00:00:00.100 --> 00:00:04.912
+RouteWise makes AI inference cheaper while enforcing your reliability requirements.
 
-00:00:03.612 --> 00:00:04.000
-date.
+00:00:05.275 --> 00:00:09.462
+In our benchmark, it cut inference cost by seventy-seven percent
 
-00:00:04.362 --> 00:00:08.088
-RouteWise helps developers choose a cheaper model setup, backed by
+00:00:09.638 --> 00:00:11.412
+compared with grounded Super.
 
-00:00:08.100 --> 00:00:08.662
-evidence.
+00:00:11.775 --> 00:00:15.238
+That’s about eighty dollars instead of three hundred forty-nine per
 
-00:00:09.600 --> 00:00:11.638
-Here’s a recorded synthetic example.
+00:00:15.250 --> 00:00:16.325
+million requests.
 
-00:00:12.000 --> 00:00:13.912
-The old route misses the refund date.
+00:00:17.100 --> 00:00:21.500
+On the same three hundred twelve synthetic conversations, ninety-eight point
 
-00:00:14.275 --> 00:00:18.538
-RouteWise reads “this Friday” against the store’s timestamp, and gets
+00:00:21.512 --> 00:00:25.638
+four percent were completed correctly without review, with zero wrong
 
-00:00:18.650 --> 00:00:19.812
-April twenty-fourth.
+00:00:25.650 --> 00:00:26.750
+answers released.
 
-00:00:20.600 --> 00:00:23.600
-If the date is ambiguous, it holds the answer for
+00:00:27.112 --> 00:00:30.500
+Independent human validation is complete for this dataset.
 
-00:00:23.612 --> 00:00:24.088
-review.
+00:00:31.350 --> 00:00:34.562
+Not every request needs your most powerful model.
 
-00:00:24.450 --> 00:00:27.950
-You can inspect the source, raw response, and every check.
+00:00:34.925 --> 00:00:39.462
+We benchmark NVIDIA Nemotron models on Nebius Token Factory, using
 
-00:00:28.850 --> 00:00:31.712
-Choose your accuracy and response-time targets.
+00:00:39.475 --> 00:00:43.438
+the same workload and declared accuracy and latency targets.
 
-00:00:32.075 --> 00:00:36.988
-RouteWise compares NVIDIA Nemotron models on Nebius Token Factory, then
+00:00:43.800 --> 00:00:47.975
+Nano handles the easy cases; Super handles requests that fail
 
-00:00:37.000 --> 00:00:39.612
-picks the cheapest setup the evidence supports.
+00:00:47.988 --> 00:00:48.788
+validation.
 
-00:00:39.975 --> 00:00:44.962
-On three hundred twelve synthetic conversations, this setup completed ninety-eight
+00:00:49.600 --> 00:00:53.712
+Tighten the response-time target, and the recommendation switches to Super.
 
-00:00:44.975 --> 00:00:49.388
-point four percent correctly without review, with no incorrect answers
+00:00:54.075 --> 00:00:57.612
+Ask for more certainty than the data supports, and RouteWise
 
-00:00:49.400 --> 00:00:50.012
-released.
-
-00:00:50.850 --> 00:00:52.338
-Need a faster response?
-
-00:00:52.700 --> 00:00:54.975
-The recommendation switches to Super.
-
-00:00:55.338 --> 00:00:58.300
-Ask for more certainty than the data supports, and it
-
-00:00:58.312 --> 00:00:59.362
+00:00:57.625 --> 00:00:58.725
 recommends nothing.
 
-00:01:00.100 --> 00:01:02.162
-This call was captured while recording.
+00:00:59.600 --> 00:01:02.050
+Reliability also means knowing when to stop.
 
-00:01:02.525 --> 00:01:06.475
-Nano leaves the date blank; RouteWise resolves it to April
+00:01:02.412 --> 00:01:05.812
+Here, the recorded route corrects a missing refund date from
 
-00:01:06.488 --> 00:01:07.062
-sixth.
+00:01:05.825 --> 00:01:07.025
+the store’s timestamp.
 
-00:01:07.425 --> 00:01:11.300
-The trace includes the actual response time and every model-call
+00:01:07.388 --> 00:01:09.950
+An ambiguous date goes to human review.
 
-00:01:11.312 --> 00:01:11.825
-charge.
+00:01:10.850 --> 00:01:13.575
+Here’s a fresh call to Nebius Token Factory.
 
-00:01:12.600 --> 00:01:16.550
-At a million requests a month, recorded inference costs project
+00:01:13.938 --> 00:01:17.300
+You can inspect the model’s raw response, the final answer,
 
-00:01:16.562 --> 00:01:20.638
-to about eighty dollars, versus three hundred forty-nine for Super.
+00:01:17.538 --> 00:01:19.812
+the checks, and the full request cost.
 
-00:01:21.000 --> 00:01:23.350
-Hosting and human review cost extra.
+00:01:20.600 --> 00:01:24.012
+Download the chosen setup, requirements, and evidence.
 
-00:01:24.100 --> 00:01:26.800
-Download the decision and integration recipe.
+00:01:24.375 --> 00:01:28.925
+These savings cover inference usage; hosting and review cost extra.
 
-00:01:27.162 --> 00:01:29.112
-These results use synthetic data.
+00:01:29.288 --> 00:01:32.712
+The dataset is synthetic, and a later noise test missed
 
-00:01:29.475 --> 00:01:33.350
-Independent human validation is still pending, and the latest noise
+00:01:32.725 --> 00:01:33.800
+its latency target.
 
-00:01:33.362 --> 00:01:35.625
-test missed its response-time target.
-
-00:01:35.988 --> 00:01:39.388
-RouteWise shows those limits alongside its recommendation.
+00:01:34.162 --> 00:01:38.000
+RouteWise makes the savings, tradeoffs, and limits visible.

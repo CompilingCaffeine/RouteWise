@@ -28,11 +28,7 @@ BOLD_PATH = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
 TITLE = ImageFont.truetype(BOLD_PATH, 30)
 SMALL = ImageFont.truetype(FONT_PATH, 21)
 CAPTION = ImageFont.truetype(FONT_PATH, 30)
-GROUPS = {
-    "05-choices": ["05-choices", "05b-none"],
-    "06-live": ["06-live", "06c-live-final", "06b-live-result"],
-    "08-export": ["08-export", "08b-limits"],
-}
+GROUPS = PRODUCTION.get("capture_groups", {})
 
 
 def probe(path):
