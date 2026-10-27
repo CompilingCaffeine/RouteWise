@@ -1,0 +1,102 @@
+{
+  "schema_version": "routewise.deployment-decision.v1",
+  "decision": "deterministic",
+  "configuration": "Adopted route \u00b7 date normalization",
+  "requirements": {
+    "task_accuracy": 0.95,
+    "field_accuracy": 0.95,
+    "deadline_ms": 4000,
+    "max_deadline_miss_upper95": 0.05
+  },
+  "evidence": {
+    "run": "datesconfirm-20261026T133902Z-ab36f4",
+    "set": "representative",
+    "provenance": "synthetic, model-written, agent-reviewed; not independent customer validation",
+    "status": "exploration of recorded evidence; new requirements are not a fresh confirmation"
+  },
+  "metrics": {
+    "n": 312,
+    "n_review_required": 0,
+    "correct_autonomous": 307,
+    "cac_rate": 0.9839743589743589,
+    "review_rate": 0.016025641025641024,
+    "necessary_review_rate": 0.0,
+    "avoidable_review_rate": 0.016025641025641024,
+    "undetected_errors": 0,
+    "undetected_rate": 0.0,
+    "undetected_upper95": 0.00859706322424554,
+    "released_accuracy": 1.0,
+    "task_accuracy": 1.0,
+    "accuracy_lower95": 0.9914029367757544,
+    "field_accuracy": 1.0,
+    "escalation_rate": 0.016025641025641024,
+    "fallback_rate": 0.0,
+    "cost_usd_total": 0.02498928,
+    "cost_per_1k_tasks": 0.08009384615384615,
+    "incomplete_cost_count": 0,
+    "p50_latency_ms": 1387.0702289859764,
+    "p95_latency_ms": 3609.181018883828,
+    "deadline_misses": 9,
+    "deadline_miss_rate": 0.028846153846153848,
+    "deadline_miss_upper95": 0.048935566541265525
+  },
+  "profile": {
+    "policy_id": "m7-grounded-extraction-date-normalization",
+    "source_run": "datesdev-20261026T130720Z-04a579",
+    "selection": "data/v5/selection.json; frozen in experiments/M7-relative-date-recovery.md Part B",
+    "validation_run": "datesconfirm-20261026T133902Z-ab36f4",
+    "prompts": {
+      "extraction": "extraction_v4"
+    },
+    "date_normalization": "deterministic",
+    "scope": "Synthetic refund extraction with relative issue dates; ambiguous issue timing (business days, ranges, next <weekday>, vague periods) goes to review. Validate on your own workload.",
+    "tasks": {
+      "extraction": {
+        "status": "ok",
+        "choice": {
+          "primary": "nano",
+          "escalate_to": "super",
+          "hedge_after_ms": null
+        },
+        "choice_label": "nano -> super on fail, with deterministic issue-date normalization",
+        "reason": "Adopted after a preregistered confirmation: +44.7 points of correct autonomous completions on 367 fresh relative-date conversations with no wrong answers released, and 98.4% correct without review, 100% task accuracy and $0.080/1k on 312 representative conversations. Ambiguous issue dates and final validation failures require review.",
+        "thresholds": {
+          "min_task_accuracy": 0.95,
+          "min_field_accuracy": 0.95,
+          "max_p95_latency_ms": 4000
+        }
+      }
+    }
+  },
+  "runtime": {
+    "config": "config/grounded.yaml",
+    "profile": "policies/deployment/m7-extraction.json",
+    "fixed_model": null,
+    "prompt": "prompts/extraction_v4.txt",
+    "release_condition": "final_valid must be true"
+  },
+  "cli": "routewise --config config/grounded.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text \"YOUR TIMESTAMPED CONVERSATION\" --json",
+  "source_sha256": {
+    "config/grounded.yaml": "843f71ca945d99519c9e16789e38b77376fa5be150ab50ce14c95954f94587d8",
+    "policies/deployment/m7-extraction.json": "2fabd9a1ecce403bd95668c624f59fdd58811fa5084f57b1e33b962f4b4c8876",
+    "policies/deployment/m6-extraction.json": "40127078efa531be4c7ab368a74db17a1158d171521630ff8b7e9936dc2a4a14",
+    "prompts/extraction_v4.txt": "dccc7e223d24b820242600da4a53b1317c02e13ed386665b55d6b64221307708",
+    "config/grounded-prices.snapshot.json": "f62f2030916d6cc4191b99bae530981e59fb00ea2583b0316762e853b8837777",
+    "src/routewise/recovery.py": "7c58e6b37c676152b372a7d256941fc6d4c226b6e0b38201cb331177db656603",
+    "src/routewise/issue_dates.py": "dd8cf6fb4180323bcbba48c2d4e091aeaf24d72d44ca435a42a6da2ef9902383",
+    "src/routewise/validate.py": "24d84531a02c0a93fd9fba16e403e6acd792bc4210731e1eb796135d44fc7abd",
+    "src/routewise/grounding.py": "7cd5c737f8081df41c4a2315f1da4bf1ce636fc92c95619660f79594082e97b7",
+    "src/routewise/deployment.py": "66b9cf46d00f609670969cd6ee87833f25940b5f515574d862031e32f189ba0c",
+    "src/routewise/evaluation.py": "70b42a63153a06f0a572851ba0b017d9c32215a7ec522dbda45058ae0244271d",
+    "src/routewise/router.py": "3e24b533159b30b35fc1c6d7cf0550c9f571c6924484f04590ff8fe6717f9be3",
+    "src/routewise/execution.py": "9114ceec182ea52b35e921c66f47cb8d18ac7c73b4cb0e0f56ada96c2f346f4e",
+    "runs/datesconfirm-20261026T133902Z-ab36f4/summary.json": "35a78c4d21d1dae0c19f8b4fdc4a13f5029d94ede09c71ae6d97f7f417a57fda",
+    "runs/datesconfirm-20261026T133902Z-ab36f4/observations.jsonl": "68c5649327f411bca72f8fbb482e1da8d1f4c29ba644cf9d8a8f4e9a55da2ea2"
+  },
+  "limits": [
+    "Refund extraction only; six-field contract.",
+    "Review is not an autonomous completion; validator pass is not proof of correctness.",
+    "Usage-cost projections exclude hosting, labeling, development and human review.",
+    "Validate independent conversations and additional serving days before production use."
+  ]
+}

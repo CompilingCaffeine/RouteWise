@@ -6,7 +6,15 @@
 
 **Code:** https://github.com/CompilingCaffeine/RouteWise (MIT)
 
-The M5 and M6 implementations are published in the live demo. Record and upload the updated demo video before submitting.
+The app's Start here and Live router paths use the adopted date-normalization profile; historical M5 and v1 paths are labelled separately. Verify that the hosted app contains these changes, then record and upload the updated public demo video before submitting.
+
+## RouteWise in one minute
+
+RouteWise helps developers choose a lower-cost NVIDIA Nemotron configuration for refund extraction using workload evidence. Set quality and latency requirements, compare matched configurations, inspect a source-backed correction or review decision, and download a deployment recipe. The measured choice can be a route, a fixed model, or no qualifying configuration.
+
+The adopted profile completed 98.4% of 312 representative synthetic conversations correctly without review, with zero observed wrong releases and about $0.080 inference cost per 1,000 requests. A separate retrospective rules-only diagnostic completed 70.5% correctly without review and released 29 wrong answers on those same conversations. This is a comparison with a simple baseline on previously exposed synthetic data, not independent validation or a claim about all possible deterministic systems. When writing noise measured in a real support mailbox was added to those conversations (M7), none of the adopted profile's answers changed and no wrong answer was released.
+
+The working product connects the evidence to an actual decision: choose requirements → compare configurations → try the selected profile on Nebius Token Factory → export a versioned deployment decision. Independent conversations and human labels are the next validation step.
 
 ## Inspiration
 

@@ -1,0 +1,29 @@
+{
+  "experiment_id": "rulesdiagnostic-20261026T193407Z-8b152d",
+  "created_at": "2026-10-26T19:34:07.604520+00:00",
+  "git": {
+    "sha": "baa4acc796ccdcd15bac9595232a8445ab9e2804",
+    "dirty": true
+  },
+  "kind": "rulesdiagnostic",
+  "version": "rules-only-v1",
+  "evidence_role": "retrospective diagnostic",
+  "limitation": "Previously exposed synthetic data; not a preregistered confirmation or independent validation.",
+  "source_run": "datesconfirm-20261026T133902Z-ab36f4",
+  "source_sha256": {
+    "src/routewise/rules_baseline.py": "0a9dbd6a059c5226c6c9b82f569c4455f64185108016e09ba8337afb0a1f1049",
+    "src/routewise/grounding.py": "7cd5c737f8081df41c4a2315f1da4bf1ce636fc92c95619660f79594082e97b7",
+    "src/routewise/textfacts.py": "e848366af47ff61f82d08501c6299acc19eb6fbbe4f4644cd88d1f227146406e",
+    "src/routewise/issue_dates.py": "dd8cf6fb4180323bcbba48c2d4e091aeaf24d72d44ca435a42a6da2ef9902383",
+    "src/routewise/recovery.py": "7c58e6b37c676152b372a7d256941fc6d4c226b6e0b38201cb331177db656603",
+    "src/routewise/validate.py": "24d84531a02c0a93fd9fba16e403e6acd792bc4210731e1eb796135d44fc7abd",
+    "src/routewise/schema.py": "8c41175195d90171b1aa87e7ec028acd9f378fa4580e0617a946f8b952e11640",
+    "src/routewise/evaluate.py": "ec9a93b68ed9508e5a1e2950f25f0e9ed35fcd6d715a14a91e9f9ef54a3b8a37",
+    "src/routewise/recovery_metrics.py": "8bccd78a44f7f4246fd23e592e57aabfd27e45985a08928662de9359ed1a4f53",
+    "src/routewise/statistics.py": "0b40d6897d0686e3f84ff9c1b62b0f2e007fe1fa85b58cbead79332258221462",
+    "src/routewise/metrics.py": "a9ee7d0cc43a344c6e257cca7b17d6d9ba58ea216b3616bee493e84404b19df4",
+    "data/v5/confirm/examples.jsonl": "14ed3d556b45db2c0cc83d79115691369b86c8fc1d87bbd73a847728627c22d3",
+    "data/v5/confirm/splits.json": "fe9125a8c12ea25ac16555d3b5fe6e6a3aa6d1b9ca6df64cf47c3144fd6aa189",
+    "runs/datesconfirm-20261026T133902Z-ab36f4/observations.jsonl": "68c5649327f411bca72f8fbb482e1da8d1f4c29ba644cf9d8a8f4e9a55da2ea2"
+  }
+}

@@ -39,6 +39,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     data.add_argument("--check", action="store_true", help="verify committed data matches the generator")
 
     sub.add_parser("prices", help="snapshot live model prices from /v1/models?verbose=true")
+    sub.add_parser('rules-baseline', help='offline rules-only diagnostic on the exposed public M6 conversations (no API calls)')
 
     probe = sub.add_parser("probe", help="call every candidate once on one labelled example")
     probe.add_argument("--example", type=Path, default=DEFAULT_PROBE_EXAMPLE)
@@ -203,12 +204,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         "validation": cmd_validation,
         "mailbox": cmd_mailbox,
         "noise": cmd_noise,
+        "rules-baseline": cmd_rules_baseline,
     }
     try:
         return commands[args.command](config, args)
     except MissingCredentials as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+
+
+def cmd_rules_baseline(config: Config, args: argparse.Namespace) -> int:
+    from routewise.rules_baseline import run_diagnostic
+    path = run_diagnostic()
+    summary = json.loads((path / 'summary.json').read_text())
+    print('Retrospective diagnostic on previously exposed synthetic data; no fresh model calls.')
+    for split, arms in summary['metrics'].items():
+        print(f'\n{split}')
+        _print_table(['arm', 'n', 'correct/no review', 'review', 'wrong releases', '$/1k'], [
+            [name, str(m['n']), f"{m['cac_rate']:.1%}", f"{m['review_rate']:.1%}",
+             str(m['undetected_errors']), f"{m['cost_per_1k_tasks']:.3f}"] for name, m in arms.items()])
+    print(f'\nDiagnostic artifacts: {_display(path)}')
+    return 0
 
 
 def _add_load_args(p: argparse.ArgumentParser) -> None:

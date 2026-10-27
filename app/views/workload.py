@@ -21,6 +21,9 @@ from ui import (CONFIGURATION_LABELS, api_key, money, ms, pct, render_trace,
                 tradeoff_chart, useful_comparison_rows)
 
 st.title('Workload optimizer')
+st.info('This page explores the earlier M5 study, without the adopted date-normalization profile. '
+        'Start here and Live router use the adopted profile; the original comparisons are retained below.')
+st.page_link('views/start.py', label='Explore the adopted profile and its current deployment recipe')
 st.markdown('Choose requirements, compare fixed models with routing, and inspect the evidence. '
             'RouteWise recommends **no configuration** when the measurements cannot establish that your requirements are met.')
 explore, upload = st.tabs(['Explore measured configurations', 'Use your labelled workload'])
@@ -133,7 +136,7 @@ with explore:
         text = st.text_area('Try a new conversation with this configuration', max_chars=12000,
                             placeholder='[2026-04-01 09:00] Customer: …')
         used = st.session_state.get('live_routes', 0)
-        if st.button('Run this configuration live', disabled=not key or not text or used >= 15):
+        if st.button('Run this M5 configuration live', disabled=not key or not text or used >= 15):
             cfg = load_config()
             version, option = OPTIONS[arm]
             if run.manifest.get('study') == 'm6' and version == 'v3':

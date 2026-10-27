@@ -10,7 +10,8 @@ config = load_config()
 evals = artifacts.list_runs("eval")
 latest_eval = artifacts.headline_eval(evals)
 
-st.title("RouteWise")
+st.title("Evidence archive")
+st.page_link('views/start.py', label='Start with the adopted profile, a guided example and deployment decision')
 st.markdown(
     "#### Find the lowest-cost model configuration your evidence supports.\n"
     "RouteWise benchmarks NVIDIA Nemotron models on Nebius Token Factory against **your labelled workload**, "

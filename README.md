@@ -1,6 +1,6 @@
 # RouteWise
 
-**Workload-specific, quality-constrained model routing on Nebius Token Factory with NVIDIA Nemotron models.**
+**Find the lowest-cost Nemotron configuration your workload evidence supports.**
 
 RouteWise benchmarks several NVIDIA open models on *your* labelled workload. It then routes each request to the cheapest model that meets the quality and latency targets you declared. Every answer is checked by a deterministic validator, and a failed answer escalates once to a stronger model. The hypothesis it tests on held-out data:
 
@@ -10,7 +10,19 @@ Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track).
 
 **Live demo:** https://nebius-routewise.streamlit.app/
 
-The dashboard includes the original benchmark and held-out evidence, live routing, experiments, and a **Workload optimizer**. Import labelled extraction data, freeze a tuning choice, test it on held-out conversations, or explore recorded configurations with confidence bounds and monthly-cost projections. The optimizer can choose a fixed model or report that none qualifies.
+**Start here:** the guided dashboard compares the adopted refund-extraction profile with matched alternatives,
+shows a real recorded correction or review decision, and lets you try a fresh conversation on Nebius Token Factory.
+Download the deployment decision with its requirements, profile, price snapshot and evidence hashes.
+The **Live router** uses the adopted date-normalization profile; earlier M5 and v1 paths are explicitly labelled.
+See the [one-minute walkthrough and integration recipe](docs/deployment.md).
+
+**What the model adds:** a new [rules-only retrospective diagnostic](results/rules-only-report.md) on the same
+312 representative synthetic conversations found 70.5% correct autonomous completions with rules versus
+98.4% for the recorded adopted profile, with 29 versus zero wrong releases. This is a simple baseline on
+previously exposed data, not independent validation. The [human pilot handoff](docs/validation-pilot-handoff.md)
+is ready; independent conversations and labelers are still needed.
+
+The dashboard includes the original benchmark and held-out evidence, live routing, experiments, and a **Workload optimizer** for the earlier M5 study. Import labelled extraction data, freeze a tuning choice, test it on held-out conversations, or explore recorded configurations with confidence bounds and monthly-cost projections. Both guided comparisons can choose a fixed model or report that none qualifies.
 
 ## Results
 
@@ -239,7 +251,7 @@ echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
 
 ## Use the measured extraction route
 
-The original default config/policies preserve v1. The adopted M6 extraction profile uses prompt v4, source grounding, Nano → Super escalation without hedging, and deterministic issue-date normalization:
+The original default CLI config/policies preserve v1; the dashboard's default live experience uses the adopted profile. The adopted M6 extraction profile uses prompt v4, source grounding, Nano → Super escalation without hedging, and deterministic issue-date normalization:
 
 ```bash
 routewise --config config/grounded.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345 please, I paid $40.00.

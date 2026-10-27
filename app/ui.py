@@ -292,11 +292,26 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
 
     With `expected` (dataset examples only), a ground-truth check follows; the router never sees it."""
     if not trace.get('final_valid', True):
-        st.error('The final answer failed validation. This request needs review before the output is used.')
+        st.warning('Held for human review. The candidate output must not be used automatically.')
+    else:
+        st.success('Released after deterministic checks. Passing checks does not guarantee correctness.')
+    if trace.get('recovery'):
+        recovery = trace['recovery']
+        st.markdown('**Final output after normalization**' if trace.get('final_valid')
+                    else '**Candidate output · withheld for review**')
+        st.json(trace.get('final_output'))
+        analysis = recovery.get('analysis', {})
+        st.caption(f"Issue-date analysis: {analysis.get('status')} · "
+                   f"{analysis.get('date') or 'no single date'} · {analysis.get('reason', '')}")
+        st.caption(f"Action: {recovery.get('action')}")
     head = st.columns(4)
     head[0].metric("Answered by", trace.get("answered_by") or trace["calls"][-1]["candidate"])
     head[1].metric("Time to answer", ms(trace["latency_ms"]))
-    head[2].metric("Total cost (all calls)", money(trace["cost_usd"], 6))
+    complete_cost = trace.get('cost_complete', True)
+    head[2].metric("Total cost (all calls)" if complete_cost else "Known charges · billing incomplete",
+                   money(trace["cost_usd"], 6))
+    if not complete_cost:
+        st.warning('Some usage charges are missing. The displayed amount is not a complete request cost.')
     head[3].metric("Model calls", len(trace["calls"]))
     st.caption(f"Route: `{trace['route']}`")
     if policy_reason:
@@ -320,7 +335,7 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
             c[3].metric("Validator", "pass" if check["passed"] else "fail")
             left, right = st.columns([3, 2])
             with left:
-                st.caption("Model output")
+                st.caption("Model output before issue-date normalization" if trace.get('recovery') else "Model output")
                 if call["parsed"] is not None:
                     st.json(call["parsed"], expanded=True)
                 else:
@@ -353,13 +368,17 @@ def render_ground_truth(trace: dict[str, Any], expected: dict[str, Any] | None) 
     s = trace["score"]
     st.markdown("**Ground-truth check** · evaluation only; the router never sees the correct answer")
     if s["task_correct"]:
-        st.success("The shipped answer is correct on every field.", icon=":material/check_circle:")
+        st.success("The released answer matches every labelled field." if trace.get('final_valid', True)
+                   else "The candidate matches the labelled fields, but remains held for review.", icon=":material/check_circle:")
         return
     final = trace.get("final_output") or {}
     wrong = [f for f, ok in s["fields"].items() if not ok]
-    rows = [{"field": f, "shipped answer": json.dumps(final.get(f)),
+    rows = [{"field": f, "released answer" if trace.get('final_valid', True) else "withheld candidate": json.dumps(final.get(f)),
              "correct value": json.dumps(expected.get(f)) if expected else "–"} for f in wrong]
     st.dataframe(rows, hide_index=True)
+    if not trace.get('final_valid', True):
+        st.info('The candidate differs from the label and was held for review; it was not released automatically.')
+        return
     last_check_passed = trace.get('final_valid', trace["validations"][-1]["passed"])
     answered_by = trace.get("answered_by") or trace["calls"][-1]["candidate"]  # older traces lack answered_by
     routed = ' -> ' in trace.get('route', '') or trace['strategy'].startswith('routewise')
