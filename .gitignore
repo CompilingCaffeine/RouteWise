@@ -12,3 +12,5 @@ private/
 *.mbox
 *.mbox.gz
 *.mbox.zip
+# Local recording sources, rendered scene clips, and QA previews; final MP4 is in docs/video/.
+artifacts/video/

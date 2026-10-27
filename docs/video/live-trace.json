@@ -1,0 +1,164 @@
+{
+  "request_id": "92f5fcf03b2e458bb2aff70a41022480",
+  "strategy": "deterministic",
+  "task": "extraction",
+  "example_id": null,
+  "policy_id": null,
+  "policy_status": null,
+  "route": "deterministic",
+  "input_chars": 193,
+  "model_chain": [
+    "nano"
+  ],
+  "calls": [
+    {
+      "call_id": "1662695f144d4943b807ffef15ccd03d",
+      "example_id": "adhoc",
+      "task": "extraction",
+      "candidate": "nano",
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "reasoning": "off",
+      "prompt_version": "extraction_v4",
+      "prompt_sha256": "dccc7e223d24b820242600da4a53b1317c02e13ed386665b55d6b64221307708",
+      "response_format": "json_schema",
+      "started_at": "2026-10-27T03:16:45.640086+00:00",
+      "latency_ms": 3191.0,
+      "total_ms": 3191.0,
+      "attempts": 1,
+      "prompt_tokens": 870,
+      "completion_tokens": 68,
+      "reasoning_tokens": null,
+      "cached_tokens": null,
+      "cost_usd": 6.852e-05,
+      "finish_reason": "stop",
+      "content": "{\n  \"refund_requested\": true,\n  \"refund_amount\": 40,\n  \"currency\": \"USD\",\n  \"order_id\": \"ORD-12345\",\n  \"contact_date\": \"2026-04-01\",\n  \"refund_date\": null\n}",
+      "reasoning_chars": null,
+      "parsed": {
+        "refund_requested": true,
+        "refund_amount": 40,
+        "currency": "USD",
+        "order_id": "ORD-12345",
+        "contact_date": "2026-04-01",
+        "refund_date": null
+      },
+      "parse_error": null,
+      "schema_error": null,
+      "error": null,
+      "ratelimit": {
+        "x-ratelimit-remaining-requests": "99",
+        "x-ratelimit-remaining-tokens": "798724"
+      },
+      "score": null,
+      "injected_delay_ms": 0.0,
+      "grounding": {
+        "evidence": {
+          "order_ids": [
+            "ORD-12345"
+          ],
+          "money": [
+            {
+              "amount": 40.0,
+              "currency": "USD",
+              "sentence": "Please refund order ORD-12345 for $40.00."
+            },
+            {
+              "amount": 40.0,
+              "currency": "USD",
+              "sentence": "Your refund of $40.00 will be issued in four days."
+            }
+          ],
+          "contact_date": "2026-04-01"
+        },
+        "raw_parsed": {
+          "refund_requested": true,
+          "refund_amount": 40,
+          "currency": "USD",
+          "order_id": "ORD-12345",
+          "contact_date": "2026-04-01",
+          "refund_date": null
+        },
+        "changed_fields": []
+      }
+    }
+  ],
+  "validations": [
+    {
+      "passed": true,
+      "failed_rules": [],
+      "checks": [
+        {
+          "rule": "schema",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "rule": "amount_in_source",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "rule": "amount_refund_context",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "rule": "currency_consistent",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "rule": "order_id_in_source",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "rule": "contact_date_valid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "rule": "issue_date_contract",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    }
+  ],
+  "escalated": false,
+  "escalation_reason": null,
+  "final_output": {
+    "refund_requested": true,
+    "refund_amount": 40,
+    "currency": "USD",
+    "order_id": "ORD-12345",
+    "contact_date": "2026-04-01",
+    "refund_date": "2026-04-06"
+  },
+  "final_valid": true,
+  "timeline_ms": {
+    "received": 0.0,
+    "dispatched_1": 0.0,
+    "model_complete_1": 3194.0,
+    "response_complete": 3194.4,
+    "accounting_complete": 3194.4
+  },
+  "latency_ms": 3194.4,
+  "cost_usd": 6.852e-05,
+  "cost_complete": true,
+  "score": null,
+  "hedged": false,
+  "answered_by": "nano",
+  "recovery": {
+    "analysis": {
+      "status": "resolved",
+      "date": "2026-04-06",
+      "reason": "store statement",
+      "known_ambiguity": false
+    },
+    "issue_mentions": [
+      "in four days"
+    ],
+    "action": "normalized",
+    "normalization_nano": "set"
+  }
+}

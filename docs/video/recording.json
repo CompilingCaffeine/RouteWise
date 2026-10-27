@@ -1,0 +1,104 @@
+{
+  "recording_date_pacific": "2026-10-26",
+  "environment": "Local Streamlit app, real Nebius API",
+  "narration": "macOS Samantha, computer-generated, 151 words/minute",
+  "editing": "CUA viewport captures at 4 fps; cuts and held frames; narration added afterward",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "output_fps": 24,
+  "published": false,
+  "scenes": [
+    {
+      "id": "01-intro",
+      "title": "A measured model choice",
+      "start_seconds": 0.0,
+      "duration_seconds": 15.25,
+      "capture_groups": [
+        "01-intro"
+      ],
+      "narration_sha256": "9c9f343c704e60affa47c265a70e18cdd3c1442801a7da656119fa958044ecce"
+    },
+    {
+      "id": "02-correction",
+      "title": "Recorded evidence: correct the issue date",
+      "start_seconds": 15.25,
+      "duration_seconds": 18.0,
+      "capture_groups": [
+        "02-correction"
+      ],
+      "narration_sha256": "9417c5ea83fc856f9787ed5957b7cb5d94a8617a458e95219609a01c460bfd8d"
+    },
+    {
+      "id": "03-review",
+      "title": "Ambiguity goes to review",
+      "start_seconds": 33.25,
+      "duration_seconds": 16.25,
+      "capture_groups": [
+        "03-review"
+      ],
+      "narration_sha256": "347b971b163c1173aea0946b92e9f7921d694b2b3bebfbf5822a7ad531c19752"
+    },
+    {
+      "id": "04-evidence",
+      "title": "Compare cost, quality and review",
+      "start_seconds": 49.5,
+      "duration_seconds": 27.25,
+      "capture_groups": [
+        "04-evidence"
+      ],
+      "narration_sha256": "4078d575e7a1cf48cde2f0395ebf44470310c3d8a7def39d7c24597270eb5aa6"
+    },
+    {
+      "id": "05-choices",
+      "title": "The answer can be Super\u2014or no recommendation",
+      "start_seconds": 76.75,
+      "duration_seconds": 20.0,
+      "capture_groups": [
+        "05-choices",
+        "05b-none"
+      ],
+      "narration_sha256": "d436cddff0e9bd792409b67c58f6a922dee82e9926fa559fe5232b423691a724"
+    },
+    {
+      "id": "06-live",
+      "title": "Fresh inference on Nebius Token Factory",
+      "start_seconds": 96.75,
+      "duration_seconds": 21.5,
+      "capture_groups": [
+        "06-live",
+        "06c-live-final",
+        "06b-live-result"
+      ],
+      "narration_sha256": "fcfcc03b55d29d35db83b55af8945a0e5c44bf995636af801e423942d0876565"
+    },
+    {
+      "id": "07-economics",
+      "title": "Make the tradeoff explicit",
+      "start_seconds": 118.25,
+      "duration_seconds": 25.5,
+      "capture_groups": [
+        "07-economics"
+      ],
+      "narration_sha256": "84c829367fe72917547394e5fb4465c88ba4d9623ed3a1dd324d9bf19d7746b9"
+    },
+    {
+      "id": "08-export",
+      "title": "Take the decision into your application",
+      "start_seconds": 143.75,
+      "duration_seconds": 28.75,
+      "capture_groups": [
+        "08-export",
+        "08b-limits"
+      ],
+      "narration_sha256": "0f0a43ad8ec23a654cc3df7410f96d04f0f8b9da36393b0490735eab7eef46b6"
+    }
+  ],
+  "duration_seconds": 172.521333,
+  "sha256": "ff4d0cfde9e8128d2194f6cc343a8aaf4fafd6770c6511185281999cf6f9637a",
+  "bytes": 6310009,
+  "file": "docs/video/routewise-devpost.mp4",
+  "live_trace": "docs/video/live-trace.json",
+  "code_commit": "d44c6c0360ca2f163b3835db4eb989167421799b"
+}

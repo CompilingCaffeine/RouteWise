@@ -30,4 +30,4 @@ The offline [rules-only diagnostic](../results/rules-only-report.md) used all 67
 
 Independent validation still needs de-identified conversations, two independent human labelers and an adjudicator. No independent labels, customer testimonial, or pilot outcome was fabricated. Use the [pilot handoff](validation-pilot-handoff.md).
 
-Deploy the reviewed changes, verify the public app in a fresh session, and record/upload the public YouTube video using [the updated script](video-script.md). No public deployment, Devpost edit or video publication was performed by this implementation task.
+The subsequent October 26 git/video cleanup produced the [2:52 recording](video/routewise-devpost.mp4) and [updated script](video-script.md). Deploy the reviewed changes, verify the public app in a fresh session, and upload the recording publicly to YouTube. No public deployment, external Devpost edit or video publication has been performed.

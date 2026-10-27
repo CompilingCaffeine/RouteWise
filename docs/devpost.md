@@ -6,7 +6,7 @@
 
 **Code:** https://github.com/CompilingCaffeine/RouteWise (MIT)
 
-The app's Start here and Live router paths use the adopted date-normalization profile; historical M5 and v1 paths are labelled separately. Verify that the hosted app contains these changes, then record and upload the updated public demo video before submitting.
+The committed app's Start here and Live router paths use the adopted date-normalization profile; historical M5 and v1 paths are labelled separately. The [updated demo video](video/routewise-devpost.mp4) is recorded (2:52.52, local app with real Nebius inference and computer-generated narration). **Before submission:** deploy this build, verify the hosted app, upload the video publicly to YouTube and insert its URL. The hosted app still showed the older navigation when checked October 26.
 
 ## RouteWise in one minute
 

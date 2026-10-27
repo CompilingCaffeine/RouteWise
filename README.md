@@ -10,6 +10,8 @@ Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track).
 
 **Live demo:** https://nebius-routewise.streamlit.app/
 
+**Demo video:** [2:52 guided walkthrough](docs/video/routewise-devpost.mp4), recorded locally with real Nebius inference and computer-generated narration. See the [script and publication checklist](docs/video-script.md); public deployment and YouTube upload are still pending.
+
 **Start here:** the guided dashboard compares the adopted refund-extraction profile with matched alternatives,
 shows a real recorded correction or review decision, and lets you try a fresh conversation on Nebius Token Factory.
 Download the deployment decision with its requirements, profile, price snapshot and evidence hashes.
