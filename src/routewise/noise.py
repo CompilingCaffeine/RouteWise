@@ -58,6 +58,19 @@ CONFUSIONS = {"could have": "could of", "would have": "would of", "should have":
               "you're welcome": "your welcome", "rather than": "rather then", "more than": "more then",
               "less than": "less then", "better than": "better then", "other than": "other then"}
 EMOTICONS = (":)", "🙂", "🙏")
+# Words the dictionary lacks: irregular verb and plural forms ("heard" is not a typo of "hear"), and contractions
+# without their apostrophe, which are counted as dropped apostrophes instead.
+IRREGULAR = frozenset("""
+arose arisen awoke awoken bore borne beat beaten became begun began bent bit bitten bled blew blown broke broken bred
+brought built burnt burst bought caught chose chosen clung came crept dealt drew drawn dreamt drank drunk drove driven
+ate eaten fell fallen felt fought found fled flung flew flown forbade forbidden forgot forgotten forgave forgiven froze
+frozen gotten gave given went gone ground grew grown hung heard hid hidden held kept knelt knew known laid leant leapt
+learnt left lent lain lost made meant paid proven rode ridden rang rung rose risen said seen sought sold sent sewn shook
+shaken shone shot shown shrank shrunk slept slid slung spoke spoken sped spent spilt spun spat sprang sprung stood stole
+stolen stuck stung stank stunk strode struck strung strove striven swore sworn swept swollen swam swum swung took taken
+taught tore torn told thought threw thrown trod trodden understood undertook undertaken woke woken wore worn wove woven
+wept wound withdrew withdrawn wrote written children women feet teeth mice geese people""".split()) | frozenset(
+    c.replace("'", "") for c in CONTRACTIONS)
 NEGATIONS = frozenset({"not", "no", "never", "nothing", "none", "neither", "nor", "cannot"})
 # Words a date or refund reading may hinge on; edits to them are tagged for the descriptive breakdown only.
 LABEL_WORDS = frozenset({m.lower() for m in _MONTHS} | {
@@ -76,6 +89,7 @@ _INTERNAL = re.compile(r"[.!?]\s+\S")
 _RUN_ON_STOP = re.compile(r"[.!]\s+([A-Za-z][\w'’]*)")
 _MID_CAPITAL = re.compile(r"(?<=[a-z,;:] )([A-Z][a-z]{3,})\b")
 _ALL_CAPS = re.compile(r"\b[A-Z]{2,}\b")
+_MIXED_CASE = re.compile(r"\b[A-Za-z]*[a-z][A-Z][A-Za-z]*\b")  # iPhone, eBay, PayPal: names, never typos
 _APOSTROPHE = re.compile(r"(?<=[A-Za-z])['’](?=[A-Za-z])")
 _CURLY = re.compile(r"(?<=[A-Za-z])’(?=[A-Za-z])")
 _DASH = re.compile(r"\s*[—–]\s*")
@@ -118,8 +132,8 @@ _VOWELS = "aeiou"
 
 
 def known(word: str, words: frozenset[str]) -> bool:
-    """A dictionary word, or a regular inflection of one."""
-    if word in words:
+    """A dictionary word, an irregular form, or a regular inflection of a dictionary word."""
+    if word in words or word in IRREGULAR:
         return True
     for suffix, endings in (("ies", ("y",)), ("ied", ("y",)), ("ing", ("", "e")), ("ed", ("", "e")), ("es", ("",)),
                             ("s", ("",)), ("er", ("", "e")), ("est", ("", "e")), ("ly", ("",)), ("ment", ("",)),
@@ -269,8 +283,8 @@ def _message_counts(body: str, c: Counter) -> None:
 def measure(conversations: Iterable[str], words: frozenset[str], exclude: frozenset[str] = frozenset()) -> dict:
     """Aggregate writing-noise profile of formatted conversations, per role.
 
-    Misspellings are tokens of at least four letters that are neither dictionary words nor seen capitalized inside a
-    sentence or in capitals anywhere (names, products, acronyms), and whose most frequent edit-distance-1 neighbour
+    Misspellings are tokens of at least four letters that are not known words (`known`) and are never seen
+    capitalized inside a sentence, in capitals or in mixed case anywhere (names, products, acronyms), and whose most frequent edit-distance-1 neighbour
     in the corpus is a known word at least ten times more frequent. Pairs in at least five conversations, whose words
     are not in `exclude`, form the published table. Real-word errors (their/there) are not detected.
     """
@@ -283,6 +297,7 @@ def measure(conversations: Iterable[str], words: frozenset[str], exclude: frozen
             freq.update(m.group(1).lower() for m in _ELIGIBLE.finditer(free))
             proper.update(m.group(1).lower() for m in _MID_CAPITAL.finditer(body))
             proper.update(t.lower() for t in _ALL_CAPS.findall(body))
+            proper.update(t.lower() for t in _MIXED_CASE.findall(body))
     frequent = {w: n for w, n in freq.items() if n >= RIGHT_MIN_COUNT and known(w, words)}
     corrections: dict[str, str | None] = {}
 

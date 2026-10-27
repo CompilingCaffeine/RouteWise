@@ -271,3 +271,10 @@ Real-word errors (their/there), missing words, and tense or agreement errors are
   - Writer draws above the mean raise the achieved average slightly, and the build reports by how much.
 
 *Reporting.* The report goes in `results/M8-noise-report.md`, and `results/runs.yaml` records `display_milestone: M7`.
+
+**2026-10-26: misspelling-detector correction before the build.** Made before the profile was committed, before the build, and before any noisy conversation existed.
+- **The defect.** The first reviewed profile (private SHA-256 `b720e8a0…`) listed "heard → hear" and "iphone → phone" as misspellings. Both are real words. The dictionary lacks irregular forms, and the detector did not treat mixed-case brand names as names. This broke the rule above that misspellings are non-words, and it inflated the measured misspelling rate.
+- **The correction.** That profile was withdrawn. `noise.known` now also accepts a fixed list of irregular verb and plural forms, and contractions without their apostrophe (already counted as dropped apostrophes). Tokens seen in mixed case anywhere (iPhone, eBay) count as names.
+- **Re-measurement.** The profile is measured again with the corrected detector. It is published under the earlier review only if its misspelling table is a subset of the pairs already reviewed. Otherwise a person reviews it again.
+
+No gate, base set, seed rule or channel rule changed.

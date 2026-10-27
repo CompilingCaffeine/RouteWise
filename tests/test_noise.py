@@ -93,6 +93,16 @@ def test_misspellings_need_a_much_more_frequent_correction_and_skip_names_and_ac
     assert noise.measure(texts[:20], WORDS)["misspellings"] == []  # four conversations are too few to publish
 
 
+def test_real_words_missing_from_the_dictionary_and_mixed_case_names_are_never_misspellings():
+    hear = "Happy to hear that, glad to hear it and sorry to hear about the phone, phone or phone."
+    texts = [conversation(("Customer", hear), ("Agent", hear)) for _ in range(12)]
+    texts += [conversation(("Customer", "I heard nothing, my iPhone broke and the iphone held the code. dont worry"),
+                           ("Agent", "Thanks for the help.")) for _ in range(6)]
+    p = noise.measure(texts, WORDS)
+    assert p["misspellings"] == [] and p["roles"]["Customer"]["features"]["misspelling"]["k"] == 0
+    assert noise.publication_problems({**p, "misspellings": [["heard", "hear", 38]]}, WORDS)
+
+
 def test_between_writer_variance_separates_consistent_and_mixed_writers():
     uniform = noise._feature([(5, 100)] * 20)
     mixed = noise._feature([(0, 100)] * 10 + [(10, 100)] * 10)
