@@ -165,6 +165,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     mb.add_argument('--refund-share', type=float, default=0.75, help='share drawn from the refund-keyword stratum')
     mb.add_argument('--seed', type=int, help='sampling seed (default: random, recorded privately)')
 
+    nz = sub.add_parser('noise', help='M7 (study m8) noise component: real-workload writing noise on synthetic labels',
+                        description='profile and publish run offline; build fetches prices only; run calls Nebius '
+                                    'with synthetic conversations only. See the 2026-10-26 amendment to '
+                                    'experiments/M8-workload-validation.md.')
+    nz.add_argument('stage', choices=('profile', 'publish', 'build', 'run', 'report'))
+    nz.add_argument('--mbox', type=Path, help='profile: the archive, inside <private-root>/raw/')
+    nz.add_argument('--private-root', type=Path, help='profile: private root outside every git repository')
+    nz.add_argument('--profile', type=Path, help='publish: the private noise-profile.json')
+    nz.add_argument('--approve', help='publish: the SHA-256 of the profile a person reviewed')
+    nz.add_argument('--reviewer', help='publish: who reviewed the profile')
+    nz.add_argument('--run', type=Path, help='run: resume this run; report: the run to analyze')
+    nz.add_argument('--budget', type=float, default=5.0, help='run: API spend limit in USD')
+
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     load_dotenv(config.path.parent.parent / ".env")
@@ -189,6 +202,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "recovery": cmd_recovery,
         "validation": cmd_validation,
         "mailbox": cmd_mailbox,
+        "noise": cmd_noise,
     }
     try:
         return commands[args.command](config, args)
@@ -248,6 +262,22 @@ def cmd_mailbox(config: Config, args: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     except Exception as exc:  # before the private session exists: never show the message
+        print(f"error: {type(exc).__name__} (message withheld: it may quote private data)", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_noise(config: Config, args: argparse.Namespace) -> int:
+    from routewise import noise_study
+    from routewise.private_mode import SafeError
+    try:
+        noise_study.main(args)
+    except SafeError as exc:  # written to hold no mailbox data
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # profile and publish read private files: never show the message
+        if args.stage not in ("profile", "publish"):
+            raise
         print(f"error: {type(exc).__name__} (message withheld: it may quote private data)", file=sys.stderr)
         return 1
     return 0

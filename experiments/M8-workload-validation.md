@@ -189,3 +189,85 @@ The report goes in `results/M8-report.md`, and the dashboard shows the study as 
 - **What the seal covers.** The seal's code hash now excludes `private_mode.py`, `validation_export.py` and `privacy_drill.py`, as well as `workload_validation.py`.
 
 No arm, outcome, label rule, design rule or decision rule changed.
+
+**2026-10-26: synthetic noise component.** Requested by the user and made before any pilot conversation was supplied or labelled; no pilot data, design or seal exists. This text was written before the noise profile was measured. No noisy conversation, and no model output on one, existed when it was committed. It adds a component and changes no arm, outcome, label rule, design rule or decision rule above. The human-labelled pilot and confirmation remain the only evidence about real language and real labels.
+
+*Why.* Every completed study used model-written prose, which is cleaner than real support writing. This component asks a narrower question that needs no labeler: does the adopted profile stay within its requirements when the synthetic conversations carry the misspellings, grammatical errors and other noise measured in the user's own mailbox?
+
+*Privacy and copyright.*
+- Mailbox text never leaves the private root and is never sent to any model.
+- `routewise noise profile` reads every eligible conversation of the private Intercom mailbox offline, after the same local de-identification as `routewise mailbox prepare`. It writes only aggregate counts and rates per speaker role.
+- It also writes one table: misspelling pairs (for example recieve → receive) that occur in at least 5 conversations. A pair is kept only if its correction is a known word and neither side is a word of any redacted value or a listed proper name.
+- A named person reviews the profile locally and approves its SHA-256. Only then does `routewise noise publish` copy it to `data/v6/noise-profile.json`.
+- No sentence, phrase or per-conversation value is copied. The noisy text is the M6 synthetic text rewritten by rules.
+
+*What is measured* (`src/routewise/noise.py`), per role (Customer, Agent):
+- **Spelling.** The rate of non-word misspellings among words of at least four letters, by word length. Also the edit kinds and positions: deletion, doubled or other insertion, keyboard-adjacent or other substitution, transposition.
+- **Grammar and wording.** Dropped apostrophes in 21 fixed contractions; 11 fixed chat abbreviations ("u", "pls", "thx", "tmrw"); 10 fixed grammatical errors ("could of", "alot", "your welcome", "more then"); repeated words.
+- **Casing.** All-lowercase messages; lowercase message and sentence starts; lowercase "i".
+- **Punctuation.** Missing terminal punctuation; "!!" and "??"; commas without a following space; straight versus curly apostrophes; spaced hyphens versus dashes; emoticons.
+- **Structure.** Run-ons, meaning messages of at least 20 words with no internal sentence break. Messages split into several turns, meaning the same role writes again within 5 minutes.
+- **Writer spread.** For each feature, the between-writer variance across conversations, by the method of moments.
+
+Real-word errors (their/there), missing words, and tense or agreement errors are not detected or modelled.
+
+*The noisy set.*
+- **Base.** All 679 conversations of the sealed M6 confirmation set (`data/v5/confirm`): 312 representative and 367 date-challenge. Their labels and review dispositions are unchanged.
+- **One rewrite each.** The seed is the first 8 hex digits of the committed profile's SHA-256.
+- **Writers.** Each role in a conversation gets one writer, drawn from the measured spread (beta distribution). A feature is added only as far as the clean text falls short of the workload's rate.
+- **Never edited.** Digits and every token containing one; all-caps tokens (currency codes, order prefixes); timestamps; speaker roles; System messages. No edit may remove the space next to such a token.
+- **Misspellings** are non-words at edit distance 1. They come from the published table where it has the word, otherwise from the profiled edit kinds and positions.
+- **Splits.** A split message's second part is one minute later, on the same date, and before the next message.
+- **Label words.** Edits to words a date or refund reading may hinge on (month and weekday names, relative-time words, refund and issue cues) are allowed, because a careful reader still recovers them. They are tagged `noise:label_word` for a descriptive breakdown.
+- **Invariants.** Every rewrite must pass `noise.invariants`: same roles and timestamps, same protected tokens, amounts and references, and unchanged System messages. Otherwise the build stops.
+- **The label claim.** The clean label is the noisy label. This is a design argument checked by those invariants, not a human relabel.
+
+*Arms and run.*
+- The three arms of Part A, built by `profile_routers` with prompt `extraction_v4` and `config/grounded.yaml`.
+- Every clean and noisy conversation goes through every arm: 1,358 conversations × 3 arms = 4,074 requests. This is one run, in an order randomized from the seal seed, at Part A's load (90 admissions per minute, 4 workers) and with a $5 budget guard.
+- `routewise noise build` writes `data/v6/seal.json`: data, profile, base, code, prompts, profiles, dictionary and prices. It is committed before the run.
+- There is one analysis, with no interim looks. Transport failures are outcomes.
+
+*Outcomes.*
+- The definitions are Part A's.
+- The representative and challenge sets are analysed separately and never pooled.
+- The clean and noisy versions of a conversation are paired.
+- Intervals are two-sided 95% conversation-bootstrap intervals (4,000 resamples).
+
+*Checks, fixed now.* All apply to the adopted profile unless stated.
+
+| Check | Set | Criterion |
+|---|---|---|
+| N1 | Representative, noisy | Wrong-release one-sided 95% Wilson upper bound ≤ 2% |
+| N2 | Representative, noisy | Task accuracy lower bound ≥ 95%, field accuracy ≥ 95%, 4 s deadline-miss upper bound ≤ 5%, no incomplete cost |
+| N3 | Representative, noisy − clean | Correct autonomous completions lower bound ≥ −2 points; wrong releases upper bound ≤ +1 point |
+| N4 | Representative, noisy | Versus previous profile: CAC lower bound ≥ −2 points, wrong releases upper bound ≤ +1 point. Versus grounded Super: cost per 1,000 requests upper bound < 0 |
+| N5 | Challenge, noisy − clean | Wrong releases upper bound ≤ +2 points (M6's S1 limit) |
+
+*Decision.*
+- If every check passes, the adopted profile is reported as robust to the measured noise on synthetic conversations. Otherwise it is not shown to be robust, and the failing checks and their causes are reported.
+- Neither result is a claim about real conversations or human labels.
+- The deployed profile changes only by a separate, preregistered decision. A fix creates a new profile, which needs its own study.
+
+*Power, stated in advance.* The sample size is fixed by the base set.
+- **N1** passes only with at most 2 wrong releases out of 312. Its power is 93% at a true rate of 0.3%, 79% at 0.5%, and 40% at 1%.
+- **N3's wrong-release margin** allows about one net noise-induced wrong release. At zero true effect, its power is 42% if 1% of pairs are discordant, and 24% at 2%. A failed N3 is therefore weak evidence of harm. A pass is reported with its interval.
+- **N5** has power 97% at 1% discordant pairs and 77% at 2%.
+
+*Descriptive, not gates.*
+- Outcomes by family.
+- Conversations with and without a label-word edit.
+- The issue-date analyzer's agreement with the labels, clean versus noisy.
+- The noise effect on each arm.
+- Calibration: each feature's workload, clean and achieved noisy rate.
+
+*Limitations.*
+- The base is synthetic: model-written prose with agent-reviewed labels.
+- The rates come from one mailbox (a test-preparation support inbox, not e-commerce refunds) and cover only the listed features.
+- Features are drawn independently per writer, so no correlation between features is modelled.
+- When the mailbox is profiled, its author roles and store timezone are not yet human-confirmed. Unconfirmed roles can shift rates between Customer and Agent.
+- The channel only adds noise:
+  - It cannot remove a feature the clean text already shows in excess.
+  - Writer draws above the mean raise the achieved average slightly, and the build reports by how much.
+
+*Reporting.* The report goes in `results/M8-noise-report.md`, and `results/runs.yaml` records `display_milestone: M7`.
