@@ -12,12 +12,14 @@ RouteWise benchmarks several NVIDIA open models on *your* labelled workload. It 
 
 Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track). All inference runs on **Nebius Token Factory** with **NVIDIA Nemotron 3 Nano, Super and Ultra**.
 
+> **Provider migration (Nov 2026).** Nebius retires its serverless Nemotron 3 Nano and Super endpoints on November 9, 2026. Live inference (the dashboard's live router and `routewise route`) therefore runs on **OpenRouter** with [`config/openrouter.yaml`](config/openrouter.yaml): the same adopted profile, with Nano pinned to the `nebius/fp8` host and Super to `dekallm/fp8`, and no fallback to other hosts. Every result in this README was measured on Nebius Token Factory with `config/grounded.yaml` and is unchanged. See [providers and pinned hosts](docs/deployment.md#providers-and-pinned-hosts).
+
 **Live demo:** https://nebius-routewise.streamlit.app/
 
 **Demo video:** [1:40 guided walkthrough](docs/video/routewise-devpost.mp4), recorded locally with real Nebius inference and computer-generated narration. See the [script and publication checklist](docs/video-script.md); public deployment and YouTube upload are still pending.
 
 **Start here:** the guided dashboard compares the adopted refund-extraction profile with matched alternatives,
-shows a real recorded correction or review decision, and lets you try a fresh conversation on Nebius Token Factory.
+shows a real recorded correction or review decision, and lets you try a fresh conversation on the live provider (OpenRouter).
 Download the deployment decision with its requirements, profile, price snapshot and evidence hashes.
 The **Live router** uses the adopted date-normalization profile; earlier M5 and v1 paths are explicitly labelled.
 See the [one-minute walkthrough and integration recipe](docs/deployment.md).
@@ -201,9 +203,9 @@ incoming request (known task) ─► selected Nemotron model ─► deterministi
 
 | Component | File |
 | --- | --- |
-| Token Factory client (timing, usage, 429/5xx retries) | `src/routewise/client.py` |
+| Chat client for Nebius Token Factory or OpenRouter (timing, usage, 429/5xx retries) | `src/routewise/client.py` |
 | The single cost function (input, cached-input, output, per-request) | `src/routewise/cost.py` |
-| Live price snapshot from `/v1/models?verbose=true` | `src/routewise/prices.py` |
+| Live price snapshot from the provider's model listing (per pinned host on OpenRouter) | `src/routewise/prices.py` |
 | Seeded workload generator + hand-labelled edge cases | `src/routewise/dataset.py`, `data/handwritten/` |
 | Ground-truth scoring (field-level, format-normalized) | `src/routewise/evaluate.py` |
 | Deterministic validator (never sees ground truth) | `src/routewise/validate.py`, `src/routewise/textfacts.py` |
@@ -249,7 +251,8 @@ Known blind spot: a well-formed answer that the text supports but that is semant
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -e ".[app,dev]"
-echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
+echo 'OPENROUTER_API_KEY=...' >> .env  # gitignored; live inference (config/openrouter.yaml)
+echo 'NEBIUS_API_KEY=...' >> .env      # reproduces the archived Nebius runs (config/grounded.yaml, other configs)
 ```
 
 ## Use the measured extraction route
@@ -257,11 +260,11 @@ echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
 The original default CLI config/policies preserve v1; the dashboard's default live experience uses the adopted profile. The adopted M6 extraction profile uses prompt v4, source grounding, Nano → Super escalation without hedging, and deterministic issue-date normalization:
 
 ```bash
-routewise --config config/grounded.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345 please, I paid $40.00.
+routewise --config config/openrouter.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345 please, I paid $40.00.
 [2026-04-02 10:00] Agent: Approved. The refund will be issued this Friday.'
 ```
 
-Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
+`config/grounded.yaml` is the measured Nebius configuration; use it to reproduce the archived runs while Nebius still serves the models. Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
 
 To test the adopted profile on your own conversations, follow [docs/workload-validation.md](docs/workload-validation.md). Customer data stays in two directories outside every git repository. The console shows aggregates only, and results leave only as reviewed aggregate exports. Labelers fill in [`data/validation-template/labeling-template.csv`](data/validation-template/README.md), and then:
 
@@ -287,6 +290,8 @@ routewise confirmation report --study m6 --run runs/confirmation-20261025T212745
 routewise recovery report --run runs/datesconfirm-20261026T133902Z-ab36f4   # M6 (study key m7)
 routewise validation report --run valpilot-…   # M7 (study key m8): private mode, once you have run it on your data
 routewise report --run runs/eval-…     # recompute a summary from recorded traces (no API calls)
+routewise --config config/openrouter.yaml prices           # every host's price and parameter support; pinned hosts checked
+routewise --config config/openrouter.yaml provider-check   # port sanity check beside archived M6 outcomes (not a new result)
 routewise route --example ext-025      # follow one request through validation/escalation/hedging
 streamlit run app/streamlit_app.py     # dashboard
 ```

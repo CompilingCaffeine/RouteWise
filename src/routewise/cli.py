@@ -17,11 +17,11 @@ from routewise import dataset, factsheets, faults, judge as judge_mod, latency, 
 from routewise.benchmark import candidate_metrics, run_benchmark
 from routewise.client import MissingCredentials, TokenFactoryClient
 from routewise.config import REPO_ROOT, Candidate, Config, load_config, load_dotenv
-from routewise.cost import Price
+from routewise.cost import Price, billing_matches
 from routewise.evaluation import STRATEGIES, build_routers, run_evaluation, summarize_evaluation, write_summary
 from routewise.execution import call_and_score
 from routewise.policy import load_policy, optimize, save_policy
-from routewise.prices import PriceNotFound, fetch_snapshot, load_snapshot, nvidia_models, price_for
+from routewise.prices import PriceNotFound, fetch_snapshot, host_problems, load_snapshot, nvidia_models, price_for
 from routewise.prompts import PromptTemplate, load_prompt
 from routewise.runlog import RunDir, read_jsonl, sha256_file
 from routewise.router import Trace
@@ -38,7 +38,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     data = sub.add_parser("data", help="regenerate the seeded dataset (data/v1)")
     data.add_argument("--check", action="store_true", help="verify committed data matches the generator")
 
-    sub.add_parser("prices", help="snapshot live model prices from /v1/models?verbose=true")
+    sub.add_parser("prices", help="snapshot live model prices (per pinned host on OpenRouter)")
     sub.add_parser('rules-baseline', help='offline rules-only diagnostic on the exposed public M6 conversations (no API calls)')
 
     probe = sub.add_parser("probe", help="call every candidate once on one labelled example")
@@ -119,6 +119,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     rs.add_argument("--nano", type=Path, nargs="+", required=True, help="v2 benchmark runs with Nano answers (one per sample)")
     rs.add_argument("--strong", type=Path, nargs="+", required=True, help="v2 benchmark runs with Super and Ultra answers")
 
+    pc = sub.add_parser("provider-check", help="port sanity check: the adopted profile on a sample of the M6 "
+                                                "representative set, beside the archived Nebius outcomes (not a new result)")
+    pc.add_argument("--n", type=int, default=50, help="representative conversations, evenly spaced across families")
+    pc.add_argument("--budget", type=float, default=1.5, help="API spend limit in USD")
+    pc.add_argument("--concurrency", type=int, default=4)
+    pc.add_argument("--rpm", type=float, default=60)
+    pc.add_argument("--run", type=Path, help="recompute the summary of an existing check (no API calls)")
+
     rep = sub.add_parser("report", help="recompute an evaluation's summary from its recorded traces (no API calls)")
     rep.add_argument("--run", type=Path, help="evaluation run directory (default: latest)")
 
@@ -191,6 +199,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "route": cmd_route,
         "evaluate": cmd_evaluate,
         "report": cmd_report,
+        "provider-check": cmd_provider_check,
         "validator-study": cmd_validator_study,
         "latency-profile": cmd_latency_profile,
         "load-sweep": cmd_load_sweep,
@@ -316,9 +325,11 @@ def cmd_data(config: Config, args: argparse.Namespace) -> int:
 
 def cmd_prices(config: Config, args: argparse.Namespace) -> int:
     client = TokenFactoryClient(base_url=config.base_url)
-    snapshot = fetch_snapshot(client, config.base_url, config.prices_snapshot)
+    snapshot = fetch_snapshot(client, config.base_url, config.prices_snapshot, [c.model_id for c in config.candidates])
     print(f"Saved {len(snapshot['models'])} models to {_display(config.prices_snapshot)}")
     print(f"fetched_at {snapshot['fetched_at']}\n")
+    if snapshot.get("provider") == "openrouter":
+        return _print_host_prices(config, snapshot)
 
     rows = []
     for model_id in nvidia_models(snapshot):
@@ -346,6 +357,46 @@ def cmd_prices(config: Config, args: argparse.Namespace) -> int:
         except PriceNotFound as exc:
             ok = False
             print(f"  MISSING  {cand.name:<8} {exc}")
+    return 0 if ok else 1
+
+
+def _required_parameters(config: Config) -> list[str]:
+    """Request parameters a pinned OpenRouter host must support; require_parameters refuses any other host."""
+    needed = ["max_tokens", "temperature", "reasoning", "response_format"]
+    if config.response_format == "json_schema":
+        needed.append("structured_outputs")
+    if config.seed is not None:
+        needed.append("seed")
+    return needed
+
+
+def _print_host_prices(config: Config, snapshot: dict[str, Any]) -> int:
+    pinned = {(c.model_id, c.host) for c in config.candidates}
+    for model_id in dict.fromkeys(c.model_id for c in config.candidates):
+        print(f"{model_id} hosts (USD per 1M tokens; * pinned):")
+        rows = []
+        for host, endpoint in ((snapshot["models"].get(model_id) or {}).get("endpoints") or {}).items():
+            supported = set(endpoint.get("supported_parameters") or [])
+            try:
+                price = price_for(snapshot, model_id, host)
+                cost = [f"{price.prompt_per_million:.3f}",
+                        f"{price.input_cache_read * 1e6:.3f}" if price.input_cache_read is not None else "-",
+                        f"{price.completion_per_million:.3f}"]
+            except PriceNotFound:
+                cost = ["dynamic", "-", "dynamic"]
+            uptime = endpoint.get("uptime_last_30m")
+            rows.append([("* " if (model_id, host) in pinned else "  ") + host, endpoint.get("quantization") or "-", *cost,
+                         "yes" if "structured_outputs" in supported else "no", "yes" if "seed" in supported else "no",
+                         "-" if uptime is None else f"{uptime:.0f}%"])
+        _print_table(["host", "quant", "input", "cached", "output", "json_schema", "seed", "uptime_30m"], rows)
+        print()
+    print(f"Configured candidates (pinned host must support {', '.join(_required_parameters(config))}):")
+    ok = True
+    for cand in config.candidates:
+        problems = host_problems(snapshot, cand.model_id, cand.host, _required_parameters(config))
+        ok = ok and not problems
+        print(f"  {'ok     ' if not problems else 'MISSING'}  {cand.name:<8} {cand.model_id} @ {cand.host}"
+              + (f": {'; '.join(problems)}" if problems else ""))
     return 0 if ok else 1
 
 
@@ -379,7 +430,7 @@ def cmd_probe(config: Config, args: argparse.Namespace) -> int:
         ["candidate", "latency_ms", "in_tok", "out_tok", "reason_tok", "cost_usd", "schema", "field_acc", "error"],
         [_probe_row(r) for r in records],
     )
-    _print_probe_checks(records, both_modes=len(modes) == 2)
+    _print_probe_checks(records, both_modes=len(modes) == 2, hosts={c.label: c.host for c, _ in plan})
     print(f"\nRaw records: {_display(run.path / 'calls.jsonl')}")
     return 0
 
@@ -468,7 +519,8 @@ def cmd_route(config: Config, args: argparse.Namespace) -> int:
     reason = policy["tasks"][task]["reason"] if args.strategy == "routewise" else "fixed baseline"
     print(f"why: {reason}")
     for call, check in zip(trace.calls, trace.validations):
-        print(f"\n[{call.candidate}] {call.latency_ms} ms, {call.prompt_tokens}+{call.completion_tokens} tokens, ${call.cost_usd:.6f}")
+        print(f"\n[{call.candidate}] {call.latency_ms} ms, {call.prompt_tokens}+{call.completion_tokens} tokens, "
+              f"${call.cost_usd:.6f}{_billing_note(call)}")
         print(f"  output: {json.dumps(call.parsed) if call.parsed is not None else call.content}")
         for c in check["checks"]:
             print(f"  {'pass' if c['passed'] else 'FAIL'}  {c['rule']}{(': ' + c['detail']) if c['detail'] else ''}")
@@ -515,7 +567,7 @@ def cmd_evaluate(config: Config, args: argparse.Namespace) -> int:
         prompts={t: _prompt_meta(p) for t, p in prompts.items()},
         strategies={name: {t: r.option(t).label for t in policy["tasks"]} for name, r in routers.items()},
         load={"concurrency": args.concurrency, "rpm": args.rpm},
-        **_common_manifest(config, snapshot, [(c, price_for(snapshot, c.model_id)) for c in config.candidates]),
+        **_common_manifest(config, snapshot, [(c, _price(snapshot, c)) for c in config.candidates]),
     )
     print(f"Evaluation {run.experiment_id}: {len(examples)} {args.split} examples x {len(routers)} strategies")
     traces = run_evaluation(routers, examples, run, concurrency=args.concurrency, rpm=args.rpm)
@@ -538,6 +590,33 @@ def cmd_report(config: Config, args: argparse.Namespace) -> int:
     _print_evaluation(summary, policy)
     print(f"\nRewrote {_display(run_dir)}/summary.json and summary.csv from {len(traces)} recorded traces")
     return 0
+
+
+def cmd_provider_check(config: Config, args: argparse.Namespace) -> int:
+    from routewise import provider_check
+    run_path = args.run or provider_check.run_check(TokenFactoryClient(base_url=config.base_url), config, n=args.n,
+                                                    budget_usd=args.budget, concurrency=args.concurrency, rpm=args.rpm)
+    s = provider_check.report(run_path)
+    print(f"\n{s['status']}.")
+    rows = []
+    for name, m in ((f"{s['provider']} (fresh)", s["fresh"]),
+                    (f"nebius M6 {s['reference']['run']} (archived)", s["reference"]["same_conversations"])):
+        if not m.get("n"):
+            continue
+        rows.append([name, str(m["n"]), _pct(m["cac_rate"]), _pct(m["review_rate"]), str(m["undetected_errors"]),
+                     f"{m['task_accuracy']:.3f}" if m["task_accuracy"] is not None else "-", f"{m['cost_per_1k_tasks']:.4f}",
+                     _fmt_ms(m["p50_latency_ms"]), _fmt_ms(m["p95_latency_ms"]), str(m["deadline_misses"])])
+    _print_table(["run", "n", "correct/no review", "review", "wrong releases", "task_acc", "$/1k", "p50_ms", "p95_ms",
+                  "> 4 s"], rows)
+    b = s["billing"]
+    print(f"\nserved by: {s['served_by']}")
+    print(f"billing matches cost.py: {b['matches']}/{b['with_reported_charge']} calls with a reported charge "
+          f"({b['calls']} calls)")
+    print(f"spend: ${s['spend_usd']['cost_py']:.4f} (cost.py), ${s['spend_usd']['reported']:.4f} (reported by provider)")
+    print(f"changed outcomes vs archived: {len(s['changed_outcomes'])}")
+    print("escalate to the owner: " + ("; ".join(s["escalate"]) if s["escalate"] else "nothing"))
+    print(f"Results: {_display(run_path)}/summary.json, observations.jsonl")
+    return 0 if s["complete"] else 1
 
 
 def cmd_validator_study(config: Config, args: argparse.Namespace) -> int:
@@ -569,7 +648,7 @@ def cmd_validator_study(config: Config, args: argparse.Namespace) -> int:
         n_samples=len(samples),
         dataset={"version": dataset.VERSION, "sha256": dataset.dataset_sha256()},
         load={"concurrency": args.concurrency, "rpm": args.rpm},
-        **_common_manifest(config, snapshot, [(c, price_for(snapshot, c.model_id)) for c in config.candidates]),
+        **_common_manifest(config, snapshot, [(c, _price(snapshot, c)) for c in config.candidates]),
     )
     print(f"Validator study {run.experiment_id}: {len(samples)} first answers ({split}), judges {judges}")
     records = validator_study.run_judges(client, config, samples, judges, _label_prices(config, snapshot), prompts,
@@ -608,7 +687,7 @@ def cmd_latency_profile(config: Config, args: argparse.Namespace) -> int:
     run.write_manifest(
         kind="latency_profile", example_id=example.id, input_sizes=latency.INPUT_SIZES, output_shapes=latency.OUTPUT_SHAPES,
         reps=args.reps, seed=args.seed, prompt=_prompt_meta(prompt), load={"concurrency": args.concurrency, "rpm": args.rpm},
-        **_common_manifest(config, snapshot, [(m, price_for(snapshot, m.model_id)) for m in models]),
+        **_common_manifest(config, snapshot, [(m, _price(snapshot, m)) for m in models]),
     )
     n = len(models) * len(latency.INPUT_SIZES) * len(latency.OUTPUT_SHAPES) * args.reps
     print(f"Latency profile {run.experiment_id}: {n} streamed calls on {example.id}")
@@ -640,7 +719,7 @@ def cmd_load_sweep(config: Config, args: argparse.Namespace) -> int:
     run.write_manifest(
         kind="load_sweep", levels=levels, requests_per_level=args.requests, cooldown_s=args.cooldown, seed=args.seed,
         workload=[e.id for e in workload], prompt=_prompt_meta(prompt),
-        **_common_manifest(config, snapshot, [(m, price_for(snapshot, m.model_id)) for m in models]),
+        **_common_manifest(config, snapshot, [(m, _price(snapshot, m)) for m in models]),
     )
     print(f"Load sweep {run.experiment_id}: models {[m.label for m in models]}, levels {levels}, {args.requests} requests each")
     records = []
@@ -680,7 +759,7 @@ def cmd_synth(config: Config, args: argparse.Namespace) -> int:
         writer_prompt_sha256=hashlib.sha256(synth.WRITER_SYSTEM.encode()).hexdigest(),
         factsheets_sha256=sha256_file(Path(factsheets.__file__)),
         load={"concurrency": args.concurrency, "rpm": args.rpm},
-        **_common_manifest(config, snapshot, [(config.candidate(w), price_for(snapshot, config.candidate(w).model_id)) for w in writers]),
+        **_common_manifest(config, snapshot, [(config.candidate(w), _price(snapshot, config.candidate(w))) for w in writers]),
     )
     print(f"Synthesis {run.experiment_id}: {len(sheets)} fact sheets, writers {writers}")
     records = synth.write_all(client, config, sheets, _label_prices(config, snapshot), concurrency=args.concurrency,
@@ -798,7 +877,7 @@ def cmd_synth_verify(config: Config, args: argparse.Namespace) -> int:
     client = TokenFactoryClient(base_url=config.base_url)
     snapshot = _snapshot(client, config)
     verifiers = [config.with_reasoning(config.candidate(name), "on") for name in ("ultra", "super")]
-    plan = [(v, price_for(snapshot, v.model_id)) for v in verifiers]
+    plan = [(v, _price(snapshot, v)) for v in verifiers]
     prompts = _prompts(config)
     run = RunDir.create("synthverify")
     run.write_manifest(kind="synth_verify", synth_run=_display(run_dir), n_examples=len(examples),
@@ -886,8 +965,12 @@ def _print_evaluation(summary: dict[str, Any], policy: dict[str, Any]) -> None:
 
 def _snapshot(client: TokenFactoryClient, config: Config) -> dict[str, Any]:
     if not config.prices_snapshot.exists():
-        fetch_snapshot(client, config.base_url, config.prices_snapshot)
+        fetch_snapshot(client, config.base_url, config.prices_snapshot, [c.model_id for c in config.candidates])
     return load_snapshot(config.prices_snapshot)
+
+
+def _price(snapshot: dict[str, Any], cand: Candidate) -> Price:
+    return price_for(snapshot, cand.model_id, cand.host)
 
 
 def _priced_candidates(
@@ -897,20 +980,20 @@ def _priced_candidates(
     plan, problems = [], []
     for cand in chosen:
         try:
-            price = price_for(snapshot, cand.model_id)
+            price = _price(snapshot, cand)
         except PriceNotFound as exc:
             problems.append(str(exc))
             continue
         variants = [config.with_reasoning(cand, m) for m in modes] if modes else [cand]
         plan.extend((v, price) for v in variants)
     if problems:
-        print("Fix model ids in config/routewise.yaml:", *problems, sep="\n  ", file=sys.stderr)
+        print(f"Fix model ids or hosts in {_display(config.path)}:", *problems, sep="\n  ", file=sys.stderr)
         return None
     return plan
 
 
 def _label_prices(config: Config, snapshot: dict[str, Any]) -> dict[str, Price]:
-    return {c.label: price_for(snapshot, c.model_id) for c in config.candidates}
+    return {c.label: _price(snapshot, c) for c in config.candidates}
 
 
 def _prompts(config: Config) -> dict[str, PromptTemplate]:
@@ -924,12 +1007,14 @@ def _prompt_meta(p: PromptTemplate) -> dict[str, str]:
 def _common_manifest(config: Config, snapshot: dict[str, Any], plan: list[tuple[Candidate, Price]]) -> dict[str, Any]:
     return {
         "config_sha256": sha256_file(config.path),
+        "provider": {"name": config.provider, "base_url": config.base_url},
         "prices": {"sha256": sha256_file(config.prices_snapshot), "fetched_at": snapshot["fetched_at"]},
         "generation": {"temperature": config.temperature, "seed": config.seed, "response_format": config.response_format},
         "thresholds": {t: vars(th) for t, th in config.thresholds.items()},
         "candidates": [
-            {"label": c.label, "model_id": c.model_id, "max_tokens": c.max_tokens, "extra_body": c.extra_body,
-             "usd_per_1m_input": p.prompt_per_million, "usd_per_1m_output": p.completion_per_million}
+            {"label": c.label, "model_id": c.model_id, "host": c.host, "max_tokens": c.max_tokens,
+             "extra_body": c.extra_body, "usd_per_1m_input": p.prompt_per_million,
+             "usd_per_1m_output": p.completion_per_million}
             for c, p in plan
         ],
     }
@@ -969,7 +1054,7 @@ def _probe_row(r: CallRecord) -> list[str]:
     ]
 
 
-def _print_probe_checks(records: list[CallRecord], both_modes: bool) -> None:
+def _print_probe_checks(records: list[CallRecord], both_modes: bool, hosts: dict[str, str | None] | None = None) -> None:
     ok_calls = [r for r in records if r.error is None]
     print("\nFeasibility checks:")
     print(f"  calls succeeded:          {len(ok_calls)}/{len(records)}")
@@ -977,6 +1062,18 @@ def _print_probe_checks(records: list[CallRecord], both_modes: bool) -> None:
     print(f"  schema-valid JSON:        {sum(r.parsed is not None and not r.schema_error for r in ok_calls)}/{len(ok_calls)}")
     usable_models = {r.model_id for r in ok_calls if r.prompt_tokens is not None and r.parsed is not None}
     print(f"  usable distinct models:   {len(usable_models)} (gate: >= 2)")
+    off = [r for r in ok_calls if r.reasoning == "off"]
+    print(f"  reasoning off honoured:   {sum(not r.reasoning_tokens and not r.reasoning_chars for r in off)}/{len(off)}")
+    pinned = {label: host for label, host in (hosts or {}).items() if host}
+    if pinned:
+        on_host = sum(_same_host(r.served_by, pinned.get(r.candidate)) for r in ok_calls)
+        print(f"  served by pinned host:    {on_host}/{len(ok_calls)} "
+              f"({', '.join(sorted({f'{r.candidate}={r.served_by}' for r in ok_calls}))})")
+        billed = [r for r in ok_calls if billing_matches(r.cost_usd, r.reported_cost_usd) is not None]
+        drift = [f"{r.candidate}: cost.py ${r.cost_usd:.8f} vs billed ${r.reported_cost_usd:.8f}"
+                 for r in billed if not billing_matches(r.cost_usd, r.reported_cost_usd)]
+        print(f"  billing matches cost.py:  {len(billed) - len(drift)}/{len(billed)} with a reported charge"
+              + "".join(f"\n    DRIFT {d}" for d in drift))
     if both_modes:
         print("  reasoning toggle (completion tokens off -> on):")
         by_model: dict[str, dict[str, CallRecord]] = {}
@@ -996,6 +1093,21 @@ def _print_metrics_table(metrics: dict[tuple[str, str], dict]) -> None:
         for (c, t), m in metrics.items()
     ]
     _print_table(["candidate", "task", "n", "task_acc", "field_acc", "schema", "p50_ms", "p95_ms", "$/1k", "errors"], rows)
+
+
+def _same_host(served_by: str | None, host: str | None) -> bool:
+    """OpenRouter reports the provider name ("DekaLLM"); pinned hosts are endpoint slugs ("dekallm/fp8")."""
+    def norm(s: str) -> str:
+        return "".join(ch for ch in s.lower() if ch.isalnum())
+    return bool(served_by and host) and norm(served_by) == norm(host.split("/")[0])
+
+
+def _billing_note(call: CallRecord) -> str:
+    if call.reported_cost_usd is None:
+        return ""
+    match = billing_matches(call.cost_usd, call.reported_cost_usd)
+    return (f" (billed ${call.reported_cost_usd:.6f} by {call.served_by or 'provider'}"
+            f"{'' if match else '; DRIFT vs cost.py'})")
 
 
 def _fmt_ms(v: float | None) -> str:

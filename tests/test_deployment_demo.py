@@ -3,7 +3,7 @@ import json
 import httpx
 import pytest
 
-from fakes import completion_body, transport
+from fakes import completion_body, openrouter_completion, transport
 from routewise.client import TokenFactoryClient
 from routewise.config import REPO_ROOT
 from routewise.deployment import (adopted_evidence, adopted_router, deployment_decision, explore_requirements)
@@ -74,28 +74,61 @@ def test_rules_request_review_rather_than_guess_on_ambiguity(text):
     assert not answer.released and answer.review_reasons
 
 
-def test_guided_ui_runs_the_adopted_profile_and_explains_review(monkeypatch):
+def test_live_recipe_targets_the_live_provider_while_evidence_stays_on_nebius():
+    e = adopted_evidence(REPO_ROOT)
+    m, selected = explore_requirements(e, accuracy=.95, field_accuracy=.95, deadline_ms=4000)
+    for provider, config in (('openrouter', 'config/openrouter.yaml'), ('nebius', 'config/grounded.yaml')):
+        decision = deployment_decision(e, m, selected, accuracy=.95, field_accuracy=.95, deadline_ms=4000,
+                                       root=REPO_ROOT, provider=provider)
+        assert decision['cli'].startswith(f'routewise --config {config} route')
+        assert decision['runtime']['config'] == config
+        assert decision['evidence']['config'] == 'config/grounded.yaml'
+        assert decision['evidence']['measured_on'] == 'Nebius Token Factory'
+    assert decision['runtime']['hosts'] is None
+    openrouter = deployment_decision(e, m, selected, accuracy=.95, field_accuracy=.95, deadline_ms=4000,
+                                     root=REPO_ROOT, provider='openrouter')
+    assert openrouter['runtime']['hosts'] == {'nano': 'nebius/fp8', 'super': 'dekallm/fp8', 'ultra': 'deepinfra/fp4'}
+
+
+@pytest.mark.parametrize('provider, key_env, button', [
+    ('openrouter', 'OPENROUTER_API_KEY', 'Run on OpenRouter'),
+    ('nebius', 'NEBIUS_API_KEY', 'Run on Nebius Token Factory'),
+])
+def test_guided_ui_runs_the_adopted_profile_and_explains_review(monkeypatch, provider, key_env, button):
     import sys
     from streamlit.testing.v1 import AppTest
 
     sys.path.insert(0, str(REPO_ROOT / 'app'))
     import routewise.client as client_module
     monkeypatch.delenv('ROUTEWISE_ARTIFACTS', raising=False)
-    monkeypatch.setenv('NEBIUS_API_KEY', 'test')
-    monkeypatch.setattr(client_module, 'TokenFactoryClient', lambda **kwargs: client_for(ANSWER))
+    monkeypatch.setenv('ROUTEWISE_PROVIDER', provider)
+    monkeypatch.setenv(key_env, 'test')
+    bodies = []
+
+    def chat(body):
+        bodies.append(body)
+        if 'provider' in body:
+            return httpx.Response(200, json=openrouter_completion(json.dumps(ANSWER), body))
+        return httpx.Response(200, json=completion_body(json.dumps(ANSWER)))
+
+    monkeypatch.setattr(client_module, 'TokenFactoryClient',
+                        lambda **kwargs: TokenFactoryClient(api_key='test', http_client=httpx.Client(transport=transport(chat))))
     at = AppTest.from_file(str(REPO_ROOT / 'app/streamlit_app.py'), default_timeout=60).run()
     assert not at.exception
     sample = next(s for s in at.selectbox if s.label == 'Example conversation')
     sample.select('Relative issue date').run()
-    next(b for b in at.button if b.label == 'Run on Nebius Token Factory').click().run()
+    next(b for b in at.button if b.label == button).click().run()
     assert not at.exception
     trace = at.session_state['start-live-last-result']['trace']
     assert trace['final_valid'] and trace['final_output']['refund_date'] == '2026-04-06'
+    assert ('provider' in bodies[-1]) == (provider == 'openrouter')
+    assert trace['calls'][0]['model_id'] == ('nvidia/nemotron-3-nano-30b-a3b' if provider == 'openrouter'
+                                             else 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B')
     assert any('Final output after normalization' in m.value for m in at.markdown)
     next(s for s in at.selectbox if s.label == 'Example conversation').select('Ambiguous date · review').run()
     # An edited input must not retain the old live answer.
     assert not any('LIVE · request' in c.value for c in at.caption)
-    next(b for b in at.button if b.label == 'Run on Nebius Token Factory').click().run()
+    next(b for b in at.button if b.label == button).click().run()
     assert not at.exception
     assert not at.session_state['start-live-last-result']['trace']['final_valid']
     assert any('Held for human review' in w.value for w in at.warning)

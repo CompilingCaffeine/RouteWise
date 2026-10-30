@@ -1,0 +1,613 @@
+{
+  "fetched_at": "2026-10-30T23:04:44.950273+00:00",
+  "provider": "openrouter",
+  "source": "https://openrouter.ai/api/v1/models",
+  "endpoints_source": "https://openrouter.ai/api/v1/models/{model_id}/endpoints",
+  "scope": "NVIDIA models; per-host endpoints for the configured candidates. A pinned host bills its endpoint price.",
+  "unit": "USD per token",
+  "models": {
+    "nvidia/nemotron-3-nano-30b-a3b": {
+      "name": "NVIDIA: Nemotron 3 Nano 30B A3B",
+      "canonical_slug": "nvidia/nemotron-3-nano-30b-a3b",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.00000006",
+        "completion": "0.00000024",
+        "input_cache_read": "0.000000012"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "presence_penalty",
+        "reasoning",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_logprobs",
+        "top_p"
+      ],
+      "endpoints": {
+        "nebius/fp8": {
+          "provider_name": "Nebius",
+          "quantization": "fp8",
+          "context_length": 262144,
+          "max_completion_tokens": 235929,
+          "pricing": {
+            "prompt": "0.00000006",
+            "completion": "0.00000024",
+            "input_cache_read": "0.000000012",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "top_k",
+            "logit_bias",
+            "repetition_penalty",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        },
+        "novita/fp4": {
+          "provider_name": "Novita",
+          "quantization": "fp4",
+          "context_length": 262144,
+          "max_completion_tokens": 32768,
+          "pricing": {
+            "prompt": "0.00000005",
+            "completion": "0.0000002",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "top_k",
+            "repetition_penalty",
+            "response_format",
+            "tools",
+            "tool_choice",
+            "logprobs",
+            "top_logprobs"
+          ],
+          "status": -5,
+          "uptime_last_30m": 0
+        }
+      }
+    },
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+      "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+      "canonical_slug": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning-20260428",
+      "context_length": 256000,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "seed",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "name": "NVIDIA: Nemotron 3 Super",
+      "canonical_slug": "nvidia/nemotron-3-super-120b-a12b-20230311",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.0000003",
+        "completion": "0.0000024",
+        "input_cache_read": "0.00000015"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "reasoning",
+        "reasoning_effort",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_logprobs",
+        "top_p"
+      ],
+      "endpoints": {
+        "crusoe/fp8": {
+          "provider_name": "Crusoe",
+          "quantization": "fp8",
+          "context_length": 1048576,
+          "max_completion_tokens": 262144,
+          "pricing": {
+            "prompt": "0.0000003",
+            "completion": "0.0000024",
+            "input_cache_read": "0.00000015",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "min_p",
+            "repetition_penalty",
+            "top_k",
+            "logit_bias",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": null
+        },
+        "deepinfra/bf16": {
+          "provider_name": "DeepInfra",
+          "quantization": "bf16",
+          "context_length": 262144,
+          "max_completion_tokens": 16384,
+          "pricing": {
+            "prompt": "0.000000085",
+            "completion": "0.0000004",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "repetition_penalty",
+            "top_k",
+            "seed",
+            "min_p",
+            "tools",
+            "tool_choice",
+            "logit_bias",
+            "response_format",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        },
+        "dekallm/fp8": {
+          "provider_name": "DekaLLM",
+          "quantization": "fp8",
+          "context_length": 262144,
+          "max_completion_tokens": 235929,
+          "pricing": {
+            "prompt": "0.00000008",
+            "completion": "0.00000045",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "frequency_penalty",
+            "logit_bias",
+            "max_tokens",
+            "presence_penalty",
+            "seed",
+            "stop",
+            "temperature",
+            "top_p",
+            "response_format",
+            "tools",
+            "logprobs",
+            "top_logprobs",
+            "structured_outputs",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        }
+      }
+    },
+    "nvidia/nemotron-3-ultra-550b-a55b": {
+      "name": "NVIDIA: Nemotron 3 Ultra",
+      "canonical_slug": "nvidia/nemotron-3-ultra-550b-a55b-20260604",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.0000006",
+        "completion": "0.0000024",
+        "input_cache_read": "0.00000012"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logit_bias",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "reasoning",
+        "reasoning_effort",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_p"
+      ],
+      "endpoints": {
+        "baseten/fp4": {
+          "provider_name": "BaseTen",
+          "quantization": "fp4",
+          "context_length": 202800,
+          "max_completion_tokens": 182520,
+          "pricing": {
+            "prompt": "0.0000006",
+            "completion": "0.0000024",
+            "input_cache_read": "0.00000012",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "top_k",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        },
+        "baseten/fp4/us": {
+          "provider_name": "BaseTen",
+          "quantization": "fp4",
+          "context_length": 202800,
+          "max_completion_tokens": 182520,
+          "pricing": {
+            "prompt": "0.0000006",
+            "completion": "0.0000024",
+            "input_cache_read": "0.00000012",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "top_k",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        },
+        "deepinfra/fp4": {
+          "provider_name": "DeepInfra",
+          "quantization": "fp4",
+          "context_length": 262144,
+          "max_completion_tokens": 16384,
+          "pricing": {
+            "prompt": "0.0000005",
+            "completion": "0.0000022",
+            "input_cache_read": "0.0000001",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "repetition_penalty",
+            "top_k",
+            "seed",
+            "min_p",
+            "tools",
+            "tool_choice",
+            "structured_outputs",
+            "response_format",
+            "logit_bias",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        },
+        "deepinfra/fp4/flex": {
+          "provider_name": "DeepInfra",
+          "quantization": "fp4",
+          "context_length": 262144,
+          "max_completion_tokens": 16384,
+          "pricing": {
+            "prompt": "0.0000004",
+            "completion": "0.00000176",
+            "input_cache_read": "0.00000008",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "repetition_penalty",
+            "top_k",
+            "seed",
+            "min_p",
+            "logit_bias",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": null
+        },
+        "venice/fp8": {
+          "provider_name": "Venice",
+          "quantization": "fp8",
+          "context_length": 256000,
+          "max_completion_tokens": 32768,
+          "pricing": {
+            "prompt": "0.000000625",
+            "completion": "0.000003125",
+            "input_cache_read": "0.0000001875",
+            "discount": 0
+          },
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "top_k",
+            "response_format",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100
+        }
+      }
+    },
+    "nvidia/nemotron-3-ultra-550b-a55b:free": {
+      "name": "NVIDIA: Nemotron 3 Ultra (free)",
+      "canonical_slug": "nvidia/nemotron-3-ultra-550b-a55b-20260604",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "seed",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3.5-content-safety": {
+      "name": "NVIDIA: Nemotron 3.5 Content Safety",
+      "canonical_slug": "nvidia/nemotron-3.5-content-safety-20260604",
+      "context_length": 131072,
+      "pricing": {
+        "prompt": "0.0000002",
+        "completion": "0.0000002"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logit_bias",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "reasoning",
+        "repetition_penalty",
+        "seed",
+        "stop",
+        "temperature",
+        "top_k",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3.5-content-safety:free": {
+      "name": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+      "canonical_slug": "nvidia/nemotron-3.5-content-safety-20260604",
+      "context_length": 128000,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "seed",
+        "temperature",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3.5-lightning": {
+      "name": "NVIDIA: Nemotron 3.5 Lightning",
+      "canonical_slug": "nvidia/nemotron-3.5-lightning-20260807",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.00000007",
+        "completion": "0.0000002",
+        "input_cache_read": "0.00000004"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "reasoning",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_logprobs",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3.5-lightning:free": {
+      "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+      "canonical_slug": "nvidia/nemotron-3.5-lightning-20260807",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "seed",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3.5-super-vl": {
+      "name": "NVIDIA: Nemotron 3.5 Super VL",
+      "canonical_slug": "nvidia/nemotron-3.5-super-vl-20261015",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000015",
+        "completion": "0.0000005",
+        "input_cache_read": "0.00000002"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "reasoning",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_k",
+        "top_logprobs",
+        "top_p"
+      ]
+    },
+    "nvidia/nemotron-3.5-super-vl:free": {
+      "name": "NVIDIA: Nemotron 3.5 Super VL (free)",
+      "canonical_slug": "nvidia/nemotron-3.5-super-vl-20261015",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_tokens",
+        "reasoning",
+        "response_format",
+        "seed",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ]
+    },
+    "nvidia/switchyard": {
+      "name": "NVIDIA: Switchyard",
+      "canonical_slug": "nvidia/switchyard",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "-1",
+        "completion": "-1"
+      },
+      "supported_parameters": []
+    }
+  }
+}

@@ -1,7 +1,9 @@
-"""Thin Token Factory client: the one place that times calls, normalizes usage and retries.
+"""Thin chat client: the one place that times calls, normalizes usage and retries.
 
-Only transport failures (HTTP 429, 5xx, connection errors) are retried here, and every
-attempt is counted. Quality-driven escalation is the router's job, not the client's.
+Serves any OpenAI-compatible provider in PROVIDERS (Nebius Token Factory, OpenRouter); the
+provider follows from the base URL unless named. Only transport failures (HTTP 429, 5xx,
+connection errors) are retried here, and every attempt is counted. Quality-driven escalation
+is the router's job, not the client's.
 """
 
 from __future__ import annotations
@@ -17,7 +19,9 @@ import httpx
 import openai
 from openai import OpenAI
 
-DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
+DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"  # Nebius: every archived run was measured here
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/"
+# Nebius-specific; recorded when a provider sends them, never required.
 RATELIMIT_HEADERS = (
     "x-ratelimit-remaining-requests",
     "x-ratelimit-remaining-tokens",
@@ -25,6 +29,29 @@ RATELIMIT_HEADERS = (
 )
 _RETRYABLE = (openai.RateLimitError, openai.InternalServerError, openai.APIConnectionError)
 _MAX_BACKOFF_S = 60.0
+
+
+@dataclass(frozen=True)
+class Provider:
+    name: str
+    label: str
+    base_url: str
+    key_env: str
+    key_url: str
+    headers: dict[str, str] = field(default_factory=dict)
+
+
+PROVIDERS = {
+    "nebius": Provider("nebius", "Nebius Token Factory", DEFAULT_BASE_URL, "NEBIUS_API_KEY",
+                       "https://tokenfactory.nebius.com"),
+    "openrouter": Provider("openrouter", "OpenRouter", OPENROUTER_BASE_URL, "OPENROUTER_API_KEY",
+                           "https://openrouter.ai/settings/keys",
+                           {"HTTP-Referer": "https://github.com/CompilingCaffeine/RouteWise", "X-Title": "RouteWise"}),
+}
+
+
+def provider_for_url(base_url: str) -> str:
+    return "openrouter" if httpx.URL(base_url).host == httpx.URL(OPENROUTER_BASE_URL).host else "nebius"
 
 
 class MissingCredentials(RuntimeError):
@@ -51,27 +78,32 @@ class ChatResult:
     streamed: bool = False
     ttft_ms: float | None = None  # dispatch -> first content/reasoning token (streaming only)
     decode_ms: float | None = None  # first token -> stream end (streaming only)
+    served_by: str | None = None  # upstream host that answered (OpenRouter `provider`); None on Nebius
+    reported_cost_usd: float | None = None  # provider-reported charge (OpenRouter usage.cost; 1 credit = 1 USD)
 
 
-class TokenFactoryClient:
+class ChatClient:
     def __init__(
         self,
         api_key: str | None = None,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: str | None = None,
         *,
+        provider: str | None = None,
         max_attempts: int = 4,
         timeout_s: float = 120.0,
         http_client: httpx.Client | None = None,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
-        key = api_key or os.environ.get("NEBIUS_API_KEY")
+        self.provider = PROVIDERS[provider or (provider_for_url(base_url) if base_url else "nebius")]
+        env = self.provider.key_env
+        key = api_key or os.environ.get(env)
         if not key:
             raise MissingCredentials(
-                "NEBIUS_API_KEY is not set. Create a key at https://tokenfactory.nebius.com "
-                "and export it, or put NEBIUS_API_KEY=... in the repo's .env file."
+                f"{env} is not set. Create a key at {self.provider.key_url} "
+                f"and export it, or put {env}=... in the repo's .env file."
             )
         self._key = key
-        self._base_url = base_url.rstrip("/") + "/"
+        self._base_url = (base_url or self.provider.base_url).rstrip("/") + "/"
         self._max_attempts = max_attempts
         self._sleep = sleep
         self._http = http_client or httpx.Client(timeout=timeout_s)
@@ -81,16 +113,21 @@ class TokenFactoryClient:
             max_retries=0,
             timeout=timeout_s,
             http_client=self._http,
+            default_headers=self.provider.headers or None,
         )
 
-    def list_models_verbose(self) -> list[dict[str, Any]]:
-        resp = self._http.get(
-            self._base_url + "models",
-            params={"verbose": "true"},
-            headers={"Authorization": f"Bearer {self._key}"},
-        )
+    def _get(self, path: str, **params: str) -> Any:
+        resp = self._http.get(self._base_url + path, params=params,
+                              headers={"Authorization": f"Bearer {self._key}", **self.provider.headers})
         resp.raise_for_status()
         return resp.json()["data"]
+
+    def list_models_verbose(self) -> list[dict[str, Any]]:
+        return self._get("models", verbose="true")
+
+    def list_endpoints(self, model_id: str) -> list[dict[str, Any]]:
+        """OpenRouter only: every upstream host serving `model_id`, each with its own price and parameters."""
+        return self._get(f"models/{model_id}/endpoints")["endpoints"]
 
     def chat(
         self,
@@ -186,6 +223,8 @@ def _to_result(model: str, started_at: str, completion: Any, headers: httpx.Head
         cached_tokens=getattr(prompt_details, "cached_tokens", None),
         ratelimit={h: headers[h] for h in RATELIMIT_HEADERS if h in headers},
         error=None if choice else "response contained no choices",
+        served_by=getattr(completion, "provider", None),
+        reported_cost_usd=_reported_cost(usage),
     )
 
 
@@ -194,10 +233,12 @@ def _consume_stream(model: str, started_at: str, stream: Any, headers: httpx.Hea
     content, reasoning = [], []
     finish_reason = None
     usage = None
+    served_by = None
     t_first = None
     error = None
     try:
         for chunk in stream:
+            served_by = served_by or getattr(chunk, "provider", None)
             if chunk.usage is not None:
                 usage = chunk.usage
             for choice in chunk.choices:
@@ -234,7 +275,17 @@ def _consume_stream(model: str, started_at: str, stream: Any, headers: httpx.Hea
         streamed=True,
         ttft_ms=round((t_first - t_dispatch) * 1000, 1) if t_first is not None else None,
         decode_ms=round((t_end - t_first) * 1000, 1) if t_first is not None else None,
+        served_by=served_by,
+        reported_cost_usd=_reported_cost(usage),
     )
+
+
+def _reported_cost(usage: Any) -> float | None:
+    cost = getattr(usage, "cost", None)
+    return float(cost) if cost is not None else None
+
+
+TokenFactoryClient = ChatClient  # back-compat: the client predates multi-provider support
 
 
 def _backoff_s(exc: Exception, attempt: int) -> float:

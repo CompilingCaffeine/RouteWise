@@ -142,6 +142,7 @@ def call_fallback(client: TokenFactoryClient, config: Config, candidate: Candida
         reasoning_chars=len(result.reasoning_content) if result.reasoning_content else None,
         parsed=data, parse_error=problem if data is None else None, schema_error=problem if data is not None else None,
         error=result.error, ratelimit=result.ratelimit,
+        served_by=result.served_by, reported_cost_usd=result.reported_cost_usd,
     )
 
 

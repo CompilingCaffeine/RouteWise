@@ -7,7 +7,7 @@ import streamlit as st
 
 from routewise import artifacts
 from routewise.benchmark import run_benchmark
-from routewise.client import TokenFactoryClient
+from routewise.client import PROVIDERS, TokenFactoryClient
 from routewise.config import REPO_ROOT, load_config
 from routewise.confirmation import OPTIONS, deployment_metrics
 from routewise.evaluation import run_evaluation, trace_outcome
@@ -28,6 +28,7 @@ st.markdown('Choose requirements, compare fixed models with routing, and inspect
             'RouteWise recommends **no configuration** when the measurements cannot establish that your requirements are met.')
 explore, upload = st.tabs(['Explore measured configurations', 'Use your labelled workload'])
 LABELS = CONFIGURATION_LABELS
+PROVIDER = PROVIDERS[load_config().provider]  # live calls on this page use the original (v1) configuration
 
 
 def show_metrics(metrics, selected):
@@ -132,7 +133,7 @@ with explore:
         if ex:
             st.code(ex['input'], language=None, wrap_lines=True)
         render_trace(chosen, expected=ex['expected'] if ex else None)
-        key = api_key()
+        key = api_key(PROVIDER.name)
         text = st.text_area('Try a new conversation with this configuration', max_chars=12000,
                             placeholder='[2026-04-01 09:00] Customer: …')
         used = st.session_state.get('live_routes', 0)
@@ -142,7 +143,7 @@ with explore:
             if run.manifest.get('study') == 'm6' and version == 'v3':
                 version = 'v4'
             snapshot = artifacts.load_prices()
-            prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
+            prices = {c.label: price_for(snapshot, c.model_id, c.host) for c in cfg.candidates}
             prompt = load_prompt(REPO_ROOT/f'prompts/extraction_{version}.txt', 'extraction')
             router = Router(TokenFactoryClient(api_key=key, base_url=cfg.base_url), cfg, prices,
                             {'extraction': prompt}, {'extraction': option}, strategy=arm)
@@ -151,7 +152,7 @@ with explore:
                 with ready.container():
                     st.caption(f"Answer ready in {answer['latency_ms']:,.0f} ms; finishing accounting…")
                     st.json(answer['output'])
-            with st.spinner('Calling Nebius Token Factory…'):
+            with st.spinner(f'Calling {PROVIDER.label}…'):
                 trace = router.route('extraction', text, on_answer=display)
             ready.empty()
             st.session_state['live_routes'] = used + 1
@@ -161,7 +162,7 @@ with upload:
     st.markdown('Upload **JSONL** with `id`, `input`, `expected` (all six extraction fields), and optionally '
                 '`split` (`tune` or `heldout`). Without split labels, a stable text hash assigns the halves. '
                 'Exact duplicate conversations are rejected. Uploads and results are not saved to the repository. '
-                'Benchmarking sends conversation text to Nebius Token Factory; labels stay in local scoring.')
+                f'Benchmarking sends conversation text to {PROVIDER.label}; labels stay in local scoring.')
     st.warning('This is a public demo. Do not upload customer conversations or labels here: validate them on '
                'your own machine with private validation mode '
                '([guide](https://github.com/CompilingCaffeine/RouteWise/blob/main/docs/workload-validation.md)).')
@@ -171,7 +172,7 @@ with upload:
                            'contact_date': '2026-04-01', 'refund_date': '2026-04-03'}}
     st.download_button('Download record format', json.dumps(sample)+'\n', 'routewise-format.jsonl', 'application/jsonl')
     uploaded = st.file_uploader('Labelled extraction workload', type=['jsonl'])
-    own_key = st.text_input('Your Nebius API key (optional)', type='password',
+    own_key = st.text_input(f'Your {PROVIDER.label} API key (optional)', type='password',
                             help='Use your own key for larger workloads. It is used only for API calls and is never written to run artifacts.')
     if uploaded:
         raw = uploaded.getvalue()
@@ -193,7 +194,7 @@ with upload:
             state = st.session_state.setdefault(state_key, {})
             cfg = load_config()
             snapshot = artifacts.load_prices()
-            key = own_key or api_key()
+            key = own_key or api_key(PROVIDER.name)
             budget = 2000 if own_key else 500
             used = st.session_state.get('workload_calls', 0)
             need = len(tune_examples)*3
@@ -209,7 +210,7 @@ with upload:
                 records = []
                 class MemoryLog:
                     def append(self, name, record): records.append(record)
-                prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
+                prices = {c.label: price_for(snapshot, c.model_id, c.host) for c in cfg.candidates}
                 prompt = load_prompt(REPO_ROOT/'prompts/extraction_v4.txt', 'extraction')
                 with st.spinner('Benchmarking Nano, Super and Ultra on the tuning split…'):
                     run_benchmark(TokenFactoryClient(api_key=key, base_url=cfg.base_url), cfg, tune_examples,
@@ -231,7 +232,7 @@ with upload:
                 if selected and st.button(f'Test frozen choice on held-out split · up to {need} calls',
                                           disabled=not key or used+need > budget or 'evaluation' in state or tested):
                     st.session_state['workload_calls'] = used+need
-                    prices = {c.label: price_for(snapshot, c.model_id) for c in cfg.candidates}
+                    prices = {c.label: price_for(snapshot, c.model_id, c.host) for c in cfg.candidates}
                     prompt = load_prompt(REPO_ROOT/'prompts/extraction_v4.txt', 'extraction')
                     client = TokenFactoryClient(api_key=key, base_url=cfg.base_url)
                     options = {f'fixed_{c.label}': RouteOption(c.label) for c in cfg.candidates}

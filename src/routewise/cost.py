@@ -5,10 +5,14 @@ Billing model (Token Factory serverless, per docs.tokenfactory.nebius.com/cached
 + cached prompt tokens   x cached-input price (falls back to input price if none is published)
 + completion tokens      x output price (reasoning tokens are part of completion tokens)
 + flat per-request price (usually 0)
+
+OpenRouter bills the same structure at the pinned host's endpoint price, and reports its charge on every
+response (usage.cost); `billing_matches` compares that charge with this function.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 
@@ -48,6 +52,13 @@ def call_cost_usd(
         + completion_tokens * price.completion
         + price.request
     )
+
+
+def billing_matches(computed_usd: float | None, reported_usd: float | None) -> bool | None:
+    """Provider-reported charge vs call_cost_usd, within rounding. None when either side is unknown."""
+    if computed_usd is None or reported_usd is None:
+        return None
+    return math.isclose(computed_usd, reported_usd, rel_tol=1e-3, abs_tol=1e-9)
 
 
 def cost_per_1k_tasks(total_cost_usd: float, n_tasks: int) -> float:
