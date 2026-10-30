@@ -106,6 +106,8 @@ class CallRecord(BaseModel):
     score: dict[str, Any] | None = None
     injected_delay_ms: float = 0.0  # synthetic stall included in latency_ms (fault-injection runs only)
     grounding: dict[str, Any] | None = None  # v3 source evidence + raw output; legacy calls stay unchanged
+    served_by: str | None = None  # upstream host that answered (OpenRouter only)
+    reported_cost_usd: float | None = None  # provider-reported charge, checked against cost_usd (OpenRouter only)
 
     def parsed_output(self) -> ParsedOutput:
         if self.error is not None and self.parsed is None:

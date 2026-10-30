@@ -10,6 +10,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from routewise.client import PROVIDERS
 from routewise.config import REPO_ROOT, load_dotenv
 
 # Reference palette (validated: first three slots pass all-pairs CVD checks in both modes).
@@ -47,15 +48,16 @@ def mode() -> str:
         return "light"
 
 
-def api_key() -> str | None:
+def api_key(provider: str = "nebius") -> str | None:
+    name = PROVIDERS[provider].key_env
     try:
-        key = st.secrets.get("NEBIUS_API_KEY")
+        key = st.secrets.get(name)
     except Exception:
         key = None
     if key:
         return key
     load_dotenv(REPO_ROOT / ".env")
-    return os.environ.get("NEBIUS_API_KEY")
+    return os.environ.get(name)
 
 
 def money(v: float | None, digits: int = 4) -> str:
@@ -323,7 +325,8 @@ def render_trace(trace: dict[str, Any], policy_reason: str | None = None,
 
     for hop, (call, check) in enumerate(zip(trace["calls"], trace["validations"]), start=1):
         with st.container(border=True):
-            title = f"**Hop {hop} · {call['candidate']}** · `{call['model_id']}`"
+            title = f"**Hop {hop} · {call['candidate']}** · `{call['model_id']}`" + (
+                f" · served by {call['served_by']}" if call.get('served_by') else '')
             st.markdown(title)
             c = st.columns(4)
             injected = call.get("injected_delay_ms") or 0

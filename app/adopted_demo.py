@@ -4,8 +4,8 @@ import json
 
 import streamlit as st
 
-from routewise.client import TokenFactoryClient
-from routewise.deployment import ARM_LABELS, profile_router
+from routewise.client import PROVIDERS, TokenFactoryClient
+from routewise.deployment import ARM_LABELS, live_config, profile_router
 from ui import MAX_LIVE_ROUTES, api_key, render_trace
 
 SAMPLES = {
@@ -79,15 +79,21 @@ def render_recorded(evidence: dict, *, key: str) -> None:
 
 def render_live(evidence: dict, *, key: str, choice: str = 'deterministic') -> None:
     policy = evidence['policy']
-    st.caption(f"Configuration: {ARM_LABELS[choice]} · prompt extraction_v4 · Nebius Token Factory")
+    config = live_config()
+    provider = PROVIDERS[config.provider].label
+    hosts = ', '.join(f'{c.name} on {c.host}' for c in config.candidates if c.host and c.name in ('nano', 'super'))
+    st.caption(f"Configuration: {ARM_LABELS[choice]} · prompt extraction_v4 · {provider}" + (f" ({hosts})" if hosts else ''))
     if choice == 'deterministic':
         st.caption(f"Active profile: {policy['policy_id']} · validation run: {policy['validation_run']}")
+    if config.provider != evidence['config'].provider:
+        st.caption(f"Recorded results were measured on {PROVIDERS[evidence['config'].provider].label}; "
+                   f"fresh requests run on {provider}.")
     name = st.selectbox('Example conversation', [*SAMPLES, 'Write a conversation'], key=f'{key}-sample')
     text = st.text_area('Conversation', value=SAMPLES.get(name, ''), height=170, max_chars=12000,
                         key=f'{key}-text-{name}')
     st.caption('Use timestamped Customer and Agent messages. Samples are illustrative synthetic inputs. '
                'Live model outputs can differ from the recorded examples. Do not enter customer data in this public demo.')
-    token = api_key()
+    token = api_key(config.provider)
     used = st.session_state.get('live_routes', 0)
     if not token:
         st.info('Live inference is unavailable on this deployment. Recorded examples above remain inspectable.')
@@ -95,15 +101,14 @@ def render_live(evidence: dict, *, key: str, choice: str = 'deterministic') -> N
         st.info('The live-call allowance for this session is used. You can still inspect recorded evidence.')
     identity = (choice, text)
     state_key = f'{key}-last-result'
-    if st.button('Run on Nebius Token Factory', type='primary', key=f'{key}-run',
+    if st.button(f'Run on {provider}', type='primary', key=f'{key}-run',
                  disabled=not token or not text.strip() or used >= MAX_LIVE_ROUTES):
         st.session_state.pop(state_key, None)
         st.session_state['live_routes'] = used + 1
         try:
-            config = evidence['config']
-            with st.spinner('Calling NVIDIA Nemotron on Nebius Token Factory…'):
+            with st.spinner(f'Calling NVIDIA Nemotron on {provider}…'):
                 client = TokenFactoryClient(api_key=token, base_url=config.base_url)
-                trace = profile_router(client, choice).route('extraction', text)
+                trace = profile_router(client, choice, config=config).route('extraction', text)
             st.session_state[state_key] = {'identity': identity, 'trace': trace.model_dump()}
         except Exception:
             st.error('The live request could not complete. No usable answer was produced. '

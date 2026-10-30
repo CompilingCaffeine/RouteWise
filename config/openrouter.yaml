@@ -1,0 +1,50 @@
+# Live inference on OpenRouter (provider migration, Nov 2026). Same adopted extraction settings as
+# config/grounded.yaml: prompt v4, source grounding, Nano -> Super escalation, issue-date normalization from
+# policies/deployment/m7-extraction.json, no hedging. Only the provider, model slugs, reasoning switch and pinned
+# hosts differ. Every archived result was measured on Nebius Token Factory with config/grounded.yaml.
+base_url: https://openrouter.ai/api/v1/
+provider: openrouter
+prices_snapshot: config/openrouter-prices.snapshot.json
+generation:
+  temperature: 0.0
+  seed: 7
+  response_format: json_schema
+reasoning_modes:
+  'off':
+    max_tokens: 512
+    extra_body:
+      reasoning:
+        enabled: false
+  'on':
+    max_tokens: 4096
+    extra_body:
+      reasoning:
+        enabled: true
+# `host` pins one upstream endpoint per candidate (provider.order, no fallbacks, require_parameters).
+# `routewise --config config/openrouter.yaml prices` lists every host with its price and parameter support.
+candidates:
+- name: nano
+  model_id: nvidia/nemotron-3-nano-30b-a3b
+  reasoning: 'off'
+  host: nebius/fp8  # the only Nano host with json_schema and seed on 2026-10-30; see docs/deployment.md
+- name: super
+  model_id: nvidia/nemotron-3-super-120b-a12b
+  reasoning: 'off'
+  host: dekallm/fp8
+- name: ultra
+  model_id: nvidia/nemotron-3-ultra-550b-a55b
+  reasoning: 'off'
+  host: deepinfra/fp4
+baselines:
+  smallest: nano
+  strongest: ultra
+thresholds:
+  extraction:
+    min_task_accuracy: 0.95
+    min_field_accuracy: 0.95
+    max_p95_latency_ms: 4000
+hedging:
+  enabled: false
+  after_primary_percentile: 95
+prompts:
+  extraction: prompts/extraction_v4.txt

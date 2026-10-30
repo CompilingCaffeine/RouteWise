@@ -76,6 +76,8 @@ def call_candidate(
         ratelimit=result.ratelimit,
         injected_delay_ms=result.injected_delay_ms,
         grounding=audit,
+        served_by=result.served_by,
+        reported_cost_usd=result.reported_cost_usd,
     )
 
 

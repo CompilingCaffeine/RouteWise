@@ -1,7 +1,7 @@
 import streamlit as st
 
 from routewise import artifacts, dataset
-from routewise.client import TokenFactoryClient
+from routewise.client import PROVIDERS, TokenFactoryClient
 from routewise.config import load_config
 from routewise.evaluation import build_routers
 from routewise.prices import price_for
@@ -27,12 +27,13 @@ latest_eval = artifacts.headline_eval(evals)
 policy = artifacts.load_json(policies[0])  # the current (newest) policy is what routes live requests
 st.caption(f"Live requests use policy `{policy['policy_id']}`.")
 
-key = api_key()
+key = api_key(config.provider)
+provider = PROVIDERS[config.provider].label
 live_tab, replay_tab = st.tabs(["Route a request live", "Replay a recorded request"])
 
 with live_tab:
     if not key:
-        st.info("Live routing is off on this deployment (no Token Factory key configured). "
+        st.info(f"Live routing is off on this deployment (no {provider} key configured). "
                 "Use **Replay a recorded request** to inspect real recorded traces.", icon=":material/key_off:")
     heldout = dataset.load_split("heldout")
     escalated_ids = set()
@@ -65,7 +66,7 @@ with live_tab:
     if st.button("Route it", type="primary", disabled=disabled, icon=":material/send:"):
         client = TokenFactoryClient(api_key=key, base_url=config.base_url)
         snapshot = artifacts.load_prices()
-        prices = {c.label: price_for(snapshot, c.model_id) for c in config.candidates}
+        prices = {c.label: price_for(snapshot, c.model_id, c.host) for c in config.candidates}
         prompts = {t: load_prompt(p, t) for t, p in config.prompts.items()}
         routers = build_routers(client, config, policy, prices, prompts)
         ready = st.empty()
@@ -73,7 +74,7 @@ with live_tab:
             with ready.container():
                 st.caption(f"Answer ready in {answer['latency_ms']:,.0f} ms · {answer['answered_by']}; finishing cost accounting…")
                 st.json(answer['output'])
-        with st.spinner("Calling Nebius Token Factory…"):
+        with st.spinner(f"Calling {provider}…"):
             trace = routers[strategy].route(task, text, example_id=example_id, expected=expected, on_answer=show_answer)
         ready.empty()
         st.session_state["live_routes"] = used + 1
