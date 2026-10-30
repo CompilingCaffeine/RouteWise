@@ -15,7 +15,10 @@ from routewise.runlog import sha256_file
 from routewise.statistics import cheapest_qualifying, wilson
 
 PROFILE = Path('policies/deployment/m7-extraction.json')
-CONFIG = Path('config/grounded.yaml')
+CONFIG = Path('config/grounded.yaml')  # the measured configuration (Nemotron 3); evidence always uses it
+# Fresh requests: Nebius removes Nemotron 3 Nano and Super from Token Factory Serverless on 2026-11-09, so the
+# same profile runs on Nebius's announced replacements. They have not been re-validated on these workloads.
+LIVE_CONFIG = Path('config/grounded-nemotron-3.5.yaml')
 VALIDATION_STATUS = Path('data/v5/validation-status.json')
 ARM_LABELS = {'deterministic': 'Adopted route · date normalization',
               'control': 'Previous route · without date normalization',
@@ -26,23 +29,33 @@ def load_adopted(root: Path | None = None) -> tuple[Config, dict]:
     root = root or artifacts.artifacts_root()
     config = load_config(root / CONFIG)
     policy = artifacts.load_json(root / PROFILE)
-    prompt = load_prompt(config.prompts['extraction'], 'extraction')
-    if policy['prompts']['extraction'] != prompt.version:
-        raise ValueError('The adopted profile and extraction prompt versions differ')
+    _check_prompt(config, policy)
     return config, policy
 
 
-def adopted_router(client, root: Path | None = None):
+def _check_prompt(config: Config, policy: dict) -> None:
+    if policy['prompts']['extraction'] != load_prompt(config.prompts['extraction'], 'extraction').version:
+        raise ValueError('The adopted profile and extraction prompt versions differ')
+
+
+def live_config(root: Path | None = None) -> Config:
+    return load_config((root or artifacts.artifacts_root()) / LIVE_CONFIG)
+
+
+def adopted_router(client, root: Path | None = None, config: Config | None = None):
     """Use the same builder as the documented CLI, including recovery and review decisions."""
-    return profile_router(client, 'deterministic', root)
+    return profile_router(client, 'deterministic', root, config)
 
 
-def profile_router(client, choice: str, root: Path | None = None):
+def profile_router(client, choice: str, root: Path | None = None, config: Config | None = None):
+    """Route fresh requests with a measured configuration's profile, on the live models by default."""
     if choice not in ARM_LABELS:
         raise ValueError(f'Unknown measured configuration: {choice}')
-    config, policy = load_adopted(root)
+    _, policy = load_adopted(root)
+    config = config or live_config(root)
     if choice == 'control':
         policy = artifacts.load_json((root or artifacts.artifacts_root()) / 'policies/deployment/m6-extraction.json')
+    _check_prompt(config, policy)
     snapshot = load_snapshot(config.prices_snapshot)
     prices = {c.label: price_for(snapshot, c.model_id) for c in config.candidates}
     prompts = {t: load_prompt(p, t) for t, p in config.prompts.items()}
@@ -84,11 +97,13 @@ def deployment_decision(evidence: dict, metrics: dict, selected: str | None, *, 
                         field_accuracy: float, deadline_ms: float, root: Path | None = None) -> dict[str, Any]:
     root = root or artifacts.artifacts_root()
     config, adopted = evidence['config'], evidence['policy']
+    live = live_config(root)
     profiles = {'deterministic': PROFILE, 'control': Path('policies/deployment/m6-extraction.json')}
     chosen_path = profiles.get(selected)
     chosen = artifacts.load_json(root / chosen_path) if chosen_path else None
-    sources = [CONFIG, PROFILE, VALIDATION_STATUS, Path('policies/deployment/m6-extraction.json'),
+    sources = [CONFIG, LIVE_CONFIG, PROFILE, VALIDATION_STATUS, Path('policies/deployment/m6-extraction.json'),
                config.prompts['extraction'].relative_to(root), config.prices_snapshot.relative_to(root),
+               live.prices_snapshot.relative_to(root),
                Path('src/routewise/recovery.py'), Path('src/routewise/issue_dates.py'),
                Path('src/routewise/validate.py'), Path('src/routewise/grounding.py'),
                Path('src/routewise/deployment.py'), Path('src/routewise/evaluation.py'),
@@ -103,16 +118,19 @@ def deployment_decision(evidence: dict, metrics: dict, selected: str | None, *, 
         'evidence': {'run': adopted['validation_run'], 'set': 'representative',
                      'provenance': 'synthetic, model-written; initially agent-reviewed; independent human validation completed for this representative dataset (project-owner confirmation)',
                      'human_validation': evidence['human_validation'],
+                     'config': CONFIG.as_posix(), 'models': {c.name: c.model_id for c in config.candidates},
                      'status': 'exploration of recorded evidence; new requirements are not a fresh confirmation'},
         'metrics': metrics.get(selected) if selected else None,
         'profile': chosen,
-        'runtime': {'config': str(CONFIG), 'profile': str(chosen_path) if chosen_path else None,
+        'runtime': {'config': LIVE_CONFIG.as_posix(), 'models': {c.name: c.model_id for c in live.candidates},
+                    'models_note': 'Nebius replacements for the measured Nemotron 3 models; not re-validated',
+                    'profile': str(chosen_path) if chosen_path else None,
                     'fixed_model': 'super' if selected == 'fixed_grounded_super' else None,
                     'prompt': 'prompts/extraction_v4.txt', 'release_condition': 'final_valid must be true'},
-        'cli': (f'routewise --config {CONFIG} route --policy {chosen_path or PROFILE}'
+        'cli': (f'routewise --config {LIVE_CONFIG.as_posix()} route --policy {(chosen_path or PROFILE).as_posix()}'
                 f'{" --strategy always_super" if selected == "fixed_grounded_super" else ""}'
                 ' --task extraction --text "YOUR TIMESTAMPED CONVERSATION" --json') if selected else None,
-        'source_sha256': {str(p): sha256_file(root / p) for p in sources},
+        'source_sha256': {p.as_posix(): sha256_file(root / p) for p in sources},
         'limits': ['Refund extraction only; six-field contract.',
                    'Review is not an autonomous completion; validator pass is not proof of correctness.',
                    'Usage-cost projections exclude hosting, labeling, development and human review.',

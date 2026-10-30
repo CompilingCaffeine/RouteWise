@@ -91,6 +91,8 @@ def test_guided_ui_runs_the_adopted_profile_and_explains_review(monkeypatch):
     assert not at.exception
     trace = at.session_state['start-live-last-result']['trace']
     assert trace['final_valid'] and trace['final_output']['refund_date'] == '2026-04-06'
+    assert trace['calls'][0]['model_id'] == 'nvidia/Nemotron-3_5-Lightning'  # live models, not the measured ones
+    assert any('Nemotron-3_5-Lightning → Nemotron-3.5-Super-VL' in c.value for c in at.caption)
     assert any('Final output after normalization' in m.value for m in at.markdown)
     next(s for s in at.selectbox if s.label == 'Example conversation').select('Ambiguous date · review').run()
     # An edited input must not retain the old live answer.

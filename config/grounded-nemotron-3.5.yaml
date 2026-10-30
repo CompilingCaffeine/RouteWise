@@ -1,0 +1,45 @@
+# Live requests after 2026-11-09, when Nebius removes Nemotron 3 Nano and Super from Token Factory Serverless.
+# Same adopted extraction settings as config/grounded.yaml (prompt v4, grounding, Nano -> Super escalation, issue-date
+# normalization from policies/deployment/m7-extraction.json, no hedging); only the two retiring model IDs change, to
+# Nebius's announced replacements (docs.tokenfactory.nebius.com/model-deprecations-november-2026). Every archived
+# result was measured with config/grounded.yaml on Nemotron 3; these replacements have not been re-validated.
+base_url: https://api.tokenfactory.nebius.com/v1/
+prices_snapshot: config/grounded-nemotron-3.5-prices.snapshot.json
+generation:
+  temperature: 0.0
+  seed: 7
+  response_format: json_schema
+reasoning_modes:
+  'off':
+    max_tokens: 512
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: false
+  'on':
+    max_tokens: 4096
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: true
+candidates:
+- name: nano
+  model_id: nvidia/Nemotron-3_5-Lightning  # replaces nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+  reasoning: 'off'
+- name: super
+  model_id: nvidia/Nemotron-3.5-Super-VL  # replaces nvidia/nemotron-3-super-120b-a12b
+  reasoning: 'off'
+- name: ultra
+  model_id: nvidia/Nemotron-3-Ultra-550b-a55b  # not retired
+  reasoning: 'off'
+baselines:
+  smallest: nano
+  strongest: ultra
+thresholds:
+  extraction:
+    min_task_accuracy: 0.95
+    min_field_accuracy: 0.95
+    max_p95_latency_ms: 4000
+hedging:
+  enabled: false
+  after_primary_percentile: 95
+prompts:
+  extraction: prompts/extraction_v4.txt

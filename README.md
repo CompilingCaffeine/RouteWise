@@ -12,6 +12,8 @@ RouteWise benchmarks several NVIDIA open models on *your* labelled workload. It 
 
 Built for the Nebius × NVIDIA Global AI Hackathon (Best Apps and Agents track). All inference runs on **Nebius Token Factory** with **NVIDIA Nemotron 3 Nano, Super and Ultra**.
 
+> **Model update (Nov 2026).** Nebius removes Nemotron 3 Nano and Super from Token Factory Serverless on November 9, 2026, and names [their replacements](https://docs.tokenfactory.nebius.com/model-deprecations-november-2026): Nemotron 3.5 Lightning and Nemotron 3.5 Super-VL. Fresh requests in the dashboard and the CLI recipe use those replacements on Token Factory, with the same adopted profile ([`config/grounded-nemotron-3.5.yaml`](config/grounded-nemotron-3.5.yaml)). Every result in this README was measured on Nemotron 3 Nano and Super with `config/grounded.yaml` and is unchanged. The replacements have not been re-validated on these workloads.
+
 **Live demo:** https://nebius-routewise.streamlit.app/
 
 **Demo video:** [1:40 guided walkthrough](docs/video/routewise-devpost.mp4), recorded locally with real Nebius inference and computer-generated narration. See the [script and publication checklist](docs/video-script.md); public deployment and YouTube upload are still pending.
@@ -257,11 +259,11 @@ echo 'NEBIUS_API_KEY=...' > .env      # gitignored; or export NEBIUS_API_KEY
 The original default CLI config/policies preserve v1; the dashboard's default live experience uses the adopted profile. The adopted M6 extraction profile uses prompt v4, source grounding, Nano → Super escalation without hedging, and deterministic issue-date normalization:
 
 ```bash
-routewise --config config/grounded.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345 please, I paid $40.00.
+routewise --config config/grounded-nemotron-3.5.yaml route --policy policies/deployment/m7-extraction.json --task extraction --text '[2026-04-01 09:00] Customer: Refund order web_12345 please, I paid $40.00.
 [2026-04-02 10:00] Agent: Approved. The refund will be issued this Friday.'
 ```
 
-Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
+This runs the profile on Nebius's replacement models. `config/grounded.yaml` is the measured Nemotron 3 configuration, which Token Factory Serverless no longer serves after November 9, 2026. Check `final_valid`; a failed final answer, or an issue date that needs review, goes to a person. The M5 profile without normalization remains at `policies/deployment/m6-extraction.json`. Both profiles are workload-specific; see the [M5](results/M6-report.md) and [M6](results/M7-report.md) reports for their limits. The dashboard's Workload optimizer offers the M5 configurations and supports importing a new labelled workload.
 
 To test the adopted profile on your own conversations, follow [docs/workload-validation.md](docs/workload-validation.md). Customer data stays in two directories outside every git repository. The console shows aggregates only, and results leave only as reviewed aggregate exports. Labelers fill in [`data/validation-template/labeling-template.csv`](data/validation-template/README.md), and then:
 

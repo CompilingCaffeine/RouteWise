@@ -5,7 +5,7 @@ import json
 import streamlit as st
 
 from routewise.client import TokenFactoryClient
-from routewise.deployment import ARM_LABELS, profile_router
+from routewise.deployment import ARM_LABELS, live_config, profile_router
 from ui import MAX_LIVE_ROUTES, api_key, render_trace
 
 SAMPLES = {
@@ -79,9 +79,15 @@ def render_recorded(evidence: dict, *, key: str) -> None:
 
 def render_live(evidence: dict, *, key: str, choice: str = 'deterministic') -> None:
     policy = evidence['policy']
-    st.caption(f"Configuration: {ARM_LABELS[choice]} · prompt extraction_v4 · Nebius Token Factory")
+    config = live_config()
+    roles = ('super',) if choice == 'fixed_grounded_super' else ('nano', 'super')
+    models = ' → '.join(config.candidate(r).model_id.removeprefix('nvidia/') for r in roles)
+    st.caption(f"Configuration: {ARM_LABELS[choice]} · prompt extraction_v4 · Nebius Token Factory · {models}")
     if choice == 'deterministic':
         st.caption(f"Active profile: {policy['policy_id']} · validation run: {policy['validation_run']}")
+    st.caption('Recorded results were measured on Nemotron 3 Nano and Super, which Nebius removes from Token Factory '
+               "Serverless on November 9, 2026. Fresh requests use Nebius's announced replacements, which have not "
+               'been re-validated on this workload.')
     name = st.selectbox('Example conversation', [*SAMPLES, 'Write a conversation'], key=f'{key}-sample')
     text = st.text_area('Conversation', value=SAMPLES.get(name, ''), height=170, max_chars=12000,
                         key=f'{key}-text-{name}')
@@ -100,10 +106,9 @@ def render_live(evidence: dict, *, key: str, choice: str = 'deterministic') -> N
         st.session_state.pop(state_key, None)
         st.session_state['live_routes'] = used + 1
         try:
-            config = evidence['config']
             with st.spinner('Calling NVIDIA Nemotron on Nebius Token Factory…'):
                 client = TokenFactoryClient(api_key=token, base_url=config.base_url)
-                trace = profile_router(client, choice).route('extraction', text)
+                trace = profile_router(client, choice, config=config).route('extraction', text)
             st.session_state[state_key] = {'identity': identity, 'trace': trace.model_dump()}
         except Exception:
             st.error('The live request could not complete. No usable answer was produced. '
